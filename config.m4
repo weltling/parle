@@ -13,8 +13,10 @@ if test "$PHP_PARLE" != "no"; then
 
   PHP_NEW_EXTENSION(parle, parle.cpp, $ext_shared,, -DZEND_ENABLE_STATIC_TSRMLS_CACHE=1 -std=c++14)
 
-  PHP_ADD_INCLUDE($ext_srcdir/lib)
-  PHP_ADD_INCLUDE($ext_builddir/lib)
+  PHP_ADD_INCLUDE($ext_srcdir/lib/lexertl14)
+  PHP_ADD_INCLUDE($ext_builddir/lib/lexertl14)
+  PHP_ADD_INCLUDE($ext_srcdir/lib/parsertl14)
+  PHP_ADD_INCLUDE($ext_builddir/lib/parsertl14)
   PHP_ADD_INCLUDE($ext_srcdir/lib/mpark)
   PHP_ADD_INCLUDE($ext_builddir/lib/mpark)
 

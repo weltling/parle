@@ -33,6 +33,10 @@
 #include "config.h"
 #endif
 
+#include "lexertl/generator.hpp"
+#include "parsertl/generator.hpp"
+#include "variant.hpp"
+
 #include "php.h"
 #include "php_ini.h"
 #include "ext/standard/info.h"
