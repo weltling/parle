@@ -4,6 +4,6 @@
 ARG_ENABLE("parle", "Enable lexer/parser support", "no");
 
 if (PHP_PARLE != "no") {
-	EXTENSION("parle", "parle.cpp", PHP_EXTNAME_SHARED, "/DZEND_ENABLE_STATIC_TSRMLS_CACHE=1");
+	EXTENSION("parle", "parle.cpp", PHP_PARLE_SHARED, "/DZEND_ENABLE_STATIC_TSRMLS_CACHE=1");
 }
 
