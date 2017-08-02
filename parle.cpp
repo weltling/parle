@@ -55,7 +55,7 @@ ZEND_DECLARE_MODULE_GLOBALS(parle)
 struct ze_parle_lexer_obj {/*{{{*/
 	lexertl::rules *rules;
 	lexertl::state_machine *sm;
-	lexertl::smatch results;
+	lexertl::smatch *results;
 	zend_object zo;
 };/*}}}*/
 
@@ -89,14 +89,14 @@ PHP_METHOD(ParleLexer, __construct)
 	lexertl::generator::build(*zplo->rules, *zplo->sm);
 
 	std::string input("abc012Ad3e4 HELLO");
-	zplo->results = lexertl::smatch(input.begin(), input.end());
-	lexertl::lookup(*zplo->sm, zplo->results);
+	zplo->results = new lexertl::smatch(input.begin(), input.end());
+	lexertl::lookup(*zplo->sm, *zplo->results);
 
-	while (zplo->results.id != 0)
+	while (zplo->results->id != 0)
 	{
-		std::cout << "Id: " << zplo->results.id << ", Token: '" <<
-		zplo->results.str () << "'\n";
-		lexertl::lookup(*zplo->sm, zplo->results);
+		std::cout << "Id: " << zplo->results->id << ", Token: '" <<
+		zplo->results->str () << "'\n";
+		lexertl::lookup(*zplo->sm, *zplo->results);
 	}
 }
 /* }}} */
@@ -122,6 +122,7 @@ php_parle_lexer_obj_destroy(zend_object *obj)
 
 	delete zplo->rules;
 	delete zplo->sm;
+	delete zplo->results;
 }/*}}}*/
 
 zend_object *
@@ -136,6 +137,7 @@ php_parle_lexer_object_init(zend_class_entry *ce)
 
 	zplo->rules = new lexertl::rules{};
 	zplo->sm = new lexertl::state_machine{};
+	zplo->results = nullptr;
 
 	return &zplo->zo;
 }/*}}}*/
