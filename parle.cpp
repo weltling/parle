@@ -34,6 +34,7 @@
 #endif
 
 #include "lexertl/generator.hpp"
+#include "lexertl/lookup.hpp"
 #include "parsertl/generator.hpp"
 #include "variant.hpp"
 
@@ -42,12 +43,102 @@
 #include "ext/standard/info.h"
 #include "php_parle.h"
 
+#undef lookup
+
 /* If you declare any globals in php_parle.h uncomment this:
 ZEND_DECLARE_MODULE_GLOBALS(parle)
 */
 
 /* True global resources - no need for thread safety here */
-static int le_parle;
+/* static int le_parle; */
+
+struct ze_parle_lexer_obj {/*{{{*/
+	lexertl::rules *rules;
+	lexertl::state_machine *sm;
+	lexertl::smatch results;
+	zend_object zo;
+};/*}}}*/
+
+zend_object_handlers parle_lexer_handlers;
+
+static zend_class_entry *ParleLexer_ce;
+
+static zend_always_inline struct ze_parle_lexer_obj *
+php_parle_lexer_fetch_obj(zend_object *obj)
+{/*{{{*/
+	return (struct ze_parle_lexer_obj *)((char *)obj - XtOffsetOf(struct ze_parle_lexer_obj, zo));
+}/*}}}*/
+
+/* {{{ public void Lexer::__construct(void) */
+PHP_METHOD(ParleLexer, __construct)
+{
+	struct ze_parle_lexer_obj *zplo;
+
+	/*if(zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "|s", &nsurl, &nsurl_len) == FAILURE) {
+		return;
+	}*/
+
+	zplo = php_parle_lexer_fetch_obj(Z_OBJ_P(getThis()));
+
+
+	zplo->rules->push("[0-9]+", 1);
+	zplo->rules->push("[a-z]+", 7);
+	zplo->rules->push("[A-Z]+", 10);
+	zplo->rules->push("[A-Z]{1}[a-z]+", 11);
+	zplo->rules->push("[\\s]+", 12);
+	lexertl::generator::build(*zplo->rules, *zplo->sm);
+
+	std::string input("abc012Ad3e4 HELLO");
+	zplo->results = lexertl::smatch(input.begin(), input.end());
+	lexertl::lookup(*zplo->sm, zplo->results);
+
+	while (zplo->results.id != 0)
+	{
+		std::cout << "Id: " << zplo->results.id << ", Token: '" <<
+		zplo->results.str () << "'\n";
+		lexertl::lookup(*zplo->sm, zplo->results);
+	}
+}
+/* }}} */
+
+/* {{{ Methods and functions
+ */
+const zend_function_entry parle_functions[] = {
+	PHP_FE_END	/* Must be the last line in parle_functions[] */
+};
+
+const zend_function_entry ParleLexer_methods[] = {
+	PHP_ME(ParleLexer, __construct, NULL, ZEND_ACC_PUBLIC)
+	PHP_FE_END
+};
+/* }}} */
+
+void
+php_parle_lexer_obj_destroy(zend_object *obj)
+{/*{{{*/
+	struct ze_parle_lexer_obj *zplo = php_parle_lexer_fetch_obj(obj);
+
+	zend_object_std_dtor(&zplo->zo);
+
+	delete zplo->rules;
+	delete zplo->sm;
+}/*}}}*/
+
+zend_object *
+php_parle_lexer_object_init(zend_class_entry *ce)
+{/*{{{*/
+	struct ze_parle_lexer_obj *zplo;
+
+	zplo = (struct ze_parle_lexer_obj *)ecalloc(1, sizeof(struct ze_parle_lexer_obj));
+
+	zend_object_std_init(&zplo->zo, ce);
+	zplo->zo.handlers = &parle_lexer_handlers;
+
+	zplo->rules = new lexertl::rules{};
+	zplo->sm = new lexertl::state_machine{};
+
+	return &zplo->zo;
+}/*}}}*/
 
 /* {{{ PHP_INI
  */
@@ -58,34 +149,6 @@ PHP_INI_BEGIN()
 PHP_INI_END()
 */
 /* }}} */
-
-/* Remove the following function when you have successfully modified config.m4
-   so that your module can be compiled into PHP, it exists only for testing
-   purposes. */
-
-/* Every user-visible function in PHP should document itself in the source */
-/* {{{ proto string confirm_parle_compiled(string arg)
-   Return a string to confirm that the module is compiled in */
-PHP_FUNCTION(confirm_parle_compiled)
-{
-	char *arg = NULL;
-	size_t arg_len, len;
-	zend_string *strg;
-
-	if (zend_parse_parameters(ZEND_NUM_ARGS(), "s", &arg, &arg_len) == FAILURE) {
-		return;
-	}
-
-	strg = strpprintf(0, "Congratulations! You have successfully modified ext/%.78s/config.m4. Module %.78s is now compiled into PHP.", "parle", arg);
-
-	RETURN_STR(strg);
-}
-/* }}} */
-/* The previous line is meant for vim and emacs, so it can correctly fold and
-   unfold functions in source code. See the corresponding marks just before
-   function definition, where the functions purpose is also documented. Please
-   follow this convention for the convenience of others editing your code.
-*/
 
 
 /* {{{ php_parle_init_globals
@@ -103,9 +166,21 @@ static void php_parle_init_globals(zend_parle_globals *parle_globals)
  */
 PHP_MINIT_FUNCTION(parle)
 {
+	zend_class_entry ce;
+
 	/* If you have INI entries, uncomment these lines
 	REGISTER_INI_ENTRIES();
 	*/
+
+	memcpy(&parle_lexer_handlers, zend_get_std_object_handlers(), sizeof(zend_object_handlers));
+	parle_lexer_handlers.clone_obj = NULL;
+	parle_lexer_handlers.offset = XtOffsetOf(struct ze_parle_lexer_obj, zo);
+	parle_lexer_handlers.free_obj = php_parle_lexer_obj_destroy;
+
+	INIT_CLASS_ENTRY(ce, "Lexer", ParleLexer_methods);
+	ce.create_object = php_parle_lexer_object_init;
+	ParleLexer_ce = zend_register_internal_class(&ce TSRMLS_CC);
+
 	return SUCCESS;
 }
 /* }}} */
@@ -117,27 +192,6 @@ PHP_MSHUTDOWN_FUNCTION(parle)
 	/* uncomment this line if you have INI entries
 	UNREGISTER_INI_ENTRIES();
 	*/
-	return SUCCESS;
-}
-/* }}} */
-
-/* Remove if there's nothing to do at request start */
-/* {{{ PHP_RINIT_FUNCTION
- */
-PHP_RINIT_FUNCTION(parle)
-{
-#if defined(COMPILE_DL_PARLE) && defined(ZTS)
-	ZEND_TSRMLS_CACHE_UPDATE();
-#endif
-	return SUCCESS;
-}
-/* }}} */
-
-/* Remove if there's nothing to do at request end */
-/* {{{ PHP_RSHUTDOWN_FUNCTION
- */
-PHP_RSHUTDOWN_FUNCTION(parle)
-{
 	return SUCCESS;
 }
 /* }}} */
@@ -156,16 +210,6 @@ PHP_MINFO_FUNCTION(parle)
 }
 /* }}} */
 
-/* {{{ parle_functions[]
- *
- * Every user visible function must have an entry in parle_functions[].
- */
-const zend_function_entry parle_functions[] = {
-	PHP_FE(confirm_parle_compiled,	NULL)		/* For testing, remove later. */
-	PHP_FE_END	/* Must be the last line in parle_functions[] */
-};
-/* }}} */
-
 /* {{{ parle_module_entry
  */
 zend_module_entry parle_module_entry = {
@@ -174,8 +218,8 @@ zend_module_entry parle_module_entry = {
 	parle_functions,
 	PHP_MINIT(parle),
 	PHP_MSHUTDOWN(parle),
-	PHP_RINIT(parle),		/* Replace with NULL if there's nothing to do at request start */
-	PHP_RSHUTDOWN(parle),	/* Replace with NULL if there's nothing to do at request end */
+	NULL,
+	NULL,
 	PHP_MINFO(parle),
 	PHP_PARLE_VERSION,
 	STANDARD_MODULE_PROPERTIES
