@@ -1,21 +1,8 @@
 dnl $Id$
 dnl config.m4 for extension parle
 
-dnl Comments in this file start with the string 'dnl'.
-dnl Remove where necessary. This file will not work
-dnl without editing.
-
-dnl If your extension references something external, use with:
-
-dnl PHP_ARG_WITH(parle, for parle support,
-dnl Make sure that the comment is aligned:
-dnl [  --with-parle             Include parle support])
-
-dnl Otherwise use enable:
-
-dnl PHP_ARG_ENABLE(parle, whether to enable parle support,
-dnl Make sure that the comment is aligned:
-dnl [  --enable-parle           Enable parle support])
+PHP_ARG_ENABLE(parle, whether to enable parle support,
+[  --enable-parle           Enable lexer/parser support])
 
 if test "$PHP_PARLE" != "no"; then
   dnl Write more examples of tests here...
@@ -59,5 +46,5 @@ if test "$PHP_PARLE" != "no"; then
   dnl
   dnl PHP_SUBST(PARLE_SHARED_LIBADD)
 
-  PHP_NEW_EXTENSION(parle, parle.c, $ext_shared,, -DZEND_ENABLE_STATIC_TSRMLS_CACHE=1)
+  PHP_NEW_EXTENSION(parle, parle.cpp, $ext_shared,, -DZEND_ENABLE_STATIC_TSRMLS_CACHE=1)
 fi
