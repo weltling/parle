@@ -56,6 +56,8 @@ struct ze_parle_lexer_obj {/*{{{*/
 	lexertl::rules *rules;
 	lexertl::state_machine *sm;
 	lexertl::smatch *results;
+	std::string *in;
+	uint8_t is_built;
 	zend_object zo;
 };/*}}}*/
 
@@ -81,7 +83,7 @@ PHP_METHOD(ParleLexer, __construct)
 	zplo = php_parle_lexer_fetch_obj(Z_OBJ_P(getThis()));
 
 
-	zplo->rules->push("[0-9]+", 1);
+	/*zplo->rules->push("[0-9]+", 1);
 	zplo->rules->push("[a-z]+", 7);
 	zplo->rules->push("[A-Z]+", 10);
 	zplo->rules->push("[A-Z]{1}[a-z]+", 11);
@@ -97,7 +99,72 @@ PHP_METHOD(ParleLexer, __construct)
 		std::cout << "Id: " << zplo->results->id << ", Token: '" <<
 		zplo->results->str () << "'\n";
 		lexertl::lookup(*zplo->sm, *zplo->results);
+	}*/
+}
+/* }}} */
+
+/* {{{ public void Lexer::addRule(string $rule, int $id) */
+PHP_METHOD(ParleLexer, addRule)
+{
+	struct ze_parle_lexer_obj *zplo;
+	char *rule;
+	size_t rule_len;
+	zend_long id;
+
+	if(zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "sl", &rule, &rule_len, &id) == FAILURE) {
+		return;
 	}
+
+	zplo = php_parle_lexer_fetch_obj(Z_OBJ_P(getThis()));
+
+	zplo->rules->push(rule, id);
+}
+/* }}} */
+
+/* {{{ public void Lexer::build(void) */
+PHP_METHOD(ParleLexer, build)
+{
+	struct ze_parle_lexer_obj *zplo;
+	zplo = php_parle_lexer_fetch_obj(Z_OBJ_P(getThis()));
+	lexertl::generator::build(*zplo->rules, *zplo->sm);
+}
+/* }}} */
+
+/* {{{ public void Lexer::consume(string $s) */
+PHP_METHOD(ParleLexer, consume)
+{
+	struct ze_parle_lexer_obj *zplo;
+	char *in;
+	size_t in_len;
+
+	if(zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s", &in, &in_len) == FAILURE) {
+		return;
+	}
+
+	zplo = php_parle_lexer_fetch_obj(Z_OBJ_P(getThis()));
+
+
+	zplo->in = new std::string(in);
+	zplo->results = new lexertl::smatch(zplo->in->begin(), zplo->in->end());
+	lexertl::lookup(*zplo->sm, *zplo->results);
+}
+/* }}} */
+
+/* {{{ public void Lexer::build(void) */
+PHP_METHOD(ParleLexer, getToken)
+{
+	struct ze_parle_lexer_obj *zplo;
+	zplo = php_parle_lexer_fetch_obj(Z_OBJ_P(getThis()));
+
+	if (0 == zplo->results->id) {
+		RETURN_NULL();
+	}
+
+	array_init(return_value);
+	add_next_index_long(return_value, zplo->results->id);
+	add_next_index_string(return_value, zplo->results->str().c_str());
+
+	lexertl::lookup(*zplo->sm, *zplo->results);
 }
 /* }}} */
 
@@ -109,6 +176,10 @@ const zend_function_entry parle_functions[] = {
 
 const zend_function_entry ParleLexer_methods[] = {
 	PHP_ME(ParleLexer, __construct, NULL, ZEND_ACC_PUBLIC)
+	PHP_ME(ParleLexer, addRule, NULL, ZEND_ACC_PUBLIC)
+	PHP_ME(ParleLexer, getToken, NULL, ZEND_ACC_PUBLIC)
+	PHP_ME(ParleLexer, build, NULL, ZEND_ACC_PUBLIC)
+	PHP_ME(ParleLexer, consume, NULL, ZEND_ACC_PUBLIC)
 	PHP_FE_END
 };
 /* }}} */
@@ -123,6 +194,7 @@ php_parle_lexer_obj_destroy(zend_object *obj)
 	delete zplo->rules;
 	delete zplo->sm;
 	delete zplo->results;
+	delete zplo->in;
 }/*}}}*/
 
 zend_object *
@@ -138,6 +210,7 @@ php_parle_lexer_object_init(zend_class_entry *ce)
 	zplo->rules = new lexertl::rules{};
 	zplo->sm = new lexertl::state_machine{};
 	zplo->results = nullptr;
+	zplo->in = nullptr;
 
 	return &zplo->zo;
 }/*}}}*/
