@@ -207,7 +207,7 @@ PHP_METHOD(ParleLexer, getToken)
 
 	zplo = php_parle_lexer_fetch_obj(Z_OBJ_P(me));
 
-	if (0 == zplo->results->id || zplo->results->npos() == zplo->results->id) {
+	if (0 == zplo->results->id) {
 		RETURN_NULL();
 	}
 
