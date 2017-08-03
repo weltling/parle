@@ -144,7 +144,7 @@ PHP_METHOD(ParleLexer, consume)
 	zplo = php_parle_lexer_fetch_obj(Z_OBJ_P(getThis()));
 
 
-	zplo->in = new std::string(in);
+	zplo->in = new std::string{in};
 	zplo->results = new lexertl::smatch(zplo->in->begin(), zplo->in->end());
 	lexertl::lookup(*zplo->sm, *zplo->results);
 }
