@@ -306,7 +306,7 @@ PHP_MINIT_FUNCTION(parle)
 
 	INIT_CLASS_ENTRY(ce, "Lexer", ParleLexer_methods);
 	ce.create_object = php_parle_lexer_object_init;
-	ParleLexer_ce = zend_register_internal_class(&ce TSRMLS_CC);
+	ParleLexer_ce = zend_register_internal_class(&ce);
 
 	return SUCCESS;
 }
