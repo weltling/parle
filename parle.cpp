@@ -35,12 +35,13 @@
 
 #include "lexertl/generator.hpp"
 #include "lexertl/lookup.hpp"
-#include "parsertl/generator.hpp"
-#include "variant.hpp"
+//#include "parsertl/generator.hpp"
+//#include "variant.hpp"
 
 #include "php.h"
 #include "php_ini.h"
 #include "ext/standard/info.h"
+#include "zend_exceptions.h"
 #include "php_parle.h"
 
 #undef lookup
@@ -103,21 +104,27 @@ PHP_METHOD(ParleLexer, __construct)
 }
 /* }}} */
 
-/* {{{ public void Lexer::addRule(string $rule, int $id) */
+/* {{{ public void Lexer::addRule(...) */
 PHP_METHOD(ParleLexer, addRule)
 {
 	struct ze_parle_lexer_obj *zplo;
-	char *rule;
-	size_t rule_len;
+	zend_string *regex, *dfa, *new_dfa;
 	zend_long id;
+	zval *me;
 
-	if(zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "sl", &rule, &rule_len, &id) == FAILURE) {
-		return;
+	/* TODO Work this through with all the overloaded variants. */
+	if(zend_parse_method_parameters_ex(ZEND_PARSE_PARAMS_QUIET, ZEND_NUM_ARGS(), getThis(), "OSl", &me, ParleLexer_ce, &regex, &id) == SUCCESS) {
+		zplo = php_parle_lexer_fetch_obj(Z_OBJ_P(me));
+		zplo->rules->push(ZSTR_VAL(regex), id);
+	} else if(zend_parse_method_parameters_ex(ZEND_PARSE_PARAMS_QUIET, ZEND_NUM_ARGS(), getThis(), "OSSS", &me, ParleLexer_ce, &dfa, &regex, &new_dfa) == SUCCESS) {
+		zplo = php_parle_lexer_fetch_obj(Z_OBJ_P(me));
+		zplo->rules->push(ZSTR_VAL(dfa), ZSTR_VAL(regex), ZSTR_VAL(new_dfa));
+	} else if(zend_parse_method_parameters_ex(ZEND_PARSE_PARAMS_QUIET, ZEND_NUM_ARGS(), getThis(), "OSSlS", &me, ParleLexer_ce, &dfa, &regex, &id, &new_dfa) == SUCCESS) {
+		zplo = php_parle_lexer_fetch_obj(Z_OBJ_P(me));
+		zplo->rules->push(ZSTR_VAL(dfa), ZSTR_VAL(regex), id, ZSTR_VAL(new_dfa));
+	} else {
+		zend_throw_exception(zend_ce_exception, "Couldn't match the method signature", 0);
 	}
-
-	zplo = php_parle_lexer_fetch_obj(Z_OBJ_P(getThis()));
-
-	zplo->rules->push(rule, id);
 }
 /* }}} */
 
@@ -125,7 +132,14 @@ PHP_METHOD(ParleLexer, addRule)
 PHP_METHOD(ParleLexer, build)
 {
 	struct ze_parle_lexer_obj *zplo;
-	zplo = php_parle_lexer_fetch_obj(Z_OBJ_P(getThis()));
+	zval *me;
+
+	if(zend_parse_method_parameters(ZEND_NUM_ARGS(), getThis(), "O", &me, ParleLexer_ce) == FAILURE) {
+		return;
+	}
+
+	zplo = php_parle_lexer_fetch_obj(Z_OBJ_P(me));
+
 	lexertl::generator::build(*zplo->rules, *zplo->sm);
 }
 /* }}} */
@@ -136,12 +150,13 @@ PHP_METHOD(ParleLexer, consume)
 	struct ze_parle_lexer_obj *zplo;
 	char *in;
 	size_t in_len;
+	zval *me;
 
-	if(zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s", &in, &in_len) == FAILURE) {
+	if(zend_parse_method_parameters(ZEND_NUM_ARGS(), getThis(), "Os", &me, ParleLexer_ce, &in, &in_len) == FAILURE) {
 		return;
 	}
 
-	zplo = php_parle_lexer_fetch_obj(Z_OBJ_P(getThis()));
+	zplo = php_parle_lexer_fetch_obj(Z_OBJ_P(me));
 
 
 	zplo->in = new std::string{in};
@@ -150,13 +165,38 @@ PHP_METHOD(ParleLexer, consume)
 }
 /* }}} */
 
-/* {{{ public void Lexer::build(void) */
+/* {{{ public void Lexer::addState(string $s) */
+PHP_METHOD(ParleLexer, addState)
+{
+	struct ze_parle_lexer_obj *zplo;
+	char *state;
+	size_t state_len;
+	zval *me;
+
+	if(zend_parse_method_parameters(ZEND_NUM_ARGS(), getThis(), "Os", &me, ParleLexer_ce, &state, &state_len) == FAILURE) {
+		return;
+	}
+
+	zplo = php_parle_lexer_fetch_obj(Z_OBJ_P(me));
+
+
+	zplo->rules->push_state(state);
+}
+/* }}} */
+
+/* {{{ public void Lexer::getToken(void) */
 PHP_METHOD(ParleLexer, getToken)
 {
 	struct ze_parle_lexer_obj *zplo;
-	zplo = php_parle_lexer_fetch_obj(Z_OBJ_P(getThis()));
+	zval *me;
 
-	if (0 == zplo->results->id) {
+	if(zend_parse_method_parameters(ZEND_NUM_ARGS(), getThis(), "O", &me, ParleLexer_ce) == FAILURE) {
+		return;
+	}
+
+	zplo = php_parle_lexer_fetch_obj(Z_OBJ_P(me));
+
+	if (0 == zplo->results->id || zplo->results->npos() == zplo->results->id) {
 		RETURN_NULL();
 	}
 
@@ -168,7 +208,7 @@ PHP_METHOD(ParleLexer, getToken)
 }
 /* }}} */
 
-/* {{{ Methods and functions
+/* {{{ Method and function entries
  */
 const zend_function_entry parle_functions[] = {
 	PHP_FE_END	/* Must be the last line in parle_functions[] */
@@ -177,6 +217,7 @@ const zend_function_entry parle_functions[] = {
 const zend_function_entry ParleLexer_methods[] = {
 	PHP_ME(ParleLexer, __construct, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(ParleLexer, addRule, NULL, ZEND_ACC_PUBLIC)
+	PHP_ME(ParleLexer, addState, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(ParleLexer, getToken, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(ParleLexer, build, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(ParleLexer, consume, NULL, ZEND_ACC_PUBLIC)
