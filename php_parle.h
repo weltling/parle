@@ -35,7 +35,7 @@
 extern zend_module_entry parle_module_entry;
 #define phpext_parle_ptr &parle_module_entry
 
-#define PHP_PARLE_VERSION "0.1.0" /* Replace with version number for your extension */
+#define PHP_PARLE_VERSION "0.3.0"
 
 #ifdef PHP_WIN32
 #	define PHP_PARLE_API __declspec(dllexport)
