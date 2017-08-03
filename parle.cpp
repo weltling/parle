@@ -112,29 +112,33 @@ PHP_METHOD(ParleLexer, addRule)
 	zend_long id, user_id = 0;
 	zval *me;
 
-	// Rules for INITIAL
-	if(zend_parse_method_parameters_ex(ZEND_PARSE_PARAMS_QUIET, ZEND_NUM_ARGS(), getThis(), "OSl|l", &me, ParleLexer_ce, &regex, &id, &user_id) == SUCCESS) {
-		zplo = php_parle_lexer_fetch_obj(Z_OBJ_P(me));
-		zplo->rules->push(ZSTR_VAL(regex), id, user_id);
-	} else if(zend_parse_method_parameters_ex(ZEND_PARSE_PARAMS_QUIET, ZEND_NUM_ARGS(), getThis(), "OSSl|l", &me, ParleLexer_ce, &regex_start, &regex_end, &id, &user_id) == SUCCESS) {
-		zplo = php_parle_lexer_fetch_obj(Z_OBJ_P(me));
-		zplo->rules->push(ZSTR_VAL(regex_start), ZSTR_VAL(regex_end), id, user_id);
-	// Rules without id
-	} else if(zend_parse_method_parameters_ex(ZEND_PARSE_PARAMS_QUIET, ZEND_NUM_ARGS(), getThis(), "OSSS", &me, ParleLexer_ce, &dfa, &regex, &new_dfa) == SUCCESS) {
-		zplo = php_parle_lexer_fetch_obj(Z_OBJ_P(me));
-		zplo->rules->push(ZSTR_VAL(dfa), ZSTR_VAL(regex), ZSTR_VAL(new_dfa));
-	} else if(zend_parse_method_parameters_ex(ZEND_PARSE_PARAMS_QUIET, ZEND_NUM_ARGS(), getThis(), "OSSSS", &me, ParleLexer_ce, &dfa, &regex_start, &regex_end, &new_dfa) == SUCCESS) {
-		zplo = php_parle_lexer_fetch_obj(Z_OBJ_P(me));
-		zplo->rules->push(ZSTR_VAL(dfa), ZSTR_VAL(regex_start), ZSTR_VAL(regex_end), ZSTR_VAL(new_dfa));
-	// Rules with id
-	} else if(zend_parse_method_parameters_ex(ZEND_PARSE_PARAMS_QUIET, ZEND_NUM_ARGS(), getThis(), "OSSlS|l", &me, ParleLexer_ce, &dfa, &regex, &id, &new_dfa, &user_id) == SUCCESS) {
-		zplo = php_parle_lexer_fetch_obj(Z_OBJ_P(me));
-		zplo->rules->push(ZSTR_VAL(dfa), ZSTR_VAL(regex), id, ZSTR_VAL(new_dfa), user_id);
-	} else if(zend_parse_method_parameters_ex(ZEND_PARSE_PARAMS_QUIET, ZEND_NUM_ARGS(), getThis(), "OSSSlS|l", &me, ParleLexer_ce, &dfa, &regex_start, &regex_end, &id, &new_dfa, &user_id) == SUCCESS) {
-		zplo = php_parle_lexer_fetch_obj(Z_OBJ_P(me));
-		zplo->rules->push(ZSTR_VAL(dfa), ZSTR_VAL(regex_start), ZSTR_VAL(regex_end), id, ZSTR_VAL(new_dfa), user_id);
-	} else {
-		zend_throw_exception(zend_ce_exception, "Couldn't match the method signature", 0);
+	try {
+		// Rules for INITIAL
+		if(zend_parse_method_parameters_ex(ZEND_PARSE_PARAMS_QUIET, ZEND_NUM_ARGS(), getThis(), "OSl|l", &me, ParleLexer_ce, &regex, &id, &user_id) == SUCCESS) {
+			zplo = php_parle_lexer_fetch_obj(Z_OBJ_P(me));
+			zplo->rules->push(ZSTR_VAL(regex), id, user_id);
+		} else if(zend_parse_method_parameters_ex(ZEND_PARSE_PARAMS_QUIET, ZEND_NUM_ARGS(), getThis(), "OSSl|l", &me, ParleLexer_ce, &regex_start, &regex_end, &id, &user_id) == SUCCESS) {
+			zplo = php_parle_lexer_fetch_obj(Z_OBJ_P(me));
+			zplo->rules->push(ZSTR_VAL(regex_start), ZSTR_VAL(regex_end), id, user_id);
+		// Rules without id
+		} else if(zend_parse_method_parameters_ex(ZEND_PARSE_PARAMS_QUIET, ZEND_NUM_ARGS(), getThis(), "OSSS", &me, ParleLexer_ce, &dfa, &regex, &new_dfa) == SUCCESS) {
+			zplo = php_parle_lexer_fetch_obj(Z_OBJ_P(me));
+			zplo->rules->push(ZSTR_VAL(dfa), ZSTR_VAL(regex), ZSTR_VAL(new_dfa));
+		} else if(zend_parse_method_parameters_ex(ZEND_PARSE_PARAMS_QUIET, ZEND_NUM_ARGS(), getThis(), "OSSSS", &me, ParleLexer_ce, &dfa, &regex_start, &regex_end, &new_dfa) == SUCCESS) {
+			zplo = php_parle_lexer_fetch_obj(Z_OBJ_P(me));
+			zplo->rules->push(ZSTR_VAL(dfa), ZSTR_VAL(regex_start), ZSTR_VAL(regex_end), ZSTR_VAL(new_dfa));
+		// Rules with id
+		} else if(zend_parse_method_parameters_ex(ZEND_PARSE_PARAMS_QUIET, ZEND_NUM_ARGS(), getThis(), "OSSlS|l", &me, ParleLexer_ce, &dfa, &regex, &id, &new_dfa, &user_id) == SUCCESS) {
+			zplo = php_parle_lexer_fetch_obj(Z_OBJ_P(me));
+			zplo->rules->push(ZSTR_VAL(dfa), ZSTR_VAL(regex), id, ZSTR_VAL(new_dfa), user_id);
+		} else if(zend_parse_method_parameters_ex(ZEND_PARSE_PARAMS_QUIET, ZEND_NUM_ARGS(), getThis(), "OSSSlS|l", &me, ParleLexer_ce, &dfa, &regex_start, &regex_end, &id, &new_dfa, &user_id) == SUCCESS) {
+			zplo = php_parle_lexer_fetch_obj(Z_OBJ_P(me));
+			zplo->rules->push(ZSTR_VAL(dfa), ZSTR_VAL(regex_start), ZSTR_VAL(regex_end), id, ZSTR_VAL(new_dfa), user_id);
+		} else {
+			zend_throw_exception(zend_ce_exception, "Couldn't match the method signature", 0);
+		}
+	} catch (const std::exception &e) {
+			zend_throw_exception(zend_ce_exception, e.what(), 0);
 	}
 }
 /* }}} */
