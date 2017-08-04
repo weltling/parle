@@ -40,6 +40,7 @@
 #include "parsertl/lookup.hpp"
 #include "parsertl/state_machine.hpp"
 #include "parsertl/parse.hpp"
+#include "parsertl/token.hpp"
 //#include "variant.hpp"
 
 #include "php.h"
@@ -70,6 +71,7 @@ struct ze_parle_parser_obj {/*{{{*/
 	parsertl::rules *rules;
 	parsertl::state_machine *sm;
 	parsertl::match_results *results;
+	parsertl::token<lexertl::citerator>::token_vector *productions;
 	lexertl::citerator *iter;
 	bool complete;
 	zend_object zo;
@@ -525,8 +527,8 @@ PHP_METHOD(ParleParser, push)
 }
 /* }}} */
 
-/* {{{ public boolean Parser::parse(void) */
-PHP_METHOD(ParleParser, parse)
+/* {{{ public boolean Parser::validate(void) */
+PHP_METHOD(ParleParser, validate)
 {
 	struct ze_parle_parser_obj *zppo;
 	struct ze_parle_lexer_obj *zplo;
@@ -592,6 +594,149 @@ PHP_METHOD(ParleParser, tokenId)
 }
 /* }}} */
 
+/* {{{ public int Parser::reduceId(void) */
+PHP_METHOD(ParleParser, reduceId)
+{
+	struct ze_parle_parser_obj *zppo;
+	zval *me;
+
+	if(zend_parse_method_parameters(ZEND_NUM_ARGS(), getThis(), "O", &me, ParleParser_ce) == FAILURE) {
+		return;
+	}
+
+	zppo = php_parle_parser_fetch_obj(Z_OBJ_P(me));
+
+	if (!zppo->complete) {
+		zend_throw_exception(ParleParserException_ce, "Parser state machine is not ready", 0);
+		return;
+	}
+
+	try {
+		RETURN_LONG(zppo->results->reduce_id());
+	} catch (const std::exception &e) {
+		zend_throw_exception(ParleParserException_ce, e.what(), 0);
+	}
+}
+/* }}} */
+
+/* {{{ public int Parser::action(void) */
+PHP_METHOD(ParleParser, action)
+{
+	struct ze_parle_parser_obj *zppo;
+	zval *me;
+
+	if(zend_parse_method_parameters(ZEND_NUM_ARGS(), getThis(), "O", &me, ParleParser_ce) == FAILURE) {
+		return;
+	}
+
+	zppo = php_parle_parser_fetch_obj(Z_OBJ_P(me));
+
+	if (!zppo->complete) {
+		zend_throw_exception(ParleParserException_ce, "Parser state machine is not ready", 0);
+		return;
+	}
+
+	try {
+		RETURN_LONG(zppo->results->entry.action);
+	} catch (const std::exception &e) {
+		zend_throw_exception(ParleParserException_ce, e.what(), 0);
+	}
+}
+/* }}} */
+
+/* {{{ public int Parser::entry(void) */
+PHP_METHOD(ParleParser, entry)
+{
+	struct ze_parle_parser_obj *zppo;
+	zval *me;
+
+	if(zend_parse_method_parameters(ZEND_NUM_ARGS(), getThis(), "O", &me, ParleParser_ce) == FAILURE) {
+		return;
+	}
+
+	zppo = php_parle_parser_fetch_obj(Z_OBJ_P(me));
+
+	if (!zppo->complete) {
+		zend_throw_exception(ParleParserException_ce, "Parser state machine is not ready", 0);
+		return;
+	}
+
+	try {
+		RETURN_STRING(zppo->results->dollar(*zppo->sm, 0, *zppo->productions).first);
+	} catch (const std::exception &e) {
+		zend_throw_exception(ParleParserException_ce, e.what(), 0);
+	}
+}
+/* }}} */
+
+/* {{{ public void Parser::advance(void) */
+PHP_METHOD(ParleParser, advance)
+{
+	struct ze_parle_parser_obj *zppo;
+	zval *me;
+
+	if(zend_parse_method_parameters(ZEND_NUM_ARGS(), getThis(), "O", &me, ParleParser_ce) == FAILURE) {
+		return;
+	}
+
+	zppo = php_parle_parser_fetch_obj(Z_OBJ_P(me));
+
+	if (!zppo->complete) {
+		zend_throw_exception(ParleParserException_ce, "Parser state machine is not ready", 0);
+		return;
+	}
+
+	try {
+		parsertl::lookup(*zppo->sm, *zppo->iter, *zppo->results, *zppo->productions);
+	} catch (const std::exception &e) {
+		zend_throw_exception(ParleParserException_ce, e.what(), 0);
+	}
+}
+/* }}} */
+
+/* {{{ public void Parser::consume(string $s) */
+PHP_METHOD(ParleParser, consume)
+{
+	struct ze_parle_parser_obj *zppo;
+	struct ze_parle_lexer_obj *zplo;
+	zval *me, *lex;
+	zend_string *in;
+
+	if(zend_parse_method_parameters(ZEND_NUM_ARGS(), getThis(), "OSO", &me, ParleParser_ce, &in, &lex, ParleLexer_ce) == FAILURE) {
+		return;
+	}
+
+	zppo = php_parle_parser_fetch_obj(Z_OBJ_P(me));
+	zplo = php_parle_lexer_fetch_obj(Z_OBJ_P(lex));
+
+	if (!zppo->complete) {
+		zend_throw_exception(ParleParserException_ce, "Parser state machine is not ready", 0);
+		return;
+	}
+	if (!zplo->complete) {
+		zend_throw_exception(ParleParserException_ce, "Lexer state machine is not ready", 0);
+		return;
+	}
+
+	try {
+		if (zppo->productions) {
+			delete zppo->productions;
+		}
+		zppo->productions = new parsertl::token<lexertl::citerator>::token_vector{};
+		if (zppo->iter) {
+			delete zppo->iter;
+		}
+		zppo->iter = new lexertl::citerator(ZSTR_VAL(in), ZSTR_VAL(in) + ZSTR_LEN(in), *zplo->sm);
+		if (zppo->results) {
+			delete zppo->results;
+		}
+		zppo->results = new parsertl::match_results((*zppo->iter)->id, *zppo->sm);
+	} catch (const std::exception &e) {
+		zend_throw_exception(ParleLexerException_ce, e.what(), 0);
+	}
+}
+/* }}} */
+
 /* {{{ Method and function entries
  */
 const zend_function_entry parle_functions[] = {
@@ -619,8 +764,13 @@ const zend_function_entry ParleParser_methods[] = {
 	PHP_ME(ParleParser, precedence, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(ParleParser, build, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(ParleParser, push, NULL, ZEND_ACC_PUBLIC)
-	PHP_ME(ParleParser, parse, NULL, ZEND_ACC_PUBLIC)
+	PHP_ME(ParleParser, validate, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(ParleParser, tokenId, NULL, ZEND_ACC_PUBLIC)
+	PHP_ME(ParleParser, reduceId, NULL, ZEND_ACC_PUBLIC)
+	PHP_ME(ParleParser, action, NULL, ZEND_ACC_PUBLIC)
+	PHP_ME(ParleParser, entry, NULL, ZEND_ACC_PUBLIC)
+	PHP_ME(ParleParser, advance, NULL, ZEND_ACC_PUBLIC)
+	PHP_ME(ParleParser, consume, NULL, ZEND_ACC_PUBLIC)
 	PHP_FE_END
 };
 /* }}} */
@@ -666,7 +816,9 @@ php_parle_parser_obj_destroy(zend_object *obj)
 
 	delete zppo->rules;
 	delete zppo->sm;
-	// other stuff to go
+	delete zppo->results;
+	delete zppo->iter;
+	delete zppo->productions;
 }/*}}}*/
 
 zend_object *
@@ -684,6 +836,7 @@ php_parle_parser_object_init(zend_class_entry *ce)
 	zppo->sm = new parsertl::state_machine{};
 	zppo->results = nullptr;
 	zppo->iter = nullptr;
+	zppo->productions = nullptr;
 
 	return &zppo->zo;
 }/*}}}*/
@@ -697,7 +850,6 @@ PHP_INI_BEGIN()
 PHP_INI_END()
 */
 /* }}} */
-
 
 /* {{{ php_parle_init_globals
  */
