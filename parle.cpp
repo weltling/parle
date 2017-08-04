@@ -35,7 +35,10 @@
 
 #include "lexertl/generator.hpp"
 #include "lexertl/lookup.hpp"
-//#include "parsertl/generator.hpp"
+#include "lexertl/iterator.hpp"
+#include "parsertl/generator.hpp"
+#include "parsertl/lookup.hpp"
+#include "parsertl/state_machine.hpp"
 //#include "variant.hpp"
 
 #include "php.h"
@@ -62,9 +65,18 @@ struct ze_parle_lexer_obj {/*{{{*/
 	zend_object zo;
 };/*}}}*/
 
+struct ze_parle_parser_obj {/*{{{*/
+	parsertl::rules *rules;
+	parsertl::state_machine *sm;
+	uint8_t is_built;
+	zend_object zo;
+};/*}}}*/
+
 zend_object_handlers parle_lexer_handlers;
+zend_object_handlers parle_parser_handlers;
 
 static zend_class_entry *ParleLexer_ce;
+static zend_class_entry *ParleParser_ce;
 
 static zend_always_inline struct ze_parle_lexer_obj *
 php_parle_lexer_fetch_obj(zend_object *obj)
@@ -223,6 +235,30 @@ PHP_METHOD(ParleLexer, getToken)
 }
 /* }}} */
 
+/* {{{ public void Lexer::__construct(void) */
+PHP_METHOD(ParleParser, __construct)
+{
+}
+/* }}} */
+
+/* {{{ public void Lexer::addToken(string $token) */
+PHP_METHOD(ParleParser, addToken)
+{
+}
+/* }}} */
+
+/* {{{ public void Lexer::left(string $token) */
+PHP_METHOD(ParleParser, left)
+{
+}
+/* }}} */
+
+/* {{{ public void Lexer::right(string $token) */
+PHP_METHOD(ParleParser, right)
+{
+}
+/* }}} */
+
 /* {{{ Method and function entries
  */
 const zend_function_entry parle_functions[] = {
@@ -236,6 +272,14 @@ const zend_function_entry ParleLexer_methods[] = {
 	PHP_ME(ParleLexer, getToken, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(ParleLexer, build, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(ParleLexer, consume, NULL, ZEND_ACC_PUBLIC)
+	PHP_FE_END
+};
+
+const zend_function_entry ParleParser_methods[] = {
+	PHP_ME(ParleParser, __construct, NULL, ZEND_ACC_PUBLIC)
+	PHP_ME(ParleParser, addToken, NULL, ZEND_ACC_PUBLIC)
+	PHP_ME(ParleParser, left, NULL, ZEND_ACC_PUBLIC)
+	PHP_ME(ParleParser, right, NULL, ZEND_ACC_PUBLIC)
 	PHP_FE_END
 };
 /* }}} */
