@@ -39,6 +39,7 @@
 #include "parsertl/generator.hpp"
 #include "parsertl/lookup.hpp"
 #include "parsertl/state_machine.hpp"
+#include "parsertl/parse.hpp"
 //#include "variant.hpp"
 
 #include "php.h"
@@ -69,7 +70,7 @@ struct ze_parle_parser_obj {/*{{{*/
 	parsertl::rules *rules;
 	parsertl::state_machine *sm;
 	parsertl::match_results *results;
-	lexertl::citerator *iter;
+//	lexertl::citerator *iter;
 	uint8_t is_built;
 	zend_object zo;
 };/*}}}*/
@@ -136,10 +137,10 @@ PHP_METHOD(ParleLexer, push)
 		// Rules for INITIAL
 		if(zend_parse_method_parameters_ex(ZEND_PARSE_PARAMS_QUIET, ZEND_NUM_ARGS(), getThis(), "OSl|l", &me, ParleLexer_ce, &regex, &id, &user_id) == SUCCESS) {
 			zplo = php_parle_lexer_fetch_obj(Z_OBJ_P(me));
-			zplo->rules->push(ZSTR_VAL(regex), id, user_id);
+			zplo->rules->push(ZSTR_VAL(regex), static_cast<size_t>(id), user_id);
 		} else if(zend_parse_method_parameters_ex(ZEND_PARSE_PARAMS_QUIET, ZEND_NUM_ARGS(), getThis(), "OSSl|l", &me, ParleLexer_ce, &regex_start, &regex_end, &id, &user_id) == SUCCESS) {
 			zplo = php_parle_lexer_fetch_obj(Z_OBJ_P(me));
-			zplo->rules->push(ZSTR_VAL(regex_start), ZSTR_VAL(regex_end), id, user_id);
+			zplo->rules->push(ZSTR_VAL(regex_start), ZSTR_VAL(regex_end), static_cast<size_t>(id), user_id);
 		// Rules without id
 		} else if(zend_parse_method_parameters_ex(ZEND_PARSE_PARAMS_QUIET, ZEND_NUM_ARGS(), getThis(), "OSSS", &me, ParleLexer_ce, &dfa, &regex, &new_dfa) == SUCCESS) {
 			zplo = php_parle_lexer_fetch_obj(Z_OBJ_P(me));
@@ -150,10 +151,10 @@ PHP_METHOD(ParleLexer, push)
 		// Rules with id
 		} else if(zend_parse_method_parameters_ex(ZEND_PARSE_PARAMS_QUIET, ZEND_NUM_ARGS(), getThis(), "OSSlS|l", &me, ParleLexer_ce, &dfa, &regex, &id, &new_dfa, &user_id) == SUCCESS) {
 			zplo = php_parle_lexer_fetch_obj(Z_OBJ_P(me));
-			zplo->rules->push(ZSTR_VAL(dfa), ZSTR_VAL(regex), id, ZSTR_VAL(new_dfa), user_id);
+			zplo->rules->push(ZSTR_VAL(dfa), ZSTR_VAL(regex), static_cast<size_t>(id), ZSTR_VAL(new_dfa), user_id);
 		} else if(zend_parse_method_parameters_ex(ZEND_PARSE_PARAMS_QUIET, ZEND_NUM_ARGS(), getThis(), "OSSSlS|l", &me, ParleLexer_ce, &dfa, &regex_start, &regex_end, &id, &new_dfa, &user_id) == SUCCESS) {
 			zplo = php_parle_lexer_fetch_obj(Z_OBJ_P(me));
-			zplo->rules->push(ZSTR_VAL(dfa), ZSTR_VAL(regex_start), ZSTR_VAL(regex_end), id, ZSTR_VAL(new_dfa), user_id);
+			zplo->rules->push(ZSTR_VAL(dfa), ZSTR_VAL(regex_start), ZSTR_VAL(regex_end), static_cast<size_t>(id), ZSTR_VAL(new_dfa), user_id);
 		} else {
 			zend_throw_exception(zend_ce_exception, "Couldn't match the method signature", 0);
 		}
@@ -255,6 +256,38 @@ PHP_METHOD(ParleLexer, getToken)
 	} catch (const std::exception &e) {
 		zend_throw_exception(zend_ce_exception, e.what(), 0);
 	}
+}
+/* }}} */
+
+/* {{{ public integer Lexer::skip(void) */
+PHP_METHOD(ParleLexer, skip)
+{
+	struct ze_parle_lexer_obj *zplo;
+	zval *me;
+
+	if(zend_parse_method_parameters(ZEND_NUM_ARGS(), getThis(), "O", &me, ParleLexer_ce) == FAILURE) {
+		return;
+	}
+
+	zplo = php_parle_lexer_fetch_obj(Z_OBJ_P(me));
+
+	RETURN_LONG(zplo->rules->skip());
+}
+/* }}} */
+
+/* {{{ public integer Lexer::eoi(void) */
+PHP_METHOD(ParleLexer, eoi)
+{
+	struct ze_parle_lexer_obj *zplo;
+	zval *me;
+
+	if(zend_parse_method_parameters(ZEND_NUM_ARGS(), getThis(), "O", &me, ParleLexer_ce) == FAILURE) {
+		return;
+	}
+
+	zplo = php_parle_lexer_fetch_obj(Z_OBJ_P(me));
+
+	RETURN_LONG(zplo->rules->eoi());
 }
 /* }}} */
 
@@ -411,6 +444,57 @@ PHP_METHOD(ParleParser, push)
 }
 /* }}} */
 
+/* {{{ public boolean Parser::parse(void) */
+PHP_METHOD(ParleParser, parse)
+{
+	struct ze_parle_parser_obj *zppo;
+	struct ze_parle_lexer_obj *zplo;
+	zval *me, *lex;
+	zend_string *in;
+
+	if(zend_parse_method_parameters(ZEND_NUM_ARGS(), getThis(), "OSO", &me, ParleParser_ce, &in, &lex, ParleLexer_ce) == FAILURE) {
+		return;
+	}
+
+	zppo = php_parle_parser_fetch_obj(Z_OBJ_P(me));
+	zplo = php_parle_lexer_fetch_obj(Z_OBJ_P(lex));
+
+	try {
+		lexertl::citerator iter(ZSTR_VAL(in), ZSTR_VAL(in) + ZSTR_LEN(in), *zplo->sm);
+		if (zppo->results) {
+			delete zppo->results;
+		}
+		zppo->results = new parsertl::match_results(iter->id, *zppo->sm);
+		RETURN_BOOL(parsertl::parse(*zppo->sm, iter, *zppo->results));
+	} catch (const std::exception &e) {
+		zend_throw_exception(zend_ce_exception, e.what(), 0);
+	}
+
+	RETURN_FALSE
+}
+/* }}} */
+
+/* {{{ public integer Parser::tokenId(string $tok) */
+PHP_METHOD(ParleParser, tokenId)
+{
+	struct ze_parle_parser_obj *zppo;
+	zval *me;
+	zend_string *nom;
+
+	if(zend_parse_method_parameters(ZEND_NUM_ARGS(), getThis(), "OS", &me, ParleParser_ce, &nom) == FAILURE) {
+		return;
+	}
+
+	zppo = php_parle_parser_fetch_obj(Z_OBJ_P(me));
+
+	try {
+		RETURN_LONG(zppo->rules->token_id(ZSTR_VAL(nom)));
+	} catch (const std::exception &e) {
+		zend_throw_exception(zend_ce_exception, e.what(), 0);
+	}
+}
+/* }}} */
+
 /* {{{ Method and function entries
  */
 const zend_function_entry parle_functions[] = {
@@ -424,6 +508,8 @@ const zend_function_entry ParleLexer_methods[] = {
 	PHP_ME(ParleLexer, getToken, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(ParleLexer, build, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(ParleLexer, consume, NULL, ZEND_ACC_PUBLIC)
+	PHP_ME(ParleLexer, skip, NULL, ZEND_ACC_PUBLIC)
+	PHP_ME(ParleLexer, eoi, NULL, ZEND_ACC_PUBLIC)
 	PHP_FE_END
 };
 
@@ -436,6 +522,8 @@ const zend_function_entry ParleParser_methods[] = {
 	PHP_ME(ParleParser, precedence, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(ParleParser, build, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(ParleParser, push, NULL, ZEND_ACC_PUBLIC)
+	PHP_ME(ParleParser, parse, NULL, ZEND_ACC_PUBLIC)
+	PHP_ME(ParleParser, tokenId, NULL, ZEND_ACC_PUBLIC)
 	PHP_FE_END
 };
 /* }}} */
