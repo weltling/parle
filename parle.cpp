@@ -62,7 +62,7 @@ struct ze_parle_lexer_obj {/*{{{*/
 	lexertl::state_machine *sm;
 	lexertl::smatch *results;
 	std::string *in;
-	uint8_t is_built;
+	bool complete;
 	zend_object zo;
 };/*}}}*/
 
@@ -70,8 +70,8 @@ struct ze_parle_parser_obj {/*{{{*/
 	parsertl::rules *rules;
 	parsertl::state_machine *sm;
 	parsertl::match_results *results;
-//	lexertl::citerator *iter;
-	uint8_t is_built;
+	lexertl::citerator *iter;
+	bool complete;
 	zend_object zo;
 };/*}}}*/
 
@@ -80,6 +80,8 @@ zend_object_handlers parle_parser_handlers;
 
 static zend_class_entry *ParleLexer_ce;
 static zend_class_entry *ParleParser_ce;
+static zend_class_entry *ParleLexerException_ce;
+static zend_class_entry *ParleParserException_ce;
 
 static zend_always_inline struct ze_parle_lexer_obj *
 php_parle_lexer_fetch_obj(zend_object *obj)
@@ -133,6 +135,11 @@ PHP_METHOD(ParleLexer, push)
 	zend_long id, user_id = 0;
 	zval *me;
 
+	if (php_parle_lexer_fetch_obj(Z_OBJ_P(getThis()))->complete) {
+		zend_throw_exception(ParleLexerException_ce, "Lexer state machine is readonly", 0);
+		return;
+	}
+
 	try {
 		// Rules for INITIAL
 		if(zend_parse_method_parameters_ex(ZEND_PARSE_PARAMS_QUIET, ZEND_NUM_ARGS(), getThis(), "OSl|l", &me, ParleLexer_ce, &regex, &id, &user_id) == SUCCESS) {
@@ -156,10 +163,10 @@ PHP_METHOD(ParleLexer, push)
 			zplo = php_parle_lexer_fetch_obj(Z_OBJ_P(me));
 			zplo->rules->push(ZSTR_VAL(dfa), ZSTR_VAL(regex_start), ZSTR_VAL(regex_end), static_cast<size_t>(id), ZSTR_VAL(new_dfa), user_id);
 		} else {
-			zend_throw_exception(zend_ce_exception, "Couldn't match the method signature", 0);
+			zend_throw_exception(ParleLexerException_ce, "Couldn't match the method signature", 0);
 		}
 	} catch (const std::exception &e) {
-		zend_throw_exception(zend_ce_exception, e.what(), 0);
+		zend_throw_exception(ParleLexerException_ce, e.what(), 0);
 	}
 }
 /* }}} */
@@ -176,11 +183,18 @@ PHP_METHOD(ParleLexer, build)
 
 	zplo = php_parle_lexer_fetch_obj(Z_OBJ_P(me));
 
+	if (zplo->complete) {
+		zend_throw_exception(ParleLexerException_ce, "Lexer state machine is readonly", 0);
+		return;
+	}
+
 	try {
 		lexertl::generator::build(*zplo->rules, *zplo->sm);
 	} catch (const std::exception &e) {
-		zend_throw_exception(zend_ce_exception, e.what(), 0);
+		zend_throw_exception(ParleLexerException_ce, e.what(), 0);
 	}
+
+	zplo->complete = true;
 }
 /* }}} */
 
@@ -198,13 +212,17 @@ PHP_METHOD(ParleLexer, consume)
 
 	zplo = php_parle_lexer_fetch_obj(Z_OBJ_P(me));
 
+	if (!zplo->complete) {
+		zend_throw_exception(ParleLexerException_ce, "Lexer state machine is not ready", 0);
+		return;
+	}
 
 	try {
 		zplo->in = new std::string{in};
 		zplo->results = new lexertl::smatch(zplo->in->begin(), zplo->in->end());
 		lexertl::lookup(*zplo->sm, *zplo->results);
 	} catch (const std::exception &e) {
-		zend_throw_exception(zend_ce_exception, e.what(), 0);
+		zend_throw_exception(ParleLexerException_ce, e.what(), 0);
 	}
 }
 /* }}} */
@@ -223,10 +241,15 @@ PHP_METHOD(ParleLexer, pushState)
 
 	zplo = php_parle_lexer_fetch_obj(Z_OBJ_P(me));
 
+	if (zplo->complete) {
+		zend_throw_exception(ParleLexerException_ce, "Lexer state machine is readonly", 0);
+		return;
+	}
+
 	try {
 		zplo->rules->push_state(state);
 	} catch (const std::exception &e) {
-		zend_throw_exception(zend_ce_exception, e.what(), 0);
+		zend_throw_exception(ParleLexerException_ce, e.what(), 0);
 	}
 }
 /* }}} */
@@ -254,7 +277,7 @@ PHP_METHOD(ParleLexer, getToken)
 
 		lexertl::lookup(*zplo->sm, *zplo->results);
 	} catch (const std::exception &e) {
-		zend_throw_exception(zend_ce_exception, e.what(), 0);
+		zend_throw_exception(ParleLexerException_ce, e.what(), 0);
 	}
 }
 /* }}} */
@@ -311,10 +334,15 @@ PHP_METHOD(ParleParser, token)
 
 	zppo = php_parle_parser_fetch_obj(Z_OBJ_P(me));
 
+	if (zppo->complete) {
+		zend_throw_exception(ParleParserException_ce, "Parser state machine is readonly", 0);
+		return;
+	}
+
 	try {
 		zppo->rules->token(ZSTR_VAL(tok));
 	} catch (const std::exception &e) {
-		zend_throw_exception(zend_ce_exception, e.what(), 0);
+		zend_throw_exception(ParleParserException_ce, e.what(), 0);
 	}
 }
 /* }}} */
@@ -332,10 +360,15 @@ PHP_METHOD(ParleParser, left)
 
 	zppo = php_parle_parser_fetch_obj(Z_OBJ_P(me));
 
+	if (zppo->complete) {
+		zend_throw_exception(ParleParserException_ce, "Parser state machine is readonly", 0);
+		return;
+	}
+
 	try {
 		zppo->rules->left(ZSTR_VAL(tok));
 	} catch (const std::exception &e) {
-		zend_throw_exception(zend_ce_exception, e.what(), 0);
+		zend_throw_exception(ParleParserException_ce, e.what(), 0);
 	}
 }
 /* }}} */
@@ -353,10 +386,15 @@ PHP_METHOD(ParleParser, right)
 
 	zppo = php_parle_parser_fetch_obj(Z_OBJ_P(me));
 
+	if (zppo->complete) {
+		zend_throw_exception(ParleParserException_ce, "Parser state machine is readonly", 0);
+		return;
+	}
+
 	try {
 		zppo->rules->right(ZSTR_VAL(tok));
 	} catch (const std::exception &e) {
-		zend_throw_exception(zend_ce_exception, e.what(), 0);
+		zend_throw_exception(ParleParserException_ce, e.what(), 0);
 	}
 }
 /* }}} */
@@ -374,10 +412,15 @@ PHP_METHOD(ParleParser, precedence)
 
 	zppo = php_parle_parser_fetch_obj(Z_OBJ_P(me));
 
+	if (zppo->complete) {
+		zend_throw_exception(ParleParserException_ce, "Parser state machine is readonly", 0);
+		return;
+	}
+
 	try {
 		zppo->rules->precedence(ZSTR_VAL(tok));
 	} catch (const std::exception &e) {
-		zend_throw_exception(zend_ce_exception, e.what(), 0);
+		zend_throw_exception(ParleParserException_ce, e.what(), 0);
 	}
 }
 /* }}} */
@@ -395,10 +438,15 @@ PHP_METHOD(ParleParser, nonassoc)
 
 	zppo = php_parle_parser_fetch_obj(Z_OBJ_P(me));
 
+	if (zppo->complete) {
+		zend_throw_exception(ParleParserException_ce, "Parser state machine is readonly", 0);
+		return;
+	}
+
 	try {
 		zppo->rules->nonassoc(ZSTR_VAL(tok));
 	} catch (const std::exception &e) {
-		zend_throw_exception(zend_ce_exception, e.what(), 0);
+		zend_throw_exception(ParleParserException_ce, e.what(), 0);
 	}
 }
 /* }}} */
@@ -415,11 +463,18 @@ PHP_METHOD(ParleParser, build)
 
 	zppo = php_parle_parser_fetch_obj(Z_OBJ_P(me));
 
+	if (zppo->complete) {
+		zend_throw_exception(ParleParserException_ce, "Parser state machine is readonly", 0);
+		return;
+	}
+
 	try {
 		parsertl::generator::build(*zppo->rules, *zppo->sm);
 	} catch (const std::exception &e) {
-		zend_throw_exception(zend_ce_exception, e.what(), 0);
+		zend_throw_exception(ParleParserException_ce, e.what(), 0);
 	}
+
+	zppo->complete = true;
 }
 /* }}} */
 
@@ -436,10 +491,15 @@ PHP_METHOD(ParleParser, push)
 
 	zppo = php_parle_parser_fetch_obj(Z_OBJ_P(me));
 
+	if (zppo->complete) {
+		zend_throw_exception(ParleParserException_ce, "Parser state machine is readonly", 0);
+		return;
+	}
+
 	try {
 		RETURN_LONG(static_cast<zend_long>(zppo->rules->push(ZSTR_VAL(lhs), ZSTR_VAL(rhs))));
 	} catch (const std::exception &e) {
-		zend_throw_exception(zend_ce_exception, e.what(), 0);
+		zend_throw_exception(ParleParserException_ce, e.what(), 0);
 	}
 }
 /* }}} */
@@ -459,15 +519,31 @@ PHP_METHOD(ParleParser, parse)
 	zppo = php_parle_parser_fetch_obj(Z_OBJ_P(me));
 	zplo = php_parle_lexer_fetch_obj(Z_OBJ_P(lex));
 
+	if (!zppo->complete) {
+		zend_throw_exception(ParleParserException_ce, "Parser state machine is not ready", 0);
+		return;
+	}
+	if (!zplo->complete) {
+		zend_throw_exception(ParleParserException_ce, "Lexer state machine is not ready", 0);
+		return;
+	}
+
 	try {
 		lexertl::citerator iter(ZSTR_VAL(in), ZSTR_VAL(in) + ZSTR_LEN(in), *zplo->sm);
-		if (zppo->results) {
+		
+		/*if (zppo->results) {
 			delete zppo->results;
 		}
 		zppo->results = new parsertl::match_results(iter->id, *zppo->sm);
-		RETURN_BOOL(parsertl::parse(*zppo->sm, iter, *zppo->results));
+		RETURN_BOOL(parsertl::parse(*zppo->sm, iter, *zppo->results));*/
+
+		/* Since it's not more than parse, nothing is saved into the object. */
+		parsertl::match_results results(iter->id, *zppo->sm);
+
+		zppo->results = new parsertl::match_results(iter->id, *zppo->sm);
+		RETURN_BOOL(parsertl::parse(*zppo->sm, iter, results));
 	} catch (const std::exception &e) {
-		zend_throw_exception(zend_ce_exception, e.what(), 0);
+		zend_throw_exception(ParleParserException_ce, e.what(), 0);
 	}
 
 	RETURN_FALSE
@@ -490,7 +566,7 @@ PHP_METHOD(ParleParser, tokenId)
 	try {
 		RETURN_LONG(zppo->rules->token_id(ZSTR_VAL(nom)));
 	} catch (const std::exception &e) {
-		zend_throw_exception(zend_ce_exception, e.what(), 0);
+		zend_throw_exception(ParleParserException_ce, e.what(), 0);
 	}
 }
 /* }}} */
@@ -551,6 +627,7 @@ php_parle_lexer_object_init(zend_class_entry *ce)
 	zend_object_std_init(&zplo->zo, ce);
 	zplo->zo.handlers = &parle_lexer_handlers;
 
+	zplo->complete = false;
 	zplo->rules = new lexertl::rules{};
 	zplo->sm = new lexertl::state_machine{};
 	zplo->results = nullptr;
@@ -581,8 +658,11 @@ php_parle_parser_object_init(zend_class_entry *ce)
 	zend_object_std_init(&zppo->zo, ce);
 	zppo->zo.handlers = &parle_parser_handlers;
 
+	zppo->complete = false;
 	zppo->rules = new parsertl::rules{};
 	zppo->sm = new parsertl::state_machine{};
+	zppo->results = nullptr;
+	zppo->iter = nullptr;
 
 	return &zppo->zo;
 }/*}}}*/
@@ -636,6 +716,11 @@ PHP_MINIT_FUNCTION(parle)
 	INIT_CLASS_ENTRY(ce, "Parser", ParleParser_methods);
 	ce.create_object = php_parle_parser_object_init;
 	ParleParser_ce = zend_register_internal_class(&ce);
+
+	INIT_CLASS_ENTRY(ce, "LexerException", NULL);
+	ParleLexerException_ce = zend_register_internal_class_ex(&ce, zend_exception_get_default());
+	INIT_CLASS_ENTRY(ce, "ParserException", NULL);
+	ParleParserException_ce = zend_register_internal_class_ex(&ce, zend_exception_get_default());
 
 	return SUCCESS;
 }
