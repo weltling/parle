@@ -150,7 +150,7 @@ PHP_METHOD(ParleLexer, addRule)
 			zend_throw_exception(zend_ce_exception, "Couldn't match the method signature", 0);
 		}
 	} catch (const std::exception &e) {
-			zend_throw_exception(zend_ce_exception, e.what(), 0);
+		zend_throw_exception(zend_ce_exception, e.what(), 0);
 	}
 }
 /* }}} */
@@ -167,7 +167,11 @@ PHP_METHOD(ParleLexer, build)
 
 	zplo = php_parle_lexer_fetch_obj(Z_OBJ_P(me));
 
-	lexertl::generator::build(*zplo->rules, *zplo->sm);
+	try {
+		lexertl::generator::build(*zplo->rules, *zplo->sm);
+	} catch (const std::exception &e) {
+		zend_throw_exception(zend_ce_exception, e.what(), 0);
+	}
 }
 /* }}} */
 
@@ -186,9 +190,13 @@ PHP_METHOD(ParleLexer, consume)
 	zplo = php_parle_lexer_fetch_obj(Z_OBJ_P(me));
 
 
-	zplo->in = new std::string{in};
-	zplo->results = new lexertl::smatch(zplo->in->begin(), zplo->in->end());
-	lexertl::lookup(*zplo->sm, *zplo->results);
+	try {
+		zplo->in = new std::string{in};
+		zplo->results = new lexertl::smatch(zplo->in->begin(), zplo->in->end());
+		lexertl::lookup(*zplo->sm, *zplo->results);
+	} catch (const std::exception &e) {
+		zend_throw_exception(zend_ce_exception, e.what(), 0);
+	}
 }
 /* }}} */
 
@@ -206,8 +214,11 @@ PHP_METHOD(ParleLexer, addState)
 
 	zplo = php_parle_lexer_fetch_obj(Z_OBJ_P(me));
 
-
-	zplo->rules->push_state(state);
+	try {
+		zplo->rules->push_state(state);
+	} catch (const std::exception &e) {
+		zend_throw_exception(zend_ce_exception, e.what(), 0);
+	}
 }
 /* }}} */
 
@@ -227,33 +238,37 @@ PHP_METHOD(ParleLexer, getToken)
 		RETURN_NULL();
 	}
 
-	array_init(return_value);
-	add_next_index_long(return_value, zplo->results->id);
-	add_next_index_string(return_value, zplo->results->str().c_str());
+	try {
+		array_init(return_value);
+		add_next_index_long(return_value, zplo->results->id);
+		add_next_index_string(return_value, zplo->results->str().c_str());
 
-	lexertl::lookup(*zplo->sm, *zplo->results);
+		lexertl::lookup(*zplo->sm, *zplo->results);
+	} catch (const std::exception &e) {
+		zend_throw_exception(zend_ce_exception, e.what(), 0);
+	}
 }
 /* }}} */
 
-/* {{{ public void Lexer::__construct(void) */
+/* {{{ public void Parser::__construct(void) */
 PHP_METHOD(ParleParser, __construct)
 {
 }
 /* }}} */
 
-/* {{{ public void Lexer::addToken(string $token) */
+/* {{{ public void Parser::addToken(string $token) */
 PHP_METHOD(ParleParser, addToken)
 {
 }
 /* }}} */
 
-/* {{{ public void Lexer::left(string $token) */
+/* {{{ public void Parser::left(string $token) */
 PHP_METHOD(ParleParser, left)
 {
 }
 /* }}} */
 
-/* {{{ public void Lexer::right(string $token) */
+/* {{{ public void Parser::right(string $token) */
 PHP_METHOD(ParleParser, right)
 {
 }
