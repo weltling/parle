@@ -282,7 +282,7 @@ PHP_METHOD(ParleLexer, getToken)
 }
 /* }}} */
 
-/* {{{ public integer Lexer::skip(void) */
+/* {{{ public int Lexer::skip(void) */
 PHP_METHOD(ParleLexer, skip)
 {
 	struct ze_parle_lexer_obj *zplo;
@@ -298,7 +298,7 @@ PHP_METHOD(ParleLexer, skip)
 }
 /* }}} */
 
-/* {{{ public integer Lexer::eoi(void) */
+/* {{{ public int Lexer::eoi(void) */
 PHP_METHOD(ParleLexer, eoi)
 {
 	struct ze_parle_lexer_obj *zplo;
@@ -311,6 +311,27 @@ PHP_METHOD(ParleLexer, eoi)
 	zplo = php_parle_lexer_fetch_obj(Z_OBJ_P(me));
 
 	RETURN_LONG(zplo->rules->eoi());
+}
+/* }}} */
+
+/* {{{ public mixed Lexer::flags([int flags]) */
+PHP_METHOD(ParleLexer, flags)
+{
+	struct ze_parle_lexer_obj *zplo;
+	zval *me;
+	zend_long flags = -1;
+
+	if(zend_parse_method_parameters(ZEND_NUM_ARGS(), getThis(), "O|l", &me, ParleLexer_ce, flags) == FAILURE) {
+		return;
+	}
+
+	zplo = php_parle_lexer_fetch_obj(Z_OBJ_P(me));
+
+	if (0 > flags) {
+		RETURN_LONG(zplo->rules->flags());
+	} else {
+		zplo->rules->flags(static_cast<size_t>(flags));
+	}
 }
 /* }}} */
 
@@ -478,7 +499,7 @@ PHP_METHOD(ParleParser, build)
 }
 /* }}} */
 
-/* {{{ public integer Parser::push(string $token) */
+/* {{{ public int Parser::push(string $token) */
 PHP_METHOD(ParleParser, push)
 {
 	struct ze_parle_parser_obj *zppo;
@@ -550,7 +571,7 @@ PHP_METHOD(ParleParser, parse)
 }
 /* }}} */
 
-/* {{{ public integer Parser::tokenId(string $tok) */
+/* {{{ public int Parser::tokenId(string $tok) */
 PHP_METHOD(ParleParser, tokenId)
 {
 	struct ze_parle_parser_obj *zppo;
@@ -707,6 +728,13 @@ PHP_MINIT_FUNCTION(parle)
 	INIT_CLASS_ENTRY(ce, "Lexer", ParleLexer_methods);
 	ce.create_object = php_parle_lexer_object_init;
 	ParleLexer_ce = zend_register_internal_class(&ce);
+#define DECL_FROM_ENUM(name, val) zend_declare_class_constant_long(ParleLexer_ce, name, sizeof(name) - 1, val);
+	DECL_FROM_ENUM("FLAG_REGEX_ICASE", lexertl::icase)
+	DECL_FROM_ENUM("FLAG_REGEX_DOT_NOT_LF", lexertl::dot_not_newline)
+	DECL_FROM_ENUM("FLAG_REGEX_DOT_NOT_CR_LF", lexertl::dot_not_cr_lf)
+	DECL_FROM_ENUM("FLAG_REGEX_SKIP_WS", lexertl::skip_ws)
+	DECL_FROM_ENUM("FLAG_REGEX_MATCH_ZERO_LEN", lexertl::match_zero_len)
+#undef DECL_FROM_ENUM
 
 	memcpy(&parle_parser_handlers, zend_get_std_object_handlers(), sizeof(zend_object_handlers));
 	parle_parser_handlers.clone_obj = NULL;
@@ -716,6 +744,16 @@ PHP_MINIT_FUNCTION(parle)
 	INIT_CLASS_ENTRY(ce, "Parser", ParleParser_methods);
 	ce.create_object = php_parle_parser_object_init;
 	ParleParser_ce = zend_register_internal_class(&ce);
+#define DECL_FROM_ENUM(name, val) zend_declare_class_constant_long(ParleParser_ce, name, sizeof(name) - 1, val);
+	DECL_FROM_ENUM("ACTION_ERROR", parsertl::error)
+	DECL_FROM_ENUM("ACTION_SHIFT", parsertl::shift)
+	DECL_FROM_ENUM("ACTION_REDUCE", parsertl::reduce)
+	DECL_FROM_ENUM("ACTION_GO_TO", parsertl::go_to)
+	DECL_FROM_ENUM("ACTION_ACCEPT", parsertl::accept)
+	DECL_FROM_ENUM("ERROR_SYNTAX", parsertl::syntax_error)
+	DECL_FROM_ENUM("ERROR_NON_ASSOCIATIVE", parsertl::non_associative)
+	DECL_FROM_ENUM("ERROR_UNKOWN_TOKEN", parsertl::unknown_token)
+#undef DECL_FROM_ENUM
 
 	INIT_CLASS_ENTRY(ce, "LexerException", NULL);
 	ParleLexerException_ce = zend_register_internal_class_ex(&ce, zend_exception_get_default());
