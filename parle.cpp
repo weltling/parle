@@ -423,7 +423,7 @@ PHP_METHOD(ParleParser, build)
 }
 /* }}} */
 
-/* {{{ public void Parser::push(string $token) */
+/* {{{ public integer Parser::push(string $token) */
 PHP_METHOD(ParleParser, push)
 {
 	struct ze_parle_parser_obj *zppo;
@@ -437,7 +437,7 @@ PHP_METHOD(ParleParser, push)
 	zppo = php_parle_parser_fetch_obj(Z_OBJ_P(me));
 
 	try {
-		zppo->rules->push(ZSTR_VAL(lhs), ZSTR_VAL(rhs));
+		RETURN_LONG(static_cast<zend_long>(zppo->rules->push(ZSTR_VAL(lhs), ZSTR_VAL(rhs))));
 	} catch (const std::exception &e) {
 		zend_throw_exception(zend_ce_exception, e.what(), 0);
 	}
