@@ -264,27 +264,109 @@ PHP_METHOD(ParleParser, __construct)
 }
 /* }}} */
 
-/* {{{ public void Parser::addToken(string $token) */
-PHP_METHOD(ParleParser, addToken)
+/* {{{ public void Parser::token(string $token) */
+PHP_METHOD(ParleParser, token)
 {
+	struct ze_parle_parser_obj *zppo;
+	zval *me;
+	zend_string *tok;
+
+	/* XXX map the full signature. */
+	if(zend_parse_method_parameters(ZEND_NUM_ARGS(), getThis(), "OS", &me, ParleParser_ce, &tok) == FAILURE) {
+		return;
+	}
+
+	zppo = php_parle_parser_fetch_obj(Z_OBJ_P(me));
+
+	try {
+		zppo->rules->token(ZSTR_VAL(tok));
+	} catch (const std::exception &e) {
+		zend_throw_exception(zend_ce_exception, e.what(), 0);
+	}
 }
 /* }}} */
 
 /* {{{ public void Parser::left(string $token) */
 PHP_METHOD(ParleParser, left)
 {
+	struct ze_parle_parser_obj *zppo;
+	zval *me;
+	zend_string *tok;
+
+	if(zend_parse_method_parameters(ZEND_NUM_ARGS(), getThis(), "OS", &me, ParleParser_ce, &tok) == FAILURE) {
+		return;
+	}
+
+	zppo = php_parle_parser_fetch_obj(Z_OBJ_P(me));
+
+	try {
+		zppo->rules->left(ZSTR_VAL(tok));
+	} catch (const std::exception &e) {
+		zend_throw_exception(zend_ce_exception, e.what(), 0);
+	}
 }
 /* }}} */
 
 /* {{{ public void Parser::right(string $token) */
 PHP_METHOD(ParleParser, right)
 {
+	struct ze_parle_parser_obj *zppo;
+	zval *me;
+	zend_string *tok;
+
+	if(zend_parse_method_parameters(ZEND_NUM_ARGS(), getThis(), "OS", &me, ParleParser_ce, &tok) == FAILURE) {
+		return;
+	}
+
+	zppo = php_parle_parser_fetch_obj(Z_OBJ_P(me));
+
+	try {
+		zppo->rules->right(ZSTR_VAL(tok));
+	} catch (const std::exception &e) {
+		zend_throw_exception(zend_ce_exception, e.what(), 0);
+	}
 }
 /* }}} */
 
 /* {{{ public void Parser::precedence(string $token) */
 PHP_METHOD(ParleParser, precedence)
 {
+	struct ze_parle_parser_obj *zppo;
+	zval *me;
+	zend_string *tok;
+
+	if(zend_parse_method_parameters(ZEND_NUM_ARGS(), getThis(), "OS", &me, ParleParser_ce, &tok) == FAILURE) {
+		return;
+	}
+
+	zppo = php_parle_parser_fetch_obj(Z_OBJ_P(me));
+
+	try {
+		zppo->rules->precedence(ZSTR_VAL(tok));
+	} catch (const std::exception &e) {
+		zend_throw_exception(zend_ce_exception, e.what(), 0);
+	}
+}
+/* }}} */
+
+/* {{{ public void Parser::nonassoc(string $token) */
+PHP_METHOD(ParleParser, nonassoc)
+{
+	struct ze_parle_parser_obj *zppo;
+	zval *me;
+	zend_string *tok;
+
+	if(zend_parse_method_parameters(ZEND_NUM_ARGS(), getThis(), "OS", &me, ParleParser_ce, &tok) == FAILURE) {
+		return;
+	}
+
+	zppo = php_parle_parser_fetch_obj(Z_OBJ_P(me));
+
+	try {
+		zppo->rules->nonassoc(ZSTR_VAL(tok));
+	} catch (const std::exception &e) {
+		zend_throw_exception(zend_ce_exception, e.what(), 0);
+	}
 }
 /* }}} */
 
@@ -302,6 +384,27 @@ PHP_METHOD(ParleParser, build)
 
 	try {
 		parsertl::generator::build(*zppo->rules, *zppo->sm);
+	} catch (const std::exception &e) {
+		zend_throw_exception(zend_ce_exception, e.what(), 0);
+	}
+}
+/* }}} */
+
+/* {{{ public void Parser::push(string $token) */
+PHP_METHOD(ParleParser, push)
+{
+	struct ze_parle_parser_obj *zppo;
+	zval *me;
+	zend_string *lhs, *rhs;
+
+	if(zend_parse_method_parameters(ZEND_NUM_ARGS(), getThis(), "OSS", &me, ParleParser_ce, &lhs, &rhs) == FAILURE) {
+		return;
+	}
+
+	zppo = php_parle_parser_fetch_obj(Z_OBJ_P(me));
+
+	try {
+		zppo->rules->push(ZSTR_VAL(lhs), ZSTR_VAL(rhs));
 	} catch (const std::exception &e) {
 		zend_throw_exception(zend_ce_exception, e.what(), 0);
 	}
@@ -326,11 +429,13 @@ const zend_function_entry ParleLexer_methods[] = {
 
 const zend_function_entry ParleParser_methods[] = {
 	PHP_ME(ParleParser, __construct, NULL, ZEND_ACC_PUBLIC)
-	PHP_ME(ParleParser, addToken, NULL, ZEND_ACC_PUBLIC)
+	PHP_ME(ParleParser, token, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(ParleParser, left, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(ParleParser, right, NULL, ZEND_ACC_PUBLIC)
+	PHP_ME(ParleParser, nonassoc, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(ParleParser, precedence, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(ParleParser, build, NULL, ZEND_ACC_PUBLIC)
+	PHP_ME(ParleParser, push, NULL, ZEND_ACC_PUBLIC)
 	PHP_FE_END
 };
 /* }}} */
