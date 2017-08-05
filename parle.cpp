@@ -1088,6 +1088,15 @@ php_parle_parser_stack_obj_destroy(zend_object *obj)
 
 	zend_object_std_dtor(&zpso->zo);
 
+	if (!zpso->stack->empty()) {
+		size_t sz = zpso->stack->size();
+		for (size_t i = 0; i < sz; i++ ) {
+			zval *z = zpso->stack->top();
+			zpso->stack->pop();
+			zval_ptr_dtor(z);
+		}
+	}
+
 	delete zpso->stack;
 }/*}}}*/
 
