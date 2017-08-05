@@ -88,13 +88,20 @@ struct ze_parle_parser_obj {/*{{{*/
 	zend_object zo;
 };/*}}}*/
 
+struct ze_parle_parser_stack_obj {/*{{{*/
+	std::stack<zval *> *stack;
+	zend_object zo;
+};/*}}}*/
+
 zend_object_handlers parle_lexer_handlers;
 zend_object_handlers parle_rlexer_handlers;
 zend_object_handlers parle_parser_handlers;
+zend_object_handlers parle_parser_stack_handlers;
 
 static zend_class_entry *ParleLexer_ce;
 static zend_class_entry *ParleRLexer_ce;
 static zend_class_entry *ParleParser_ce;
+static zend_class_entry *ParleParserStack_ce;
 static zend_class_entry *ParleLexerException_ce;
 static zend_class_entry *ParleParserException_ce;
 
@@ -120,6 +127,12 @@ static zend_always_inline struct ze_parle_parser_obj *
 php_parle_parser_fetch_obj(zend_object *obj)
 {/*{{{*/
 	return (struct ze_parle_parser_obj *)((char *)obj - XtOffsetOf(struct ze_parle_parser_obj, zo));
+}/*}}}*/
+
+static zend_always_inline struct ze_parle_parser_stack_obj *
+php_parle_parser_stack_fetch_obj(zend_object *obj)
+{/*{{{*/
+	return (struct ze_parle_parser_stack_obj *)((char *)obj - XtOffsetOf(struct ze_parle_parser_stack_obj, zo));
 }/*}}}*/
 
 /* {{{ public void Lexer::__construct(void) */
@@ -805,6 +818,124 @@ PHP_METHOD(ParleParser, consume)
 }
 /* }}} */
 
+/* {{{ public bool ParserStack::empty(void) */
+PHP_METHOD(ParleParserStack, empty)
+{
+	struct ze_parle_parser_stack_obj *zpso;
+	zval *me;
+
+	if(zend_parse_method_parameters(ZEND_NUM_ARGS(), getThis(), "O", &me, ParleParserStack_ce) == FAILURE) {
+		return;
+	}
+
+	zpso = php_parle_parser_stack_fetch_obj(Z_OBJ_P(me));
+
+	RETURN_BOOL(zpso->stack->empty());
+}
+/* }}} */
+
+/* {{{ public void ParserStack::pop(void) */
+PHP_METHOD(ParleParserStack, pop)
+{
+	struct ze_parle_parser_stack_obj *zpso;
+	zval *me;
+
+	if(zend_parse_method_parameters(ZEND_NUM_ARGS(), getThis(), "O", &me, ParleParserStack_ce) == FAILURE) {
+		return;
+	}
+
+	zpso = php_parle_parser_stack_fetch_obj(Z_OBJ_P(me));
+
+	if (zpso->stack->empty()) {
+		return;
+	}
+
+	zval *z = zpso->stack->top();
+
+	zpso->stack->pop();
+
+	zval_ptr_dtor(z);
+	efree(z);
+}
+/* }}} */
+
+/* {{{ public void ParserStack::push(mixed $val) */
+PHP_METHOD(ParleParserStack, push)
+{
+	struct ze_parle_parser_stack_obj *zpso;
+	zval *me;
+	zval *in, *save;
+
+	if(zend_parse_method_parameters(ZEND_NUM_ARGS(), getThis(), "Oz", &me, ParleParserStack_ce, &in) == FAILURE) {
+		return;
+	}
+
+	zpso = php_parle_parser_stack_fetch_obj(Z_OBJ_P(me));
+
+	save = (zval *) emalloc(sizeof(zval));
+	ZVAL_COPY(save, in);
+
+	zpso->stack->push(save);
+}
+/* }}} */
+
+/* {{{ public int ParserStack::size(void) */
+PHP_METHOD(ParleParserStack, size)
+{
+	struct ze_parle_parser_stack_obj *zpso;
+	zval *me;
+
+	if(zend_parse_method_parameters(ZEND_NUM_ARGS(), getThis(), "O", &me, ParleParserStack_ce) == FAILURE) {
+		return;
+	}
+
+	zpso = php_parle_parser_stack_fetch_obj(Z_OBJ_P(me));
+
+	RETURN_LONG(zpso->stack->size());
+}
+/* }}} */
+
+/* {{{ public mixed ParserStack::top(void) */
+PHP_METHOD(ParleParserStack, top)
+{
+	struct ze_parle_parser_stack_obj *zpso;
+	zval *me;
+	zval *in = NULL, *old, *z;
+
+	if(zend_parse_method_parameters(ZEND_NUM_ARGS(), getThis(), "O|z", &me, ParleParserStack_ce, &in) == FAILURE) {
+		return;
+	}
+
+	zpso = php_parle_parser_stack_fetch_obj(Z_OBJ_P(me));
+
+	if (in) {
+		if (zpso->stack->empty()) {
+			// XXX should this be done?
+			z = (zval *) emalloc(sizeof(zval));
+			ZVAL_COPY(z, in);
+
+			zpso->stack->push(z);
+		} else {
+			old = zpso->stack->top();
+
+			z = (zval *) emalloc(sizeof(zval));
+			ZVAL_COPY(z, in);
+
+			zpso->stack->top() = z;
+
+			zval_ptr_dtor(old);
+			efree(old);
+		}
+	} else {
+		if (zpso->stack->empty()) {
+			return;
+		}
+
+		ZVAL_COPY(return_value, zpso->stack->top());
+	}
+}
+/* }}} */
+
 /* {{{ Method and function entries
  */
 const zend_function_entry parle_functions[] = {
@@ -845,6 +976,15 @@ const zend_function_entry ParleParser_methods[] = {
 	PHP_ME(ParleParser, entry, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(ParleParser, advance, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(ParleParser, consume, NULL, ZEND_ACC_PUBLIC)
+	PHP_FE_END
+};
+
+const zend_function_entry ParleParserStack_methods[] = {
+	PHP_ME(ParleParserStack, empty, NULL, ZEND_ACC_PUBLIC)
+	PHP_ME(ParleParserStack, pop, NULL, ZEND_ACC_PUBLIC)
+	PHP_ME(ParleParserStack, push, NULL, ZEND_ACC_PUBLIC)
+	PHP_ME(ParleParserStack, size, NULL, ZEND_ACC_PUBLIC)
+	PHP_ME(ParleParserStack, top, NULL, ZEND_ACC_PUBLIC)
 	PHP_FE_END
 };
 /* }}} */
@@ -941,6 +1081,31 @@ php_parle_parser_object_init(zend_class_entry *ce)
 	return &zppo->zo;
 }/*}}}*/
 
+void
+php_parle_parser_stack_obj_destroy(zend_object *obj)
+{/*{{{*/
+	struct ze_parle_parser_stack_obj *zpso = php_parle_parser_stack_fetch_obj(obj);
+
+	zend_object_std_dtor(&zpso->zo);
+
+	delete zpso->stack;
+}/*}}}*/
+
+zend_object *
+php_parle_parser_stack_object_init(zend_class_entry *ce)
+{/*{{{*/
+	struct ze_parle_parser_stack_obj *zpso;
+
+	zpso = (struct ze_parle_parser_stack_obj *)ecalloc(1, sizeof(struct ze_parle_parser_stack_obj));
+
+	zend_object_std_init(&zpso->zo, ce);
+	zpso->zo.handlers = &parle_parser_stack_handlers;
+
+	zpso->stack = new std::stack<zval *>();
+
+	return &zpso->zo;
+}/*}}}*/
+
 /* {{{ PHP_INI
  */
 /* Remove comments and fill if you need to have entries in php.ini
@@ -1015,6 +1180,15 @@ PHP_MINIT_FUNCTION(parle)
 	DECL_FROM_ENUM("ERROR_NON_ASSOCIATIVE", parsertl::non_associative)
 	DECL_FROM_ENUM("ERROR_UNKOWN_TOKEN", parsertl::unknown_token)
 #undef DECL_FROM_ENUM
+
+	memcpy(&parle_parser_stack_handlers, zend_get_std_object_handlers(), sizeof(zend_object_handlers));
+	parle_parser_stack_handlers.clone_obj = NULL;
+	parle_parser_stack_handlers.offset = XtOffsetOf(struct ze_parle_parser_stack_obj, zo);
+	parle_parser_stack_handlers.free_obj = php_parle_parser_stack_obj_destroy;
+
+	INIT_CLASS_ENTRY(ce, "ParserStack", ParleParserStack_methods);
+	ce.create_object = php_parle_parser_stack_object_init;
+	ParleParserStack_ce = zend_register_internal_class(&ce);
 
 	INIT_CLASS_ENTRY(ce, "LexerException", NULL);
 	ParleLexerException_ce = zend_register_internal_class_ex(&ce, zend_exception_get_default());
