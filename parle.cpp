@@ -171,7 +171,7 @@ PHP_METHOD(ParleLexer, __construct)
 PHP_METHOD(ParleLexer, push)
 {
 	struct ze_parle_lexer_obj *zplo;
-	zend_string *regex, *regex_start, *regex_end, *dfa, *new_dfa;
+	zend_string *regex, *regex_start, *regex_end;
 	zend_long id, user_id = 0;
 	zval *me;
 
