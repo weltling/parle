@@ -234,7 +234,7 @@ PHP_METHOD(ParleLexer, build)
 	struct ze_parle_lexer_obj *zplo;
 	zval *me;
 
-	if(zend_parse_method_parameters(ZEND_NUM_ARGS(), getThis(), "O", &me, ParleRLexer_ce) == FAILURE) {
+	if(zend_parse_method_parameters(ZEND_NUM_ARGS(), getThis(), "O", &me, ParleLexer_ce) == FAILURE) {
 		return;
 	}
 
@@ -1009,7 +1009,7 @@ PHP_MINIT_FUNCTION(parle)
 	DECL_FROM_ENUM("ACTION_ERROR", parsertl::error)
 	DECL_FROM_ENUM("ACTION_SHIFT", parsertl::shift)
 	DECL_FROM_ENUM("ACTION_REDUCE", parsertl::reduce)
-	DECL_FROM_ENUM("ACTION_GO_TO", parsertl::go_to)
+	DECL_FROM_ENUM("ACTION_GOTO", parsertl::go_to)
 	DECL_FROM_ENUM("ACTION_ACCEPT", parsertl::accept)
 	DECL_FROM_ENUM("ERROR_SYNTAX", parsertl::syntax_error)
 	DECL_FROM_ENUM("ERROR_NON_ASSOCIATIVE", parsertl::non_associative)
