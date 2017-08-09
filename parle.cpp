@@ -730,8 +730,9 @@ PHP_METHOD(ParleParser, entry)
 {
 	struct ze_parle_parser_obj *zppo;
 	zval *me;
+	zend_long idx = 0;
 
-	if(zend_parse_method_parameters(ZEND_NUM_ARGS(), getThis(), "O", &me, ParleParser_ce) == FAILURE) {
+	if(zend_parse_method_parameters(ZEND_NUM_ARGS(), getThis(), "O|l", &me, ParleParser_ce, &idx) == FAILURE) {
 		return;
 	}
 
@@ -742,8 +743,22 @@ PHP_METHOD(ParleParser, entry)
 		return;
 	}
 
+	if (idx < 0 ||
+		zppo->sm->_rules.size() < static_cast<size_t>(idx) + 1 /*||
+		zppo->results->production_size(*zppo->sm, zppo->results->entry.param) + static_cast<size_t>(idx) > zppo->productions->size()*/) {
+		zend_throw_exception(ParleParserException_ce, "Invalid index", 0);
+		return;
+	}
+
 	try {
-		RETURN_STRING(zppo->results->dollar(*zppo->sm, 0, *zppo->productions).first);
+		auto ret = zppo->results->dollar(*zppo->sm, static_cast<size_t>(idx), *zppo->productions);
+		if (!ret.first) {
+			RETURN_NULL();
+		}
+
+		const char *first = ret.first;
+		const char *second = ret.second;
+		RETURN_STRINGL(first, second - first);
 	} catch (const std::exception &e) {
 		zend_throw_exception(ParleParserException_ce, e.what(), 0);
 	}
