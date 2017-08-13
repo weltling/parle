@@ -355,9 +355,37 @@ PHP_METHOD(ParleLexer, getToken)
 
 	try {
 		array_init(return_value);
-		add_next_index_long(return_value, zplo->results->id);
-		add_next_index_string(return_value, zplo->results->str().c_str());
+		add_assoc_long_ex(return_value, "id", sizeof("id")-1, static_cast<zend_long>(zplo->results->id));
+#if PHP_MAJOR_VERSION >= 7 && PHP_MINOR_VERSION >= 2
+		add_assoc_stringl_ex(return_value, "token", sizeof("token")-1, zplo->results->str().c_str(), zplo->results->str().size());
+#else
+		add_assoc_stringl_ex(return_value, "token", sizeof("token")-1, (char *)zplo->results->str().c_str(), zplo->results->str().size());
+#endif
 
+	} catch (const std::exception &e) {
+		zend_throw_exception(ParleLexerException_ce, e.what(), 0);
+	}
+}
+/* }}} */
+
+/* {{{ public void Lexer::advance(void) */
+PHP_METHOD(ParleLexer, advance)
+{
+	struct ze_parle_lexer_obj *zplo;
+	zval *me;
+
+	if(zend_parse_method_parameters(ZEND_NUM_ARGS(), getThis(), "O", &me, ParleLexer_ce) == FAILURE) {
+		return;
+	}
+
+	zplo = php_parle_lexer_fetch_obj(Z_OBJ_P(me));
+
+	if (!zplo->complete) {
+		zend_throw_exception(ParleLexerException_ce, "Lexer state machine is not ready", 0);
+		return;
+	}
+
+	try {
 		lexertl::lookup(*zplo->sm, *zplo->results);
 	} catch (const std::exception &e) {
 		zend_throw_exception(ParleLexerException_ce, e.what(), 0);
@@ -965,6 +993,7 @@ const zend_function_entry ParleLexer_methods[] = {
 	PHP_ME(ParleLexer, consume, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(ParleLexer, skip, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(ParleLexer, eoi, NULL, ZEND_ACC_PUBLIC)
+	PHP_ME(ParleLexer, advance, NULL, ZEND_ACC_PUBLIC)
 	PHP_FE_END
 };
 
