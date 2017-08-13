@@ -725,8 +725,8 @@ PHP_METHOD(ParleParser, action)
 }
 /* }}} */
 
-/* {{{ public int Parser::entry(void) */
-PHP_METHOD(ParleParser, entry)
+/* {{{ public int Parser::dollar(int $idx) */
+PHP_METHOD(ParleParser, dollar)
 {
 	struct ze_parle_parser_obj *zppo;
 	zval *me;
@@ -988,7 +988,7 @@ const zend_function_entry ParleParser_methods[] = {
 	PHP_ME(ParleParser, tokenId, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(ParleParser, reduceId, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(ParleParser, action, NULL, ZEND_ACC_PUBLIC)
-	PHP_ME(ParleParser, entry, NULL, ZEND_ACC_PUBLIC)
+	PHP_ME(ParleParser, dollar, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(ParleParser, advance, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(ParleParser, consume, NULL, ZEND_ACC_PUBLIC)
 	PHP_FE_END
