@@ -368,17 +368,17 @@ PHP_METHOD(ParleLexer, getToken)
 }
 /* }}} */
 
-/* {{{ public void Lexer::advance(void) */
-PHP_METHOD(ParleLexer, advance)
-{
-	struct ze_parle_lexer_obj *zplo;
+template<typename lexer_obj_type> void
+_lexer_advance(INTERNAL_FUNCTION_PARAMETERS, zend_class_entry *ce)
+{/*{{{*/
+	lexer_obj_type *zplo;
 	zval *me;
 
-	if(zend_parse_method_parameters(ZEND_NUM_ARGS(), getThis(), "O", &me, ParleLexer_ce) == FAILURE) {
+	if(zend_parse_method_parameters(ZEND_NUM_ARGS(), getThis(), "O", &me, ce) == FAILURE) {
 		return;
 	}
 
-	zplo = php_parle_lexer_fetch_obj(Z_OBJ_P(me));
+	zplo = _php_parle_lexer_fetch_zobj<lexer_obj_type>(Z_OBJ_P(me));
 
 	if (!zplo->complete) {
 		zend_throw_exception(ParleLexerException_ce, "Lexer state machine is not ready", 0);
@@ -390,6 +390,19 @@ PHP_METHOD(ParleLexer, advance)
 	} catch (const std::exception &e) {
 		zend_throw_exception(ParleLexerException_ce, e.what(), 0);
 	}
+}/*}}}*/
+
+/* {{{ public void Lexer::advance(void) */
+PHP_METHOD(ParleLexer, advance)
+{
+	_lexer_advance<struct ze_parle_lexer_obj>(INTERNAL_FUNCTION_PARAM_PASSTHRU, ParleLexer_ce);
+}
+/* }}} */
+
+/* {{{ public void RLexer::advance(void) */
+PHP_METHOD(ParleRLexer, advance)
+{
+	_lexer_advance<struct ze_parle_rlexer_obj>(INTERNAL_FUNCTION_PARAM_PASSTHRU, ParleRLexer_ce);
 }
 /* }}} */
 
