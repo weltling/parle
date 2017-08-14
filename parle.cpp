@@ -64,7 +64,6 @@ struct ze_parle_lexer_obj {/*{{{*/
 	lexertl::smatch *results;
 	std::string *in;
 	bool complete;
-	bool recursive;
 	zend_object zo;
 };/*}}}*/
 
@@ -74,7 +73,6 @@ struct ze_parle_rlexer_obj {/*{{{*/
 	lexertl::srmatch *results;
 	std::string *in;
 	bool complete;
-	bool recursive;
 	zend_object zo;
 };/*}}}*/
 
@@ -1059,7 +1057,7 @@ php_parle_lexer_obj_dtor(lexer_type *zplo)
 }/*}}}*/
 
 template<typename lexer_type> zend_object *
-php_parle_lexer_obj_ctor(zend_class_entry *ce, bool recursive)
+php_parle_lexer_obj_ctor(zend_class_entry *ce)
 {/*{{{*/
 	lexer_type *zplo;
 
@@ -1069,7 +1067,6 @@ php_parle_lexer_obj_ctor(zend_class_entry *ce, bool recursive)
 	zplo->zo.handlers = &parle_lexer_handlers;
 
 	zplo->complete = false;
-	zplo->recursive = recursive;
 	zplo->rules = new lexertl::rules{};
 	zplo->sm = new lexertl::state_machine{};
 	zplo->results = nullptr;
@@ -1088,7 +1085,7 @@ php_parle_lexer_obj_destroy(zend_object *obj)
 zend_object *
 php_parle_lexer_object_init(zend_class_entry *ce)
 {/*{{{*/
-	return php_parle_lexer_obj_ctor<struct ze_parle_lexer_obj>(ce, false);
+	return php_parle_lexer_obj_ctor<struct ze_parle_lexer_obj>(ce);
 }/*}}}*/
 
 void
@@ -1101,7 +1098,7 @@ php_parle_rlexer_obj_destroy(zend_object *obj)
 zend_object *
 php_parle_rlexer_object_init(zend_class_entry *ce)
 {/*{{{*/
-	return php_parle_lexer_obj_ctor<struct ze_parle_rlexer_obj>(ce, true);
+	return php_parle_lexer_obj_ctor<struct ze_parle_rlexer_obj>(ce);
 }/*}}}*/
 
 void
