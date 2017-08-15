@@ -1,5 +1,5 @@
 --TEST--
-Simple stackless calc
+Advanced calc with state
 --SKIPIF--
 <?php if (!extension_loaded("parle")) print "skip"; ?>
 --FILE--
@@ -8,12 +8,17 @@ Simple stackless calc
 $p = new Parser;
 $p->token("INTEGER");
 $p->left("'+' '-' '*' '/'");
+$p->precedence("NEGATE");
+$p->right("'^'");
 
 $p->push("start", "exp");
 $add_idx = $p->push("exp", "exp '+' exp");
 $sub_idx = $p->push("exp", "exp '-' exp");
 $mul_idx = $p->push("exp", "exp '*' exp");
 $div_idx = $p->push("exp", "exp '/' exp");
+$p->push("exp", "'(' exp ')'");
+$neg_idx = $p->push("exp", "'-' exp %prec NEGATE");
+$exp_idx = $p->push("exp", "exp '^' exp");
 $int_idx = $p->push("exp", "INTEGER");
 
 $p->build();
@@ -22,17 +27,22 @@ $lex = new RLexer;
 $lex->push("[+]", $p->tokenId("'+'"));
 $lex->push("[-]", $p->tokenId("'-'"));
 $lex->push("[*]", $p->tokenId("'*'"));
+$lex->push("[\\^]", $p->tokenId("'^'"));
 $lex->push("[/]", $p->tokenId("'/'"));
 $lex->push("\\d+", $p->tokenId("INTEGER"));
+$lex->push("[(]", $p->tokenId("'('"));
+$lex->push("[)]", $p->tokenId("')'"));
 $lex->push("\\s+", $lex->skip());
 
 $lex->build();
 
 $exp = array(
-	"1 + 1",
-	"33 / 10",
-	"100 * 45",
-	"17 - 45",
+	"1 + 2^4",
+	"33 / (10 + 1)",
+	"100 * 45 / 10",
+	"10*5 - 45",
+	"10 - -4",
+	"10000000^0 + 10 - 3^2",
 );
 
 foreach ($exp as $in) {
@@ -43,6 +53,7 @@ foreach ($exp as $in) {
 	$p->consume($in, $lex);
 
 	$act = $p->action();
+	$stack = new ParserStack;
 
 	while (Parser::ACTION_ERROR != $act && Parser::ACTION_ACCEPT != $act) {
 		switch ($act) {
@@ -55,44 +66,57 @@ foreach ($exp as $in) {
 				break;
 			case Parser::ACTION_REDUCE:
 				$rid = $p->reduceId();
-
-				/*$l = $p->dollar(0);
-				$r = $p->dollar(2);*/
-
 				switch ($rid) {
 					case $add_idx:
-						$l = $p->dollar(0);
-						$r = $p->dollar(2);
-						echo "$l + $r = " . ($l + $r) . "\n";
+						$op0 = $stack->top();
+						$stack->pop();
+						$stack->top($stack->top() + $op0);
 						break;
 					case $sub_idx:
-						$l = $p->dollar(0);
-						$r = $p->dollar(2);
-						echo "$l - $r = " . ($l - $r) . "\n";
+						$op0 = $stack->top();
+						$stack->pop();
+						$stack->top($stack->top() - $op0);
 						break;
 					case $mul_idx:
-						$l = $p->dollar(0);
-						$r = $p->dollar(2);
-						echo "$l * $r = " . ($l * $r) . "\n";
+						$op0 = $stack->top();
+						$stack->pop();
+						$stack->top($stack->top() * $op0);
 						break;
 					case $div_idx:
-						$l = $p->dollar(0);
-						$r = $p->dollar(2);
-						echo "$l / $r = " . ($l / $r) . "\n";
+						$op0 = $stack->top();
+						$stack->pop();
+						$stack->top($stack->top() / $op0);
+						break;
+					case $exp_idx:
+						$op0 = $stack->top();
+						$stack->pop();
+						$stack->top($stack->top() ** $op0);
+						break;
+					case $neg_idx:
+						$top = $stack->top();
+						$stack->top(-$top);
+						break;
+					case $int_idx:
+						$i = (int)$p->dollar();
+						$stack->push($i);
 						break;
 				}
+
 			break;
 		}
 		$p->advance();
 		$act = $p->action();
 	}
+	echo "$in = " . $stack->top() . "\n";
 }
 
 ?>
 ==DONE==
 --EXPECT--
-1 + 1 = 2
-33 / 10 = 3.3
-100 * 45 = 4500
-17 - 45 = -28
+1 + 2^4 = 17
+33 / (10 + 1) = 3
+100 * 45 / 10 = 450
+10*5 - 45 = 5
+10 - -4 = 14
+10000000^0 + 10 - 3^2 = 2
 ==DONE==
