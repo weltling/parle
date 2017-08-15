@@ -844,9 +844,7 @@ PHP_METHOD(ParleParser, dollar)
 		return;
 	}
 
-	if (idx < 0 ||
-		zppo->sm->_rules.size() < static_cast<size_t>(idx) + 1 /*||
-		zppo->results->production_size(*zppo->sm, zppo->results->entry.param) + static_cast<size_t>(idx) > zppo->productions->size()*/) {
+	if (idx < 0 || zppo->productions->size() <= static_cast<size_t>(idx)) {
 		zend_throw_exception(ParleParserException_ce, "Invalid index", 0);
 		return;
 	}
