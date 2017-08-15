@@ -1,5 +1,5 @@
 --TEST--
-Lexer parse php var statement
+Lex PHP var statement
 --SKIPIF--
 <?php if (!extension_loaded("parle")) print "skip"; ?>
 --FILE--
