@@ -269,7 +269,6 @@ _lexer_consume(INTERNAL_FUNCTION_PARAMETERS, zend_class_entry *ce) noexcept
 	try {
 		zplo->in = new std::string{in};
 		zplo->results = new lexer_type(zplo->in->begin(), zplo->in->end());
-		lexertl::lookup(*zplo->sm, *zplo->results);
 	} catch (const std::exception &e) {
 		zend_throw_exception(ParleLexerException_ce, e.what(), 0);
 	}
@@ -328,9 +327,9 @@ _lexer_token(INTERNAL_FUNCTION_PARAMETERS, zend_class_entry *ce) noexcept
 
 	zplo = _php_parle_lexer_fetch_zobj<lexer_obj_type>(Z_OBJ_P(me));
 
-	if (0 == zplo->results->id) {
+	/*if (0 == zplo->results->id) {
 		RETURN_NULL();
-	}
+	}*/
 
 	try {
 		array_init(return_value);
@@ -489,6 +488,36 @@ PHP_METHOD(ParleRLexer, flags)
 	_lexer_eoi<struct ze_parle_rlexer_obj>(INTERNAL_FUNCTION_PARAM_PASSTHRU, ParleRLexer_ce);
 }
 /* }}} */
+
+template<typename lexer_obj_type> void
+_lexer_npos(INTERNAL_FUNCTION_PARAMETERS, zend_class_entry *ce) noexcept
+{
+	lexer_obj_type *zplo;
+	zval *me;
+
+	if(zend_parse_method_parameters(ZEND_NUM_ARGS(), getThis(), "O", &me, ce) == FAILURE) {
+		return;
+	}
+
+	zplo = _php_parle_lexer_fetch_zobj<lexer_obj_type>(Z_OBJ_P(me));
+
+	RETURN_LONG(zplo->results->npos());
+}
+
+/* {{{ public int Lexer::npos(void) */
+PHP_METHOD(ParleLexer, npos)
+{
+	_lexer_npos<struct ze_parle_lexer_obj>(INTERNAL_FUNCTION_PARAM_PASSTHRU, ParleLexer_ce);
+}
+/* }}} */
+
+/* {{{ public int RLexer::npos(void) */
+PHP_METHOD(ParleRLexer, npos)
+{
+	_lexer_npos<struct ze_parle_rlexer_obj>(INTERNAL_FUNCTION_PARAM_PASSTHRU, ParleRLexer_ce);
+}
+/* }}} */
+
 
 /* {{{ public void Parser::__construct(void) */
 PHP_METHOD(ParleParser, __construct)
@@ -1037,6 +1066,7 @@ const zend_function_entry ParleLexer_methods[] = {
 	PHP_ME(ParleLexer, skip, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(ParleLexer, eoi, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(ParleLexer, advance, NULL, ZEND_ACC_PUBLIC)
+	PHP_ME(ParleLexer, npos, NULL, ZEND_ACC_PUBLIC)
 	PHP_FE_END
 };
 
@@ -1048,6 +1078,7 @@ const zend_function_entry ParleRLexer_methods[] = {
 	PHP_ME(ParleRLexer, skip, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(ParleRLexer, eoi, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(ParleRLexer, advance, NULL, ZEND_ACC_PUBLIC)
+	PHP_ME(ParleRLexer, npos, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(ParleRLexer, pushState, NULL, ZEND_ACC_PUBLIC)
 	PHP_FE_END
 };
