@@ -1,5 +1,5 @@
 --TEST--
-Check for parle presence
+Lexer parse php var statement
 --SKIPIF--
 <?php if (!extension_loaded("parle")) print "skip"; ?>
 --FILE--
