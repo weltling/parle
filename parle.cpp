@@ -491,7 +491,7 @@ PHP_METHOD(ParleRLexer, flags)
 
 template<typename lexer_obj_type> void
 _lexer_npos(INTERNAL_FUNCTION_PARAMETERS, zend_class_entry *ce) noexcept
-{
+{/*{{{*/
 	lexer_obj_type *zplo;
 	zval *me;
 
@@ -502,7 +502,7 @@ _lexer_npos(INTERNAL_FUNCTION_PARAMETERS, zend_class_entry *ce) noexcept
 	zplo = _php_parle_lexer_fetch_zobj<lexer_obj_type>(Z_OBJ_P(me));
 
 	RETURN_LONG(zplo->results->npos());
-}
+}/*}}}*/
 
 /* {{{ public int Lexer::npos(void) */
 PHP_METHOD(ParleLexer, npos)
@@ -518,6 +518,24 @@ PHP_METHOD(ParleRLexer, npos)
 }
 /* }}} */
 
+template<typename lexer_obj_type> void
+_lexer_macro(INTERNAL_FUNCTION_PARAMETERS, zend_class_entry *ce) noexcept
+{/*{{{*/
+}/*}}}*/
+
+/* {{{ public void Lexer::insertMacro(string $name, string $reg) */
+PHP_METHOD(ParleLexer, insertMacro)
+{
+	_lexer_macro<struct ze_parle_lexer_obj>(INTERNAL_FUNCTION_PARAM_PASSTHRU, ParleLexer_ce);
+}
+/* }}} */
+
+/* {{{ public void RLexer::insertMacro(string $name, string $reg) */
+PHP_METHOD(ParleRLexer, insertMacro)
+{
+	_lexer_macro<struct ze_parle_rlexer_obj>(INTERNAL_FUNCTION_PARAM_PASSTHRU, ParleRLexer_ce);
+}
+/* }}} */
 
 /* {{{ public void Parser::__construct(void) */
 PHP_METHOD(ParleParser, __construct)
@@ -1065,6 +1083,7 @@ const zend_function_entry ParleLexer_methods[] = {
 	PHP_ME(ParleLexer, eoi, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(ParleLexer, advance, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(ParleLexer, npos, NULL, ZEND_ACC_PUBLIC)
+	PHP_ME(ParleLexer, insertMacro, NULL, ZEND_ACC_PUBLIC)
 	PHP_FE_END
 };
 
@@ -1078,6 +1097,7 @@ const zend_function_entry ParleRLexer_methods[] = {
 	PHP_ME(ParleRLexer, advance, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(ParleRLexer, npos, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(ParleRLexer, pushState, NULL, ZEND_ACC_PUBLIC)
+	PHP_ME(ParleRLexer, insertMacro, NULL, ZEND_ACC_PUBLIC)
 	PHP_FE_END
 };
 
