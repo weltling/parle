@@ -525,14 +525,18 @@ _lexer_macro(INTERNAL_FUNCTION_PARAMETERS, zend_class_entry *ce) noexcept
 	zval *me;
 	zend_string *name, *regex, *regex_begin, *regex_end;
 
-	if(zend_parse_method_parameters_ex(ZEND_PARSE_PARAMS_QUIET, ZEND_NUM_ARGS(), getThis(), "OSS", &me, ce, &name, &regex) == SUCCESS) {
-		zplo = _php_parle_lexer_fetch_zobj<lexer_obj_type>(Z_OBJ_P(me));
-		zplo->rules->insert_macro(ZSTR_VAL(name), ZSTR_VAL(regex));
-	} else if(zend_parse_method_parameters_ex(ZEND_PARSE_PARAMS_QUIET, ZEND_NUM_ARGS(), getThis(), "OSSS", &me, ce, &name, &regex_begin, &regex_end) == SUCCESS) {
-		zplo = _php_parle_lexer_fetch_zobj<lexer_obj_type>(Z_OBJ_P(me));
-		zplo->rules->insert_macro(ZSTR_VAL(name), ZSTR_VAL(regex_begin), ZSTR_VAL(regex_end));
-	} else {
-		zend_throw_exception(ParleLexerException_ce, "Couldn't match the method signature", 0);
+	try {
+		if(zend_parse_method_parameters_ex(ZEND_PARSE_PARAMS_QUIET, ZEND_NUM_ARGS(), getThis(), "OSS", &me, ce, &name, &regex) == SUCCESS) {
+			zplo = _php_parle_lexer_fetch_zobj<lexer_obj_type>(Z_OBJ_P(me));
+			zplo->rules->insert_macro(ZSTR_VAL(name), ZSTR_VAL(regex));
+		} else if(zend_parse_method_parameters_ex(ZEND_PARSE_PARAMS_QUIET, ZEND_NUM_ARGS(), getThis(), "OSSS", &me, ce, &name, &regex_begin, &regex_end) == SUCCESS) {
+			zplo = _php_parle_lexer_fetch_zobj<lexer_obj_type>(Z_OBJ_P(me));
+			zplo->rules->insert_macro(ZSTR_VAL(name), ZSTR_VAL(regex_begin), ZSTR_VAL(regex_end));
+		} else {
+			zend_throw_exception(ParleLexerException_ce, "Couldn't match the method signature", 0);
+		}
+	} catch (const std::exception &e) {
+		zend_throw_exception(ParleLexerException_ce, e.what(), 0);
 	}
 }/*}}}*/
 
