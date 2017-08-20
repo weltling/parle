@@ -33,6 +33,9 @@
 #include "config.h"
 #endif
 
+#define __STDC_FORMAT_MACROS
+#include "inttypes.h"
+
 #include "lexertl/generator.hpp"
 #include "lexertl/lookup.hpp"
 #include "lexertl/iterator.hpp"
@@ -488,6 +491,41 @@ PHP_METHOD(ParleLexer, bol)
 PHP_METHOD(ParleRLexer, bol)
 {
 	_lexer_bol<struct ze_parle_rlexer_obj>(INTERNAL_FUNCTION_PARAM_PASSTHRU, ParleRLexer_ce);
+}
+/* }}} */
+
+template<typename lexer_obj_type> void
+_lexer_restart(INTERNAL_FUNCTION_PARAMETERS, zend_class_entry *ce) noexcept
+{/*{{{*/
+	lexer_obj_type *zplo;
+	zval *me;
+	zend_long pos;
+
+	if(zend_parse_method_parameters(ZEND_NUM_ARGS(), getThis(), "Ol", &me, ce, &pos) == FAILURE) {
+		return;
+	}
+
+	zplo = _php_parle_lexer_fetch_zobj<lexer_obj_type>(Z_OBJ_P(me));
+
+	if (pos < 0 || static_cast<size_t>(pos) > zplo->in->length()) {
+		zend_throw_exception_ex(ParleLexerException_ce, 0, "Invalid offset " ZEND_LONG_FMT, pos);
+		return;
+	}
+
+	zplo->results->first = zplo->results->second = zplo->in->begin() + pos;
+}/*}}}*/
+
+/* {{{ public void Lexer::restart(int $position) */
+PHP_METHOD(ParleLexer, restart)
+{
+	_lexer_restart<struct ze_parle_lexer_obj>(INTERNAL_FUNCTION_PARAM_PASSTHRU, ParleLexer_ce);
+}
+/* }}} */
+
+/* {{{ public void RLexer::restart(int $position) */
+PHP_METHOD(ParleRLexer, restart)
+{
+	_lexer_restart<struct ze_parle_rlexer_obj>(INTERNAL_FUNCTION_PARAM_PASSTHRU, ParleRLexer_ce);
 }
 /* }}} */
 
@@ -1137,6 +1175,7 @@ const zend_function_entry ParleLexer_methods[] = {
 	PHP_ME(ParleLexer, advance, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(ParleLexer, npos, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(ParleLexer, bol, NULL, ZEND_ACC_PUBLIC)
+	PHP_ME(ParleLexer, restart, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(ParleLexer, insertMacro, NULL, ZEND_ACC_PUBLIC)
 	PHP_FE_END
 };
@@ -1151,6 +1190,7 @@ const zend_function_entry ParleRLexer_methods[] = {
 	PHP_ME(ParleRLexer, advance, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(ParleRLexer, npos, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(ParleRLexer, bol, NULL, ZEND_ACC_PUBLIC)
+	PHP_ME(ParleRLexer, restart, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(ParleRLexer, pushState, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(ParleRLexer, insertMacro, NULL, ZEND_ACC_PUBLIC)
 	PHP_FE_END
