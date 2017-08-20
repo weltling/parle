@@ -458,13 +458,47 @@ PHP_METHOD(ParleRLexer, eoi)
 /* }}} */
 
 template<typename lexer_obj_type> void
+_lexer_bol(INTERNAL_FUNCTION_PARAMETERS, zend_class_entry *ce) noexcept
+{/*{{{*/
+	lexer_obj_type *zplo;
+	zval *me;
+	bool bol;
+
+	if(zend_parse_method_parameters(ZEND_NUM_ARGS(), getThis(), "O|b", &me, ce, &bol) == FAILURE) {
+		return;
+	}
+
+	zplo = _php_parle_lexer_fetch_zobj<lexer_obj_type>(Z_OBJ_P(me));
+
+	if (1 == ZEND_NUM_ARGS()) {
+		RETURN_BOOL(zplo->results->bol);
+	} else {
+		zplo->results->bol = bol;
+	}
+}/*}}}*/
+
+/* {{{ public mixed Lexer::bol([bool $bol]) */
+PHP_METHOD(ParleLexer, bol)
+{
+	_lexer_bol<struct ze_parle_lexer_obj>(INTERNAL_FUNCTION_PARAM_PASSTHRU, ParleLexer_ce);
+}
+/* }}} */
+
+/* {{{ public mixed RLexer::bol([bool $bol]) */
+PHP_METHOD(ParleRLexer, bol)
+{
+	_lexer_bol<struct ze_parle_rlexer_obj>(INTERNAL_FUNCTION_PARAM_PASSTHRU, ParleRLexer_ce);
+}
+/* }}} */
+
+template<typename lexer_obj_type> void
 _lexer_flags(INTERNAL_FUNCTION_PARAMETERS, zend_class_entry *ce) noexcept
 {/*{{{*/
 	lexer_obj_type *zplo;
 	zval *me;
 	zend_long flags = -1;
 
-	if(zend_parse_method_parameters(ZEND_NUM_ARGS(), getThis(), "O|l", &me, ce, flags) == FAILURE) {
+	if(zend_parse_method_parameters(ZEND_NUM_ARGS(), getThis(), "O|l", &me, ce, &flags) == FAILURE) {
 		return;
 	}
 
@@ -1102,6 +1136,7 @@ const zend_function_entry ParleLexer_methods[] = {
 	PHP_ME(ParleLexer, eoi, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(ParleLexer, advance, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(ParleLexer, npos, NULL, ZEND_ACC_PUBLIC)
+	PHP_ME(ParleLexer, bol, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(ParleLexer, insertMacro, NULL, ZEND_ACC_PUBLIC)
 	PHP_FE_END
 };
@@ -1115,6 +1150,7 @@ const zend_function_entry ParleRLexer_methods[] = {
 	PHP_ME(ParleRLexer, eoi, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(ParleRLexer, advance, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(ParleRLexer, npos, NULL, ZEND_ACC_PUBLIC)
+	PHP_ME(ParleRLexer, bol, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(ParleRLexer, pushState, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(ParleRLexer, insertMacro, NULL, ZEND_ACC_PUBLIC)
 	PHP_FE_END
