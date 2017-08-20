@@ -343,7 +343,7 @@ _lexer_token(INTERNAL_FUNCTION_PARAMETERS, zend_class_entry *ce) noexcept
 #else
 		add_assoc_stringl_ex(return_value, "token", sizeof("token")-1, (char *)ret.c_str(), ret.size());
 #endif
-		//add_assoc_long(return_value, "offset", zplo->results->first - zplo->in->begin());
+		add_assoc_long(return_value, "offset", zplo->results->first - zplo->in->begin());
 
 	} catch (const std::exception &e) {
 		zend_throw_exception(ParleLexerException_ce, e.what(), 0);

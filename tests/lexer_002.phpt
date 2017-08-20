@@ -39,29 +39,36 @@ foreach ($nums as $in) {
 ?>
 ==DONE==
 --EXPECT--
-array(2) {
+array(3) {
   ["id"]=>
   int(4)
   ["token"]=>
   string(4) "0x42"
+  ["offset"]=>
+  int(0)
 }
-array(2) {
+array(3) {
   ["id"]=>
   int(1)
   ["token"]=>
   string(8) "0b010101"
+  ["offset"]=>
+  int(5)
 }
-array(2) {
+array(3) {
   ["id"]=>
   int(2)
   ["token"]=>
   string(3) "075"
+  ["offset"]=>
+  int(14)
 }
-array(2) {
+array(3) {
   ["id"]=>
   int(3)
   ["token"]=>
   string(2) "24"
+  ["offset"]=>
+  int(18)
 }
 ==DONE==
-

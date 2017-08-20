@@ -35,85 +35,111 @@ while (0 != $tok["id"]) {
 ?>
 ==DONE==
 --EXPECT--
-array(2) {
+array(3) {
   ["id"]=>
   int(2)
   ["token"]=>
   string(3) "cmd"
+  ["offset"]=>
+  int(4)
 }
-array(2) {
+array(3) {
   ["id"]=>
   int(100)
   ["token"]=>
   string(1) "
 "
+  ["offset"]=>
+  int(7)
 }
-array(2) {
+array(3) {
   ["id"]=>
   int(50)
   ["token"]=>
   string(1) "a"
+  ["offset"]=>
+  int(8)
 }
-array(2) {
+array(3) {
   ["id"]=>
   int(100)
   ["token"]=>
   string(1) " "
+  ["offset"]=>
+  int(9)
 }
-array(2) {
+array(3) {
   ["id"]=>
   int(4)
   ["token"]=>
   string(3) "cmd"
+  ["offset"]=>
+  int(10)
 }
-array(2) {
+array(3) {
   ["id"]=>
   int(100)
   ["token"]=>
   string(1) "
 "
+  ["offset"]=>
+  int(13)
 }
-array(2) {
+array(3) {
   ["id"]=>
   int(3)
   ["token"]=>
   string(3) "cmd"
+  ["offset"]=>
+  int(14)
 }
-array(2) {
+array(3) {
   ["id"]=>
   int(100)
   ["token"]=>
   string(1) " "
+  ["offset"]=>
+  int(17)
 }
-array(2) {
+array(3) {
   ["id"]=>
   int(50)
   ["token"]=>
   string(5) "again"
+  ["offset"]=>
+  int(18)
 }
-array(2) {
+array(3) {
   ["id"]=>
   int(100)
   ["token"]=>
   string(1) "
 "
+  ["offset"]=>
+  int(23)
 }
-array(2) {
+array(3) {
   ["id"]=>
   int(50)
   ["token"]=>
   string(7) "another"
+  ["offset"]=>
+  int(24)
 }
-array(2) {
+array(3) {
   ["id"]=>
   int(100)
   ["token"]=>
   string(1) " "
+  ["offset"]=>
+  int(31)
 }
-array(2) {
+array(3) {
   ["id"]=>
   int(4)
   ["token"]=>
   string(3) "cmd"
+  ["offset"]=>
+  int(32)
 }
 ==DONE==

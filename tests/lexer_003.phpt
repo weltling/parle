@@ -84,94 +84,124 @@ while (0 != $tok["id"]) {
 ?>
 ==DONE==
 --EXPECT--
-array(2) {
+array(3) {
   ["id"]=>
   int(42)
   ["token"]=>
   string(1) "{"
+  ["offset"]=>
+  int(0)
 }
-array(2) {
+array(3) {
   ["id"]=>
   int(46)
   ["token"]=>
   string(5) ""key""
+  ["offset"]=>
+  int(5)
 }
-array(2) {
+array(3) {
   ["id"]=>
   int(44)
   ["token"]=>
   string(1) "["
+  ["offset"]=>
+  int(12)
 }
-array(2) {
+array(3) {
   ["id"]=>
   int(47)
   ["token"]=>
   string(15) ""qelque choose""
+  ["offset"]=>
+  int(18)
 }
-array(2) {
+array(3) {
   ["id"]=>
   int(48)
   ["token"]=>
   string(2) "42"
+  ["offset"]=>
+  int(39)
 }
-array(2) {
+array(3) {
   ["id"]=>
   int(47)
   ["token"]=>
   string(8) ""füße""
+  ["offset"]=>
+  int(54)
 }
-array(2) {
+array(3) {
   ["id"]=>
   int(45)
   ["token"]=>
   string(1) "]"
+  ["offset"]=>
+  int(66)
 }
-array(2) {
+array(3) {
   ["id"]=>
   int(46)
   ["token"]=>
   string(5) ""obj""
+  ["offset"]=>
+  int(72)
 }
-array(2) {
+array(3) {
   ["id"]=>
   int(42)
   ["token"]=>
   string(1) "{"
+  ["offset"]=>
+  int(79)
 }
-array(2) {
+array(3) {
   ["id"]=>
   int(46)
   ["token"]=>
   string(6) ""prop""
+  ["offset"]=>
+  int(87)
 }
-array(2) {
+array(3) {
   ["id"]=>
   int(48)
   ["token"]=>
   string(2) "12"
+  ["offset"]=>
+  int(95)
 }
-array(2) {
+array(3) {
   ["id"]=>
   int(43)
   ["token"]=>
   string(1) "}"
+  ["offset"]=>
+  int(101)
 }
-array(2) {
+array(3) {
   ["id"]=>
   int(46)
   ["token"]=>
   string(6) ""some""
+  ["offset"]=>
+  int(107)
 }
-array(2) {
+array(3) {
   ["id"]=>
   int(50)
   ["token"]=>
   string(4) "null"
+  ["offset"]=>
+  int(115)
 }
-array(2) {
+array(3) {
   ["id"]=>
   int(43)
   ["token"]=>
   string(1) "}"
+  ["offset"]=>
+  int(121)
 }
 ==DONE==

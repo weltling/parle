@@ -30,29 +30,36 @@ while (0 != $tok["id"]) {
 ?>
 ==DONE==
 --EXPECT--
-array(2) {
+array(3) {
   ["id"]=>
   int(1)
   ["token"]=>
   string(6) "$hello"
+  ["offset"]=>
+  int(0)
 }
-array(2) {
+array(3) {
   ["id"]=>
   int(2)
   ["token"]=>
   string(1) "="
+  ["offset"]=>
+  int(6)
 }
-array(2) {
+array(3) {
   ["id"]=>
   int(3)
   ["token"]=>
   string(2) "42"
+  ["offset"]=>
+  int(7)
 }
-array(2) {
+array(3) {
   ["id"]=>
   int(4)
   ["token"]=>
   string(1) ";"
+  ["offset"]=>
+  int(9)
 }
 ==DONE==
-
