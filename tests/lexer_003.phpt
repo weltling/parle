@@ -5,6 +5,8 @@ Lex JSON
 --FILE--
 <?php
 
+use Parle\RLexer;
+
 const eOpenOb = 42;
 const eCloseOb = 43;
 const eOpenArr = 44;

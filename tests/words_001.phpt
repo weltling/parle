@@ -5,6 +5,9 @@ Parse words from a string
 --FILE--
 <?php 
 
+use Parle\Parser;
+use Parle\Lexer;
+
 $p = new Parser;
 $p->token("WORD");
 $p->push("start", "sentence");

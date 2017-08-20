@@ -5,6 +5,8 @@ Lex PHP var statement
 --FILE--
 <?php 
 
+use Parle\Lexer;
+
 $lex = new Lexer;
 $lex->push("\$[a-z]{1,}[a-zA-Z0-9_]+", 1);
 $lex->push("=", 2);

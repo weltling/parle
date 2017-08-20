@@ -5,6 +5,10 @@ Simple stackless calc
 --FILE--
 <?php 
 
+use Parle\Parser;
+use Parle\ParserException;
+use Parle\RLexer;
+
 $p = new Parser;
 $p->token("INTEGER");
 $p->left("'+' '-' '*' '/'");
@@ -37,7 +41,7 @@ $exp = array(
 
 foreach ($exp as $in) {
 	if (!$p->validate($in, $lex)) {
-		throw new \ParserException("Failed to validate input");
+		throw new ParserException("Failed to validate input");
 	}
 
 	$p->consume($in, $lex);
@@ -47,7 +51,7 @@ foreach ($exp as $in) {
 	while (Parser::ACTION_ERROR != $act && Parser::ACTION_ACCEPT != $act) {
 		switch ($act) {
 			case Parser::ACTION_ERROR:
-				throw new \ParserException("Parser error");
+				throw new ParserException("Parser error");
 				break;
 			case Parser::ACTION_SHIFT:
 			case Parser::ACTION_GOTO:

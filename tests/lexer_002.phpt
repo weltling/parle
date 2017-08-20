@@ -5,6 +5,8 @@ Lex various number formats
 --FILE--
 <?php 
 
+use Parle\Lexer;
+
 $lex = new Lexer;
 
 $lex->push("0b[01]+", 1);

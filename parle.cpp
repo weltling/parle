@@ -1386,7 +1386,7 @@ PHP_MINIT_FUNCTION(parle)
 	parle_lexer_handlers.offset = XtOffsetOf(struct ze_parle_lexer_obj, zo);
 	parle_lexer_handlers.free_obj = php_parle_lexer_obj_destroy;
 
-	INIT_CLASS_ENTRY(ce, "Lexer", ParleLexer_methods);
+	INIT_CLASS_ENTRY(ce, "Parle\\Lexer", ParleLexer_methods);
 	ce.create_object = php_parle_lexer_object_init;
 	ParleLexer_ce = zend_register_internal_class(&ce);
 #define DECL_FROM_ENUM(name, val) zend_declare_class_constant_long(ParleLexer_ce, name, sizeof(name) - 1, val);
@@ -1402,7 +1402,7 @@ PHP_MINIT_FUNCTION(parle)
 	parle_rlexer_handlers.offset = XtOffsetOf(struct ze_parle_rlexer_obj, zo);
 	parle_rlexer_handlers.free_obj = php_parle_rlexer_obj_destroy;
 
-	INIT_CLASS_ENTRY(ce, "RLexer", ParleRLexer_methods);
+	INIT_CLASS_ENTRY(ce, "Parle\\RLexer", ParleRLexer_methods);
 	ce.create_object = php_parle_rlexer_object_init;
 	ParleRLexer_ce = zend_register_internal_class_ex(&ce, ParleLexer_ce);
 
@@ -1411,7 +1411,7 @@ PHP_MINIT_FUNCTION(parle)
 	parle_parser_handlers.offset = XtOffsetOf(struct ze_parle_parser_obj, zo);
 	parle_parser_handlers.free_obj = php_parle_parser_obj_destroy;
 
-	INIT_CLASS_ENTRY(ce, "Parser", ParleParser_methods);
+	INIT_CLASS_ENTRY(ce, "Parle\\Parser", ParleParser_methods);
 	ce.create_object = php_parle_parser_object_init;
 	ParleParser_ce = zend_register_internal_class(&ce);
 #define DECL_FROM_ENUM(name, val) zend_declare_class_constant_long(ParleParser_ce, name, sizeof(name) - 1, val);
@@ -1430,13 +1430,13 @@ PHP_MINIT_FUNCTION(parle)
 	parle_parser_stack_handlers.offset = XtOffsetOf(struct ze_parle_parser_stack_obj, zo);
 	parle_parser_stack_handlers.free_obj = php_parle_parser_stack_obj_destroy;
 
-	INIT_CLASS_ENTRY(ce, "ParserStack", ParleParserStack_methods);
+	INIT_CLASS_ENTRY(ce, "Parle\\ParserStack", ParleParserStack_methods);
 	ce.create_object = php_parle_parser_stack_object_init;
 	ParleParserStack_ce = zend_register_internal_class(&ce);
 
-	INIT_CLASS_ENTRY(ce, "LexerException", NULL);
+	INIT_CLASS_ENTRY(ce, "Parle\\LexerException", NULL);
 	ParleLexerException_ce = zend_register_internal_class_ex(&ce, zend_exception_get_default());
-	INIT_CLASS_ENTRY(ce, "ParserException", NULL);
+	INIT_CLASS_ENTRY(ce, "Parle\\ParserException", NULL);
 	ParleParserException_ce = zend_register_internal_class_ex(&ce, zend_exception_get_default());
 
 	return SUCCESS;
