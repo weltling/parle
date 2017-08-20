@@ -333,12 +333,14 @@ _lexer_token(INTERNAL_FUNCTION_PARAMETERS, zend_class_entry *ce) noexcept
 
 	try {
 		array_init(return_value);
+		std::string ret = zplo->results->str();
 		add_assoc_long_ex(return_value, "id", sizeof("id")-1, static_cast<zend_long>(zplo->results->id));
 #if PHP_MAJOR_VERSION >= 7 && PHP_MINOR_VERSION >= 2
-		add_assoc_stringl_ex(return_value, "token", sizeof("token")-1, zplo->results->str().c_str(), zplo->results->str().size());
+		add_assoc_stringl_ex(return_value, "token", sizeof("token")-1, ret.c_str(), ret.size());
 #else
-		add_assoc_stringl_ex(return_value, "token", sizeof("token")-1, (char *)zplo->results->str().c_str(), zplo->results->str().size());
+		add_assoc_stringl_ex(return_value, "token", sizeof("token")-1, (char *)ret.c_str(), ret.size());
 #endif
+		//add_assoc_long(return_value, "offset", zplo->results->first - zplo->in->begin());
 
 	} catch (const std::exception &e) {
 		zend_throw_exception(ParleLexerException_ce, e.what(), 0);
