@@ -291,7 +291,7 @@ PHP_METHOD(ParleRLexer, consume)
 }
 /* }}} */
 
-/* {{{ public void RLexer::pushState(string $s) */
+/* {{{ public int RLexer::pushState(string $s) */
 PHP_METHOD(ParleRLexer, pushState)
 {
 	struct ze_parle_rlexer_obj *zplo;
@@ -311,7 +311,7 @@ PHP_METHOD(ParleRLexer, pushState)
 	}
 
 	try {
-		zplo->rules->push_state(state);
+		RETURN_LONG(zplo->rules->push_state(state));
 	} catch (const std::exception &e) {
 		zend_throw_exception(ParleLexerException_ce, e.what(), 0);
 	}
