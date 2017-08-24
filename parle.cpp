@@ -318,6 +318,22 @@ PHP_METHOD(ParleRLexer, pushState)
 }
 /* }}} */
 
+/* {{{ public int RLexer::state(void) */
+PHP_METHOD(ParleRLexer, state)
+{
+	struct ze_parle_rlexer_obj *zplo;
+	zval *me;
+
+	if(zend_parse_method_parameters(ZEND_NUM_ARGS(), getThis(), "O", &me, ParleRLexer_ce) == FAILURE) {
+		return;
+	}
+
+	zplo = php_parle_rlexer_fetch_obj(Z_OBJ_P(me));
+
+	RETURN_LONG(static_cast<zend_long>(zplo->results->state));
+}
+/* }}} */
+
 template<typename lexer_obj_type> void
 _lexer_token(INTERNAL_FUNCTION_PARAMETERS, zend_class_entry *ce) noexcept
 {/*{{{*/
@@ -344,6 +360,7 @@ _lexer_token(INTERNAL_FUNCTION_PARAMETERS, zend_class_entry *ce) noexcept
 		add_assoc_stringl_ex(return_value, "token", sizeof("token")-1, (char *)ret.c_str(), ret.size());
 #endif
 		add_assoc_long(return_value, "offset", zplo->results->first - zplo->in->begin());
+//		add_assoc_long(return_value, "state", zplo->results->state);
 
 	} catch (const std::exception &e) {
 		zend_throw_exception(ParleLexerException_ce, e.what(), 0);
@@ -1192,6 +1209,7 @@ const zend_function_entry ParleRLexer_methods[] = {
 	PHP_ME(ParleRLexer, bol, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(ParleRLexer, restart, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(ParleRLexer, pushState, NULL, ZEND_ACC_PUBLIC)
+	PHP_ME(ParleRLexer, state, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(ParleRLexer, insertMacro, NULL, ZEND_ACC_PUBLIC)
 	PHP_FE_END
 };
