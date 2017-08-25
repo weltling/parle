@@ -6,7 +6,7 @@ Advanced calc with state
 <?php 
 
 use Parle\Parser;
-use Parle\ParserStack;
+use Parle\Stack;
 use Parle\ParserException;
 use Parle\RLexer;
 
@@ -58,7 +58,7 @@ foreach ($exp as $in) {
 	$p->consume($in, $lex);
 
 	$act = $p->action();
-	$stack = new ParserStack;
+	$stack = new Stack;
 
 	while (Parser::ACTION_ERROR != $act && Parser::ACTION_ACCEPT != $act) {
 		switch ($act) {
