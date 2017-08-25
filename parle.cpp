@@ -357,7 +357,7 @@ _lexer_token(INTERNAL_FUNCTION_PARAMETERS, zend_class_entry *ce) noexcept
 		array_init(return_value);
 		std::string ret = zplo->results->str();
 		add_assoc_long_ex(return_value, "id", sizeof("id")-1, static_cast<zend_long>(zplo->results->id));
-#if PHP_MAJOR_VERSION >= 7 && PHP_MINOR_VERSION >= 2
+#if PHP_MAJOR_VERSION > 7 || PHP_MAJOR_VERSION >= 7 && PHP_MINOR_VERSION >= 2
 		add_assoc_stringl_ex(return_value, "token", sizeof("token")-1, ret.c_str(), ret.size());
 #else
 		add_assoc_stringl_ex(return_value, "token", sizeof("token")-1, (char *)ret.c_str(), ret.size());
@@ -1205,7 +1205,7 @@ PHP_METHOD(ParleStack, size)
 }
 /* }}} */
 
-/* {{{ public mixed Stack::top(void) */
+/* {{{ public mixed Stack::top([mixed $val]) */
 PHP_METHOD(ParleStack, top)
 {
 	struct ze_parle_stack_obj *zpso;
@@ -1244,6 +1244,35 @@ PHP_METHOD(ParleStack, top)
 		ZVAL_COPY(return_value, zpso->stack->top());
 	}
 }
+/* }}} */
+
+/* {{{ Arginfo
+ */
+#if PHP_MAJOR_VERSION >= 7 && PHP_MINOR_VERSION < 2
+ZEND_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(arginfo_parle_stack_empty, 0, 0, _IS_BOOL, NULL, 0)
+#elif PHP_MAJOR_VERSION >= 7
+ZEND_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(arginfo_parle_stack_empty, 0, 0, _IS_BOOL, 0)
+#endif
+ZEND_END_ARG_INFO();
+
+ZEND_BEGIN_ARG_INFO_EX(arginfo_parle_stack_pop, 0, 0, 0)
+ZEND_END_ARG_INFO();
+
+ZEND_BEGIN_ARG_INFO_EX(arginfo_parle_stack_push, 0, 0, 1)
+	ZEND_ARG_INFO(0, item)
+ZEND_END_ARG_INFO();
+
+#if PHP_MAJOR_VERSION >= 7 && PHP_MINOR_VERSION < 2
+ZEND_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(arginfo_parle_stack_size, 0, 0, IS_LONG, NULL, 0)
+#elif PHP_MAJOR_VERSION >= 7
+ZEND_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(arginfo_parle_stack_size, 0, 0, IS_LONG, 0)
+#endif
+ZEND_END_ARG_INFO();
+
+ZEND_BEGIN_ARG_INFO_EX(arginfo_parle_stack_top, 0, 0, 0)
+	ZEND_ARG_INFO(0, new_top)
+ZEND_END_ARG_INFO();
+
 /* }}} */
 
 /* {{{ Method and function entries
@@ -1307,11 +1336,11 @@ const zend_function_entry ParleParser_methods[] = {
 };
 
 const zend_function_entry ParleStack_methods[] = {
-	PHP_ME(ParleStack, empty, NULL, ZEND_ACC_PUBLIC)
-	PHP_ME(ParleStack, pop, NULL, ZEND_ACC_PUBLIC)
-	PHP_ME(ParleStack, push, NULL, ZEND_ACC_PUBLIC)
-	PHP_ME(ParleStack, size, NULL, ZEND_ACC_PUBLIC)
-	PHP_ME(ParleStack, top, NULL, ZEND_ACC_PUBLIC)
+	PHP_ME(ParleStack, empty, arginfo_parle_stack_empty, ZEND_ACC_PUBLIC)
+	PHP_ME(ParleStack, pop, arginfo_parle_stack_pop, ZEND_ACC_PUBLIC)
+	PHP_ME(ParleStack, push, arginfo_parle_stack_push, ZEND_ACC_PUBLIC)
+	PHP_ME(ParleStack, size, arginfo_parle_stack_size, ZEND_ACC_PUBLIC)
+	PHP_ME(ParleStack, top, arginfo_parle_stack_top, ZEND_ACC_PUBLIC)
 	PHP_FE_END
 };
 /* }}} */
