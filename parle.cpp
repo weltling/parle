@@ -39,6 +39,8 @@
 #include "lexertl/generator.hpp"
 #include "lexertl/lookup.hpp"
 #include "lexertl/iterator.hpp"
+#include "lexertl/debug.hpp"
+
 #include "parsertl/generator.hpp"
 #include "parsertl/lookup.hpp"
 #include "parsertl/state_machine.hpp"
@@ -645,6 +647,42 @@ PHP_METHOD(ParleRLexer, insertMacro)
 }
 /* }}} */
 
+template<typename lexer_obj_type> void
+_lexer_dump(INTERNAL_FUNCTION_PARAMETERS, zend_class_entry *ce) noexcept
+{/*{{{*/
+	lexer_obj_type *zplo;
+	zval *me;
+
+	if(zend_parse_method_parameters(ZEND_NUM_ARGS(), getThis(), "O", &me, ce) == FAILURE) {
+		return;
+	}
+
+	zplo = _php_parle_lexer_fetch_zobj<lexer_obj_type>(Z_OBJ_P(me));
+
+	try {
+		/* XXX std::cout might be not thread safe, need to gather the right
+			descriptor from the SAPI and convert to a usable stream. */
+		lexertl::debug::dump(*zplo->sm, *zplo->rules, std::cout);
+	} catch (const std::exception &e) {
+		zend_throw_exception(ParleLexerException_ce, e.what(), 0);
+	}
+}
+/* }}} */
+
+/* {{{ public void Lexer::dump(void) */
+PHP_METHOD(ParleLexer, dump)
+{
+	_lexer_dump<struct ze_parle_lexer_obj>(INTERNAL_FUNCTION_PARAM_PASSTHRU, ParleLexer_ce);
+}
+/* }}} */
+
+/* {{{ public void RLexer::dump(void) */
+PHP_METHOD(ParleRLexer, dump)
+{
+	_lexer_dump<struct ze_parle_rlexer_obj>(INTERNAL_FUNCTION_PARAM_PASSTHRU, ParleRLexer_ce);
+}
+/* }}} */
+
 /* {{{ public void Parser::__construct(void) */
 PHP_METHOD(ParleParser, __construct)
 {
@@ -1194,6 +1232,7 @@ const zend_function_entry ParleLexer_methods[] = {
 	PHP_ME(ParleLexer, bol, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(ParleLexer, restart, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(ParleLexer, insertMacro, NULL, ZEND_ACC_PUBLIC)
+	PHP_ME(ParleLexer, dump, NULL, ZEND_ACC_PUBLIC)
 	PHP_FE_END
 };
 
@@ -1211,6 +1250,7 @@ const zend_function_entry ParleRLexer_methods[] = {
 	PHP_ME(ParleRLexer, pushState, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(ParleRLexer, state, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(ParleRLexer, insertMacro, NULL, ZEND_ACC_PUBLIC)
+	PHP_ME(ParleRLexer, dump, NULL, ZEND_ACC_PUBLIC)
 	PHP_FE_END
 };
 
