@@ -46,6 +46,7 @@
 #include "parsertl/state_machine.hpp"
 #include "parsertl/parse.hpp"
 #include "parsertl/token.hpp"
+#include "parsertl/debug.hpp"
 //#include "variant.hpp"
 
 #include "php.h"
@@ -659,6 +660,11 @@ _lexer_dump(INTERNAL_FUNCTION_PARAMETERS, zend_class_entry *ce) noexcept
 
 	zplo = _php_parle_lexer_fetch_zobj<lexer_obj_type>(Z_OBJ_P(me));
 
+	if (!zplo->complete) {
+		zend_throw_exception(ParleLexerException_ce, "Lexer state machine is not ready", 0);
+		return;
+	}
+
 	try {
 		/* XXX std::cout might be not thread safe, need to gather the right
 			descriptor from the SAPI and convert to a usable stream. */
@@ -1053,7 +1059,7 @@ PHP_METHOD(ParleParser, advance)
 }
 /* }}} */
 
-/* {{{ public void Parser::consume(string $s) */
+/* {{{ public void Parser::consume(string $s, Lexer $lex) */
 PHP_METHOD(ParleParser, consume)
 {
 	struct ze_parle_parser_obj *zppo;
@@ -1096,6 +1102,31 @@ PHP_METHOD(ParleParser, consume)
 }
 /* }}} */
 
+/* {{{ public void Parser::dump(void) */
+PHP_METHOD(ParleParser, dump)
+{
+	struct ze_parle_parser_obj *zppo;
+	zval *me;
+
+	if(zend_parse_method_parameters(ZEND_NUM_ARGS(), getThis(), "O", &me, ParleParser_ce) == FAILURE) {
+		return;
+	}
+
+	zppo = php_parle_parser_fetch_obj(Z_OBJ_P(me));
+
+	if (!zppo->complete) {
+		zend_throw_exception(ParleParserException_ce, "Parser state machine is not ready", 0);
+		return;
+	}
+
+	try {
+		/* XXX See comment in _lexer_dump(). */
+		parsertl::debug::dump(*zppo->rules, std::cout);
+	} catch (const std::exception &e) {
+		zend_throw_exception(ParleLexerException_ce, e.what(), 0);
+	}
+}
+/* }}} */
 /* {{{ public bool ParserStack::empty(void) */
 PHP_METHOD(ParleParserStack, empty)
 {
@@ -1270,6 +1301,7 @@ const zend_function_entry ParleParser_methods[] = {
 	PHP_ME(ParleParser, dollar, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(ParleParser, advance, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(ParleParser, consume, NULL, ZEND_ACC_PUBLIC)
+	PHP_ME(ParleParser, dump, NULL, ZEND_ACC_PUBLIC)
 	PHP_FE_END
 };
 
