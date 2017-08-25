@@ -1127,6 +1127,7 @@ PHP_METHOD(ParleParser, dump)
 	}
 }
 /* }}} */
+
 /* {{{ public bool ParserStack::empty(void) */
 PHP_METHOD(ParleParserStack, empty)
 {
