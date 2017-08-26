@@ -996,7 +996,7 @@ PHP_METHOD(ParleParser, action)
 }
 /* }}} */
 
-/* {{{ public int Parser::dollar(int $idx) */
+/* {{{ public string Parser::dollar(int $idx) */
 PHP_METHOD(ParleParser, dollar)
 {
 	struct ze_parle_parser_obj *zppo;
@@ -1248,6 +1248,85 @@ PHP_METHOD(ParleStack, top)
 
 /* {{{ Arginfo
  */
+ZEND_BEGIN_ARG_INFO_EX(arginfo_parle_parser_token, 0, 0, 1)
+	ZEND_ARG_TYPE_INFO(0, tok, IS_STRING, 0)
+ZEND_END_ARG_INFO();
+
+ZEND_BEGIN_ARG_INFO_EX(arginfo_parle_parser_left, 0, 0, 1)
+	ZEND_ARG_TYPE_INFO(0, tok, IS_STRING, 0)
+ZEND_END_ARG_INFO();
+
+ZEND_BEGIN_ARG_INFO_EX(arginfo_parle_parser_right, 0, 0, 1)
+	ZEND_ARG_TYPE_INFO(0, tok, IS_STRING, 0)
+ZEND_END_ARG_INFO();
+
+ZEND_BEGIN_ARG_INFO_EX(arginfo_parle_parser_nonassoc, 0, 0, 1)
+	ZEND_ARG_TYPE_INFO(0, tok, IS_STRING, 0)
+ZEND_END_ARG_INFO();
+
+ZEND_BEGIN_ARG_INFO_EX(arginfo_parle_parser_precedence, 0, 0, 1)
+	ZEND_ARG_TYPE_INFO(0, tok, IS_STRING, 0)
+ZEND_END_ARG_INFO();
+
+ZEND_BEGIN_ARG_INFO_EX(arginfo_parle_parser_build, 0, 0, 0)
+ZEND_END_ARG_INFO();
+
+#if PHP_MAJOR_VERSION >= 7 && PHP_MINOR_VERSION < 2
+ZEND_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(arginfo_parle_parser_push, 0, 1, IS_LONG, NULL, 0)
+#elif PHP_MAJOR_VERSION >= 7
+ZEND_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(arginfo_parle_parser_push, 0, 1, IS_LONG, 0)
+#endif
+	ZEND_ARG_TYPE_INFO(0, tok, IS_STRING, 0)
+ZEND_END_ARG_INFO();
+
+#if PHP_MAJOR_VERSION >= 7 && PHP_MINOR_VERSION < 2
+ZEND_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(arginfo_parle_parser_validate, 0, 0, _IS_BOOL, NULL, 0)
+#elif PHP_MAJOR_VERSION >= 7
+ZEND_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(arginfo_parle_parser_validate, 0, 0, _IS_BOOL, 0)
+#endif
+ZEND_END_ARG_INFO();
+
+#if PHP_MAJOR_VERSION >= 7 && PHP_MINOR_VERSION < 2
+ZEND_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(arginfo_parle_parser_tokenid, 0, 1, IS_LONG, NULL, 0)
+#elif PHP_MAJOR_VERSION >= 7
+ZEND_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(arginfo_parle_parser_tokenid, 0, 1, IS_LONG, 0)
+#endif
+	ZEND_ARG_TYPE_INFO(0, tok, IS_STRING, 0)
+ZEND_END_ARG_INFO();
+
+#if PHP_MAJOR_VERSION >= 7 && PHP_MINOR_VERSION < 2
+ZEND_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(arginfo_parle_parser_reduceid, 0, 0, IS_LONG, NULL, 0)
+#elif PHP_MAJOR_VERSION >= 7
+ZEND_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(arginfo_parle_parser_reduceid, 0, 0, IS_LONG, 0)
+#endif
+ZEND_END_ARG_INFO();
+
+#if PHP_MAJOR_VERSION >= 7 && PHP_MINOR_VERSION < 2
+ZEND_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(arginfo_parle_parser_action, 0, 0, IS_LONG, NULL, 0)
+#elif PHP_MAJOR_VERSION >= 7
+ZEND_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(arginfo_parle_parser_action, 0, 0, IS_LONG, 0)
+#endif
+ZEND_END_ARG_INFO();
+
+#if PHP_MAJOR_VERSION >= 7 && PHP_MINOR_VERSION < 2
+ZEND_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(arginfo_parle_parser_dollar, 0, 0, IS_STRING, NULL, 0)
+#elif PHP_MAJOR_VERSION >= 7
+ZEND_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(arginfo_parle_parser_dollar, 0, 0, IS_STRING, 0)
+#endif
+	ZEND_ARG_TYPE_INFO(0, idx, IS_LONG, 0)
+ZEND_END_ARG_INFO();
+
+ZEND_BEGIN_ARG_INFO_EX(arginfo_parle_parser_advance, 0, 0, 0)
+ZEND_END_ARG_INFO();
+
+ZEND_BEGIN_ARG_INFO_EX(arginfo_parle_parser_consume, 0, 0, 2)
+	ZEND_ARG_TYPE_INFO(0, data, IS_STRING, 0)
+	ZEND_ARG_OBJ_INFO(0, lexer, "Parle\Lexer", 0)
+ZEND_END_ARG_INFO();
+
+ZEND_BEGIN_ARG_INFO_EX(arginfo_parle_parser_dump, 0, 0, 0)
+ZEND_END_ARG_INFO();
+
 #if PHP_MAJOR_VERSION >= 7 && PHP_MINOR_VERSION < 2
 ZEND_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(arginfo_parle_stack_empty, 0, 0, _IS_BOOL, NULL, 0)
 #elif PHP_MAJOR_VERSION >= 7
@@ -1317,21 +1396,21 @@ const zend_function_entry ParleRLexer_methods[] = {
 
 const zend_function_entry ParleParser_methods[] = {
 	PHP_ME(ParleParser, __construct, NULL, ZEND_ACC_PUBLIC)
-	PHP_ME(ParleParser, token, NULL, ZEND_ACC_PUBLIC)
-	PHP_ME(ParleParser, left, NULL, ZEND_ACC_PUBLIC)
-	PHP_ME(ParleParser, right, NULL, ZEND_ACC_PUBLIC)
-	PHP_ME(ParleParser, nonassoc, NULL, ZEND_ACC_PUBLIC)
-	PHP_ME(ParleParser, precedence, NULL, ZEND_ACC_PUBLIC)
-	PHP_ME(ParleParser, build, NULL, ZEND_ACC_PUBLIC)
-	PHP_ME(ParleParser, push, NULL, ZEND_ACC_PUBLIC)
-	PHP_ME(ParleParser, validate, NULL, ZEND_ACC_PUBLIC)
-	PHP_ME(ParleParser, tokenId, NULL, ZEND_ACC_PUBLIC)
-	PHP_ME(ParleParser, reduceId, NULL, ZEND_ACC_PUBLIC)
-	PHP_ME(ParleParser, action, NULL, ZEND_ACC_PUBLIC)
-	PHP_ME(ParleParser, dollar, NULL, ZEND_ACC_PUBLIC)
-	PHP_ME(ParleParser, advance, NULL, ZEND_ACC_PUBLIC)
-	PHP_ME(ParleParser, consume, NULL, ZEND_ACC_PUBLIC)
-	PHP_ME(ParleParser, dump, NULL, ZEND_ACC_PUBLIC)
+	PHP_ME(ParleParser, token, arginfo_parle_parser_token, ZEND_ACC_PUBLIC)
+	PHP_ME(ParleParser, left, arginfo_parle_parser_left, ZEND_ACC_PUBLIC)
+	PHP_ME(ParleParser, right, arginfo_parle_parser_right, ZEND_ACC_PUBLIC)
+	PHP_ME(ParleParser, nonassoc, arginfo_parle_parser_nonassoc, ZEND_ACC_PUBLIC)
+	PHP_ME(ParleParser, precedence, arginfo_parle_parser_precedence, ZEND_ACC_PUBLIC)
+	PHP_ME(ParleParser, build, arginfo_parle_parser_build, ZEND_ACC_PUBLIC)
+	PHP_ME(ParleParser, push, arginfo_parle_parser_push, ZEND_ACC_PUBLIC)
+	PHP_ME(ParleParser, validate, arginfo_parle_parser_validate, ZEND_ACC_PUBLIC)
+	PHP_ME(ParleParser, tokenId, arginfo_parle_parser_tokenid, ZEND_ACC_PUBLIC)
+	PHP_ME(ParleParser, reduceId, arginfo_parle_parser_reduceid, ZEND_ACC_PUBLIC)
+	PHP_ME(ParleParser, action, arginfo_parle_parser_action, ZEND_ACC_PUBLIC)
+	PHP_ME(ParleParser, dollar, arginfo_parle_parser_dollar, ZEND_ACC_PUBLIC)
+	PHP_ME(ParleParser, advance, arginfo_parle_parser_advance, ZEND_ACC_PUBLIC)
+	PHP_ME(ParleParser, consume, arginfo_parle_parser_consume, ZEND_ACC_PUBLIC)
+	PHP_ME(ParleParser, dump, arginfo_parle_parser_dump, ZEND_ACC_PUBLIC)
 	PHP_FE_END
 };
 
