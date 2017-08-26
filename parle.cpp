@@ -853,7 +853,7 @@ PHP_METHOD(ParleParser, build)
 }
 /* }}} */
 
-/* {{{ public int Parser::push(string $token) */
+/* {{{ public int Parser::push(string $name, string $rule) */
 PHP_METHOD(ParleParser, push)
 {
 	struct ze_parle_parser_obj *zppo;
@@ -1319,8 +1319,9 @@ ZEND_END_ARG_INFO();
 ZEND_BEGIN_ARG_INFO_EX(arginfo_parle_parser_build, 0, 0, 0)
 ZEND_END_ARG_INFO();
 
-PARLE_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(arginfo_parle_parser_push, 0, 1, IS_LONG, 0)
-	ZEND_ARG_TYPE_INFO(0, tok, IS_STRING, 0)
+PARLE_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(arginfo_parle_parser_push, 0, 2, IS_LONG, 0)
+	ZEND_ARG_TYPE_INFO(0, name, IS_STRING, 0)
+	ZEND_ARG_TYPE_INFO(0, rule, IS_STRING, 0)
 ZEND_END_ARG_INFO();
 
 PARLE_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(arginfo_parle_parser_validate, 0, 0, _IS_BOOL, 0)
