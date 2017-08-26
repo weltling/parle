@@ -18,21 +18,21 @@ namespace details
 {
 template<typename iterator>
 void next(const state_machine &sm_, iterator &iter_, match_results &results_,
-    const std::set<std::size_t> &prod_set_, iterator &last_eoi_,
-    match_results &last_results_, bool &hit_);
+    std::set<std::size_t> &prod_set_, iterator &last_eoi_,
+    match_results &last_results_);
 template<typename iterator, typename token_vector>
 void next(const state_machine &sm_, iterator &iter_, match_results &results_,
-    const std::set<std::size_t> &prod_set_, iterator &last_eoi_,
-    match_results &last_results_, bool &hit_, token_vector &productions_);
+    std::set<std::size_t> &prod_set_, iterator &last_eoi_,
+    match_results &last_results_, token_vector &productions_);
 template<typename iterator>
 bool parse(const state_machine &sm_, iterator &iter_, match_results &results_,
-    const std::set<std::size_t> &prod_set_, bool &hit_);
+    std::set<std::size_t> &prod_set_);
 }
 
 // Equivalent of std::search().
 template<typename iterator>
 bool search(const state_machine &sm_, iterator &iter_, iterator &end_,
-    const std::set<std::size_t> &prod_set_)
+    std::set<std::size_t> &prod_set_)
 {
     bool hit_ = false;
     iterator curr_ = iter_;
@@ -44,36 +44,38 @@ bool search(const state_machine &sm_, iterator &iter_, iterator &end_,
 
     while (curr_ != end_)
     {
+        prod_set_.clear();
         results_.reset(curr_->id, sm_);
 
         while (results_.entry.action != accept &&
             results_.entry.action != error)
         {
             details::next(sm_, curr_, results_, prod_set_, last_eoi_,
-                last_results_, hit_);
+                last_results_);
         }
 
-        if (results_.entry.action == accept)
+        hit_ = results_.entry.action == accept;
+
+        if (hit_)
         {
             end_ = curr_;
-            hit_ |= prod_set_.empty();
             break;
         }
         else if (last_eoi_->id != 0)
         {
             iterator eoi_;
 
-            if (details::parse(sm_, eoi_, last_results_, prod_set_, hit_))
+            hit_ = details::parse(sm_, eoi_, last_results_, prod_set_);
+
+            if (hit_)
             {
                 end_ = last_eoi_;
-                hit_ |= prod_set_.empty();
                 break;
             }
         }
 
         ++iter_;
         curr_ = iter_;
-        hit_ = false;
     }
 
     return hit_;
@@ -81,7 +83,7 @@ bool search(const state_machine &sm_, iterator &iter_, iterator &end_,
 
 template<typename iterator, typename token_vector>
 bool search(const state_machine &sm_, iterator &iter_, iterator &end_,
-    const std::set<std::size_t> &prod_set_, token_vector &productions_)
+    std::set<std::size_t> &prod_set_, token_vector &productions_)
 {
     bool hit_ = false;
     iterator curr_ = iter_;
@@ -93,36 +95,38 @@ bool search(const state_machine &sm_, iterator &iter_, iterator &end_,
 
     while (curr_ != end_)
     {
+        prod_set_.clear();
         results_.reset(curr_->id, sm_);
 
         while (results_.entry.action != accept &&
             results_.entry.action != error)
         {
             details::next(sm_, curr_, results_, prod_set_, last_eoi_,
-                last_results_, hit_, productions_);
+                last_results_, productions_);
         }
 
-        if (results_.entry.action == accept)
+        hit_ = results_.entry.action == accept;
+
+        if (hit_)
         {
             end_ = curr_;
-            hit_ |= prod_set_.empty();
             break;
         }
         else if (last_eoi_->id != 0)
         {
             iterator eoi_;
 
-            if (details::parse(sm_, eoi_, last_results_, prod_set_, hit_))
+            hit_ = details::parse(sm_, eoi_, last_results_, prod_set_);
+
+            if (hit_)
             {
                 end_ = last_eoi_;
-                hit_ |= prod_set_.empty();
                 break;
             }
         }
 
         ++iter_;
         curr_ = iter_;
-        hit_ = false;
     }
 
     return hit_;
@@ -132,8 +136,8 @@ namespace details
 {
 template<typename iterator>
 void next(const state_machine &sm_, iterator &iter_, match_results &results_,
-    const std::set<std::size_t> &prod_set_, iterator &last_eoi_,
-    match_results &last_results_, bool &hit_)
+    std::set<std::size_t> &prod_set_, iterator &last_eoi_,
+    match_results &last_results_)
 {
     switch (results_.entry.action)
     {
@@ -178,8 +182,7 @@ void next(const state_machine &sm_, iterator &iter_, match_results &results_,
             sm_._rules[results_.entry.param].second.size();
         token<iterator> token_;
 
-        hit_ |= prod_set_.find(results_.entry.param) !=
-            prod_set_.end();
+        prod_set_.insert(results_.entry.param);
 
         if (size_)
         {
@@ -219,8 +222,8 @@ void next(const state_machine &sm_, iterator &iter_, match_results &results_,
 
 template<typename iterator, typename token_vector>
 void next(const state_machine &sm_, iterator &iter_, match_results &results_,
-    const std::set<std::size_t> &prod_set_, iterator &last_eoi_,
-    match_results &last_results_, bool &hit_, token_vector &productions_)
+    std::set<std::size_t> &prod_set_, iterator &last_eoi_,
+    match_results &last_results_, token_vector &productions_)
 {
     switch (results_.entry.action)
     {
@@ -267,8 +270,7 @@ void next(const state_machine &sm_, iterator &iter_, match_results &results_,
             sm_._rules[results_.entry.param].second.size();
         token<iterator> token_;
 
-        hit_ |= prod_set_.find(results_.entry.param) !=
-            prod_set_.end();
+        prod_set_.insert(results_.entry.param);
 
         if (size_)
         {
@@ -312,7 +314,7 @@ void next(const state_machine &sm_, iterator &iter_, match_results &results_,
 
 template<typename iterator>
 bool parse(const state_machine &sm_, iterator &iter_, match_results &results_,
-    const std::set<std::size_t> &prod_set_, bool &hit_)
+    std::set<std::size_t> &prod_set_)
 {
     while (results_.entry.action != error)
     {
@@ -347,8 +349,7 @@ bool parse(const state_machine &sm_, iterator &iter_, match_results &results_,
             const std::size_t size_ =
                 sm_._rules[results_.entry.param].second.size();
 
-            hit_ |= prod_set_.find(results_.entry.param) !=
-                prod_set_.end();
+            prod_set_.insert(results_.entry.param);
 
             if (size_)
             {

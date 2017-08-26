@@ -21,6 +21,7 @@ struct dfa_state
     size_t_pair_vector _transitions;
 };
 
+// Must be deque due to iterator usage in basic_generator::build_dfa().
 using dfa = std::deque<dfa_state>;
 }
 

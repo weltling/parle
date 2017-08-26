@@ -97,17 +97,15 @@ public:
 
                 while (index_ != ~0)
                 {
-                    if (lhs_iter_->_rhs.empty())
+                    if (lhs_iter_->_rhs.first.empty())
                     {
                         stream_ << ' ';
                         empty(stream_);
                     }
                     else
                     {
-                        typename symbol_vector::const_iterator rhs_iter_ =
-                            lhs_iter_->_rhs.begin();
-                        typename symbol_vector::const_iterator rhs_end_ =
-                            lhs_iter_->_rhs.end();
+                        auto rhs_iter_ = lhs_iter_->_rhs.first.cbegin();
+                        auto rhs_end_ = lhs_iter_->_rhs.first.cend();
 
                         for (; rhs_iter_ != rhs_end_; ++rhs_iter_)
                         {
@@ -116,8 +114,19 @@ public:
                                 rhs_iter_->_id :
                                 terminals_ + rhs_iter_->_id;
 
-                            stream_ << ' ' << symbols_[id_];
+                            // Don't dump '$'
+                            if (id_ > 0)
+                            {
+                                stream_ << ' ' << symbols_[id_];
+                            }
                         }
+                    }
+
+                    if (!lhs_iter_->_rhs.second.empty())
+                    {
+                        stream_ << ' ';
+                        prec(stream_);
+                        stream_ << lhs_iter_->_rhs.second;
                     }
 
                     index_ = lhs_iter_->_next_lhs;
@@ -214,7 +223,6 @@ private:
     using string = std::basic_string<char_type>;
     using string_vector = typename rules::string_vector;
     using symbol = typename rules::symbol;
-    using symbol_vector = typename rules::symbol_vector;
     using token_prec_assoc =
         std::pair<std::size_t, typename rules::token_info::associativity>;
     using token_info = typename rules::token_info;
@@ -250,6 +258,16 @@ private:
     static void nonassoc(std::wostream &stream_)
     {
         stream_ << L"%nonassoc ";
+    }
+
+    static void prec(std::ostream &stream_)
+    {
+        stream_ << "%prec ";
+    }
+
+    static void prec(std::wostream &stream_)
+    {
+        stream_ << L"%prec ";
     }
 
     static void precedence(std::ostream &stream_)

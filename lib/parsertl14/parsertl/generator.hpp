@@ -46,14 +46,14 @@ public:
         }
     };
 
-    using prod_deque = std::deque<prod>;
+    using prod_vector = std::vector<prod>;
     using string = typename rules::string;
 
     static void build(rules &rules_, state_machine &sm_,
         std::string *warnings_ = 0)
     {
         dfa dfa_;
-        prod_deque new_grammar_;
+        prod_vector new_grammar_;
         std::size_t new_start_ = static_cast<std::size_t>(~0);
         rules new_rules_;
         nt_info_vector new_nt_info_;
@@ -100,7 +100,7 @@ public:
         {
             dfa_state &state_ = dfa_[s_];
             size_t_vector symbols_;
-            using item_sets = std::deque<size_t_pair_vector>;
+            using item_sets = std::vector<size_t_pair_vector>;
             item_sets item_sets_;
 
             state_._closure.assign(state_._basis.begin(), state_._basis.end());
@@ -110,9 +110,9 @@ public:
             {
                 const production p_ = grammar_[pair_.first];
 
-                if (pair_.second < p_._rhs.size())
+                if (pair_.second < p_._rhs.first.size())
                 {
-                    const symbol &symbol_ = p_._rhs[pair_.second];
+                    const symbol &symbol_ = p_._rhs.first[pair_.second];
                     const std::size_t id_ = symbol_._type == symbol::TERMINAL ?
                         symbol_._id : terminals_ + symbol_._id;
                     typename size_t_vector::const_iterator sym_iter_ =
@@ -155,7 +155,7 @@ public:
     }
 
     static void rewrite(const rules &rules_, dfa &dfa_,
-        prod_deque &new_grammar_, std::size_t &new_start_,
+        prod_vector &new_grammar_, std::size_t &new_start_,
         nt_info_vector &new_nt_info_)
     {
         using trie = std::pair<std::size_t, size_t_pair>;
@@ -228,15 +228,15 @@ public:
 
                 std::size_t index_ = sidx_;
 
-                if (production_._rhs.empty())
+                if (production_._rhs.first.empty())
                 {
                     prod_._rhs_indexes.push_back(size_t_pair(sidx_, sidx_));
                 }
 
-                for (std::size_t ridx_ = 0, rsize_ = production_._rhs.size();
-                    ridx_ != rsize_; ++ridx_)
+                for (std::size_t ridx_ = 0, rsize_ = production_._rhs.
+                    first.size(); ridx_ != rsize_; ++ridx_)
                 {
-                    const symbol &symbol_ = production_._rhs[ridx_];
+                    const symbol &symbol_ = production_._rhs.first[ridx_];
                     const dfa_state &st_ = dfa_[index_];
 
                     prod_._rhs_indexes.push_back(size_t_pair(index_, 0));
@@ -290,7 +290,7 @@ public:
 
     // http://www.sqlite.org/src/artifact?ci=trunk&filename=tool/lemon.c
     // FindFirstSets()
-    static void build_first_sets(const prod_deque &grammar_,
+    static void build_first_sets(const prod_vector &grammar_,
         nt_info_vector &nt_info_)
     {
         bool progress_ = true;
@@ -364,7 +364,7 @@ public:
         } while (progress_);
     }
 
-    static void build_follow_sets(const prod_deque &grammar_,
+    static void build_follow_sets(const prod_vector &grammar_,
         nt_info_vector &nt_info_)
     {
         for (;;)
@@ -462,20 +462,16 @@ public:
     }
 
 private:
-    using char_type = typename rules::char_type;
-    using char_vector_deque = std::deque<char_vector>;
     using grammar = typename rules::production_vector;
-    using ostringstream = std::basic_ostringstream<char_type>;
     using size_t_vector = std::vector<std::size_t>;
     using hash_map = std::map<std::size_t, size_t_vector>;
-    using string_size_t_map = typename rules::string_size_t_map;
     using string_vector = typename rules::string_vector;
     using symbol = typename rules::symbol;
     using token_info = typename rules::token_info;
     using token_info_vector = typename rules::token_info_vector;
 
     static void build_table(const rules &rules_, const dfa &dfa_,
-        const prod_deque &new_grammar_, const nt_info_vector &new_nt_info_,
+        const prod_vector &new_grammar_, const nt_info_vector &new_nt_info_,
         state_machine &sm_, std::string *warnings_)
     {
         const grammar &grammar_ = rules_.grammar();
@@ -522,7 +518,7 @@ private:
             {
                 const production &production_ = grammar_[c_.first];
 
-                if (production_._rhs.size() == c_.second)
+                if (production_._rhs.first.size() == c_.second)
                 {
                     char_vector follow_set_(terminals_, 0);
 
@@ -579,7 +575,7 @@ private:
 
             pair_.first = terminals_ + production_._lhs;
 
-            for (const symbol &symbol_ : production_._rhs)
+            for (const auto &symbol_ : production_._rhs.first)
             {
                 if (symbol_._type == symbol::TERMINAL)
                 {
@@ -638,12 +634,12 @@ private:
         {
             const size_t_pair pair_ = state_._closure[c_];
             const production *p_ = &grammar_[pair_.first];
-            const std::size_t rhs_size_ = p_->_rhs.size();
+            const std::size_t rhs_size_ = p_->_rhs.first.size();
 
             if (pair_.second < rhs_size_)
             {
                 // SHIFT
-                const symbol &symbol_ = p_->_rhs[pair_.second];
+                const symbol &symbol_ = p_->_rhs.first[pair_.second];
 
                 if (symbol_._type == symbol::NON_TERMINAL)
                 {
@@ -740,8 +736,6 @@ private:
             typename token_info::associativity lhs_assoc_ =
                 token_info::token;
             std::size_t rhs_prec_ = 0;
-            typename token_info::associativity rhs_assoc_ =
-                token_info::token;
             const token_info *iter_ = &tokens_info_[id_];
 
             if (lhs_.action == shift)
@@ -757,7 +751,6 @@ private:
             if (rhs_.action == shift)
             {
                 rhs_prec_ = iter_->_precedence;
-                rhs_assoc_ = iter_->_associativity;
             }
             else if (rhs_.action == reduce)
             {
@@ -861,8 +854,8 @@ private:
             {
                 const production &production_ = grammar_[c_.first];
 
-                if (production_._rhs.size() > c_.second &&
-                    production_._rhs[c_.second]._id == id_)
+                if (production_._rhs.first.size() > c_.second &&
+                    production_._rhs.first[c_.second]._id == id_)
                 {
                     dump_production(production_, c_.second, terminals_,
                         symbols_, ss_);
@@ -882,8 +875,8 @@ private:
         const std::size_t dot_, const std::size_t terminals_,
         const string_vector &symbols_, std::ostringstream &ss_)
     {
-        auto sym_iter_ = production_._rhs.cbegin();
-        auto sym_end_ = production_._rhs.cend();
+        auto sym_iter_ = production_._rhs.first.cbegin();
+        auto sym_end_ = production_._rhs.first.cend();
         std::size_t index_ = 0;
 
         ss_ << " (";

@@ -22,6 +22,8 @@ struct match_results
         token_id(static_cast<std::size_t>(~0))
     {
         stack.push_back(0);
+        entry.action = error;
+        entry.param = unknown_token;
     }
 
     match_results(const std::size_t token_id_, const state_machine &sm_)

@@ -116,7 +116,7 @@ void read_bison(const char *start_, const char *end_, rules &rules_)
         "[A-Za-z_.][-A-Za-z_.0-9]*", grules_.token_id("NAME"), "PRODUCTIONS");
     // Always skip comments
     lrules_.push("CODE,INITIAL,PREC,PRODUCTIONS",
-        "[/][*](.|\n)*?[*][/]|[/][/].*", lrules_.skip(), ".");
+        "[/][*](.|\n|\r\n)*?[*][/]|[/][/].*", lrules_.skip(), ".");
     // All whitespace in PRODUCTIONS mode is skipped.
     lrules_.push("PREC,PRODUCTIONS", "\\s+", lrules_.skip(), ".");
     lrules_.push("FINISH", "(.|\n)+", lrules_.skip(), "INITIAL");

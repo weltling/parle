@@ -45,21 +45,15 @@ void lookup(const state_machine &sm_, iterator &iter_, match_results &results_)
     {
         const std::size_t size_ =
             sm_._rules[results_.entry.param].second.size();
-        token<iterator> token_;
 
         if (size_)
         {
             results_.stack.resize(results_.stack.size() - size_);
         }
-        else
-        {
-            token_.first = token_.second = iter_->first;
-        }
 
         results_.token_id = sm_._rules[results_.entry.param].first;
         results_.entry = sm_._table[results_.stack.back() * sm_._columns +
             results_.token_id];
-        token_.id = results_.token_id;
         break;
     }
     case go_to:

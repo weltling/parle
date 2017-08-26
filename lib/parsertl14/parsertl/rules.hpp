@@ -67,7 +67,7 @@ public:
     struct production
     {
         std::size_t _lhs;
-        symbol_vector _rhs;
+        std::pair<symbol_vector, string> _rhs;
         std::size_t _precedence;
         std::size_t _index;
         std::size_t _next_lhs;
@@ -83,7 +83,8 @@ public:
         void clear()
         {
             _lhs = static_cast<std::size_t>(~0);
-            _rhs.clear();
+            _rhs.first.clear();
+            _rhs.second.clear();
             _precedence = 0;
             _index = static_cast<std::size_t>(~0);
             _next_lhs = static_cast<std::size_t>(~0);
@@ -141,7 +142,7 @@ public:
         rules_.push("CODE", "[}]", rules_.skip(), "<");
 
         rules_.push("INITIAL", "%empty", rules_.skip(), "EMPTY");
-        rules_.push("INITIAL", "%prec", rules_.skip(), "PREC");
+        rules_.push("INITIAL,EMPTY", "%prec", rules_.skip(), "PREC");
         rules_.push("PREC", "{LITERAL}|{SYMBOL}", PREC, "INITIAL");
         rules_.push("INITIAL,EMPTY", "[|]", OR, "INITIAL");
         rules_.push("INITIAL,CODE,EMPTY,PREC", "[/][*](.|\n)*?[*][/]|[/][/].*",
@@ -269,26 +270,26 @@ public:
         // Validate start rule
         if (start_ >= _nt_locations.size() ||
             _grammar[_nt_locations[start_]._first_production].
-                _rhs.size() != 1)
+                _rhs.first.size() != 1)
         {
             static char_type accept_ [] =
                 { '$', 'a', 'c', 'c', 'e', 'p', 't', 0 };
             string rhs_ = _start;
 
             push_production(accept_, rhs_);
-            _grammar.back()._rhs.push_back
+            _grammar.back()._rhs.first.push_back
                 (symbol(symbol::TERMINAL, insert_terminal(string(1, '$'))));
             _start = accept_;
         }
         else
         {
-            _grammar[_nt_locations[start_]._first_production]._rhs.
+            _grammar[_nt_locations[start_]._first_production]._rhs.first.
                 push_back(symbol(symbol::TERMINAL,
                     insert_terminal(string(1, '$'))));
 
             for (const auto &p_ : _grammar)
             {
-                for (const auto &s_ : p_._rhs)
+                for (const auto &s_ : p_._rhs.first)
                 {
                     if (s_._type == symbol::NON_TERMINAL && s_._id == start_)
                     {
@@ -525,7 +526,8 @@ private:
                 token_info &token_info_ = info(id_);
 
                 production_._precedence = token_info_._precedence;
-                production_._rhs.push_back(symbol(symbol::TERMINAL, id_));
+                production_._rhs.first.push_back(symbol(symbol::
+                    TERMINAL, id_));
                 break;
             }
             case SYMBOL:
@@ -540,8 +542,8 @@ private:
 
                     // NON_TERMINAL
                     location(id_);
-                    production_._rhs.push_back
-                    (symbol(symbol::NON_TERMINAL, id_));
+                    production_._rhs.first.push_back(symbol(symbol::
+                        NON_TERMINAL, id_));
                 }
                 else
                 {
@@ -549,7 +551,8 @@ private:
                     token_info &token_info_ = info(id_);
 
                     production_._precedence = token_info_._precedence;
-                    production_._rhs.push_back(symbol(symbol::TERMINAL, id_));
+                    production_._rhs.first.push_back(symbol(symbol::
+                        TERMINAL, id_));
                 }
 
                 break;
@@ -570,6 +573,7 @@ private:
                 }
 
                 production_._precedence = info(id_)._precedence;
+                production_._rhs.second = token_;
                 break;
             }
             case OR:
@@ -591,7 +595,6 @@ private:
                 const char_type *l_ = lhs_.c_str();
                 const char_type *r_ = rhs_.c_str();
 
-                assert(0);
                 ss_ << "Syntax error in rule '";
                 narrow(l_, ss_);
                 ss_ << "': '";

@@ -7,7 +7,6 @@
 #define PARSERTL_STATE_MACHINE_HPP
 
 #include "enums.hpp"
-#include <deque>
 #include <map>
 #include <vector>
 
@@ -42,7 +41,7 @@ struct state_machine
     using table = std::vector<entry>;
     using size_t_vector = std::vector<std::size_t>;
     using size_t_size_t_pair = std::pair<std::size_t, size_t_vector>;
-    using rules = std::deque<size_t_size_t_pair>;
+    using rules = std::vector<size_t_size_t_pair>;
 
     table _table;
     std::size_t _columns;
