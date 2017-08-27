@@ -562,24 +562,24 @@ _lexer_flags(INTERNAL_FUNCTION_PARAMETERS, zend_class_entry *ce) noexcept
 
 	zplo = _php_parle_lexer_fetch_zobj<lexer_obj_type>(Z_OBJ_P(me));
 
-	if (0 > flags) {
-		RETURN_LONG(zplo->rules->flags());
-	} else {
+	if (flags > 0) {
 		zplo->rules->flags(static_cast<size_t>(flags));
 	}
+
+	RETURN_LONG(zplo->rules->flags());
 }/*}}}*/
 
-/* {{{ public mixed Lexer::flags([int flags]) */
+/* {{{ public int Lexer::flags([int flags]) */
 PHP_METHOD(ParleLexer, flags)
 {
-	_lexer_eoi<struct ze_parle_lexer_obj>(INTERNAL_FUNCTION_PARAM_PASSTHRU, ParleLexer_ce);
+	_lexer_flags<struct ze_parle_lexer_obj>(INTERNAL_FUNCTION_PARAM_PASSTHRU, ParleLexer_ce);
 }
 /* }}} */
 
-/* {{{ public mixed RLexer::flags([int flags]) */
+/* {{{ public int RLexer::flags([int flags]) */
 PHP_METHOD(ParleRLexer, flags)
 {
-	_lexer_eoi<struct ze_parle_rlexer_obj>(INTERNAL_FUNCTION_PARAM_PASSTHRU, ParleRLexer_ce);
+	_lexer_flags<struct ze_parle_rlexer_obj>(INTERNAL_FUNCTION_PARAM_PASSTHRU, ParleRLexer_ce);
 }
 /* }}} */
 
@@ -1354,6 +1354,10 @@ ZEND_END_ARG_INFO();
 PARLE_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(arginfo_parle_lexer_state, 0, 0, IS_LONG, 0)
 ZEND_END_ARG_INFO();
 
+PARLE_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(arginfo_parle_lexer_flags, 0, 0, IS_LONG, 0)
+	ZEND_ARG_TYPE_INFO(0, state, IS_LONG, 0)
+ZEND_END_ARG_INFO();
+
 ZEND_BEGIN_ARG_INFO_EX(arginfo_parle_parser_token, 0, 0, 1)
 	ZEND_ARG_TYPE_INFO(0, tok, IS_STRING, 0)
 ZEND_END_ARG_INFO();
@@ -1449,6 +1453,7 @@ const zend_function_entry ParleLexer_methods[] = {
 	PHP_ME(ParleLexer, restart, arginfo_parle_lexer_restart, ZEND_ACC_PUBLIC)
 	PHP_ME(ParleLexer, insertMacro, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(ParleLexer, dump, arginfo_parle_lexer_dump, ZEND_ACC_PUBLIC)
+	PHP_ME(ParleLexer, flags, arginfo_parle_lexer_flags, ZEND_ACC_PUBLIC)
 	PHP_FE_END
 };
 
@@ -1467,6 +1472,7 @@ const zend_function_entry ParleRLexer_methods[] = {
 	PHP_ME(ParleRLexer, state, arginfo_parle_lexer_state, ZEND_ACC_PUBLIC)
 	PHP_ME(ParleRLexer, insertMacro, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(ParleRLexer, dump, arginfo_parle_lexer_dump, ZEND_ACC_PUBLIC)
+	PHP_ME(ParleRLexer, flags, arginfo_parle_lexer_flags, ZEND_ACC_PUBLIC)
 	PHP_FE_END
 };
 
