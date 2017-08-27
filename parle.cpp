@@ -1128,6 +1128,64 @@ PHP_METHOD(ParleParser, dump)
 }
 /* }}} */
 
+/* {{{ public string Parser::trace(void) */
+PHP_METHOD(ParleParser, trace)
+{
+	struct ze_parle_parser_obj *zppo;
+	zval *me;
+
+	if(zend_parse_method_parameters(ZEND_NUM_ARGS(), getThis(), "O", &me, ParleParser_ce) == FAILURE) {
+		return;
+	}
+
+	zppo = php_parle_parser_fetch_obj(Z_OBJ_P(me));
+
+	if (!zppo->complete) {
+		zend_throw_exception(ParleParserException_ce, "Parser state machine is not ready", 0);
+		return;
+	}
+
+	try {
+		std::string s;
+		switch (zppo->results->entry.action) {
+			case parsertl::shift:
+				s = "shift " + std::to_string(zppo->results->entry.param);
+				RETURN_STRINGL(s.c_str(), s.size());
+				break;
+			case parsertl::go_to:
+				s = "goto " + std::to_string(zppo->results->entry.param);
+				RETURN_STRINGL(s.c_str(), s.size());
+				break;
+			case parsertl::accept:
+				RETURN_STRINGL("accept", sizeof("accept")-1);
+				break;
+			case parsertl::reduce:
+				/* TODO symbols should be setup only once. */
+				parsertl::rules::string_vector symbols;
+				zppo->rules->terminals(symbols);
+				zppo->rules->non_terminals(symbols);
+				parsertl::state_machine::size_t_size_t_pair &pair_ = zppo->sm->_rules[zppo->results->entry.param];
+
+				s = "reduce by " + symbols[pair_.first] + " ->";
+
+				if (pair_.second.empty()) {
+					s += " %empty";
+				} else {
+					for (auto iter_ = pair_.second.cbegin(), end_ = pair_.second.cend(); iter_ != end_; ++iter_) {
+						s += ' ';
+						s += symbols[*iter_];
+					}
+				}
+
+				RETURN_STRINGL(s.c_str(), s.size());
+				break;
+		}
+	} catch (const std::exception &e) {
+		zend_throw_exception(ParleLexerException_ce, e.what(), 0);
+	}
+}
+/* }}} */
+
 /* {{{ public bool Stack::empty(void) */
 PHP_METHOD(ParleStack, empty)
 {
@@ -1429,6 +1487,7 @@ const zend_function_entry ParleParser_methods[] = {
 	PHP_ME(ParleParser, advance, arginfo_parle_parser_advance, ZEND_ACC_PUBLIC)
 	PHP_ME(ParleParser, consume, arginfo_parle_parser_consume, ZEND_ACC_PUBLIC)
 	PHP_ME(ParleParser, dump, arginfo_parle_parser_dump, ZEND_ACC_PUBLIC)
+	PHP_ME(ParleParser, trace, NULL, ZEND_ACC_PUBLIC)
 	PHP_FE_END
 };
 
