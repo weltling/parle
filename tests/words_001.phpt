@@ -38,7 +38,7 @@ foreach ($words as $in) {
 	$out = array();
 	while (0 != $tok["id"]) {
 		if ($tok["id"] > 0) {
-			$out[] = $tok["token"];
+			$out[] = $tok["value"];
 		}
 		$lex->advance();
 		$tok = $lex->getToken();

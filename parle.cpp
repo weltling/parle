@@ -359,9 +359,9 @@ _lexer_token(INTERNAL_FUNCTION_PARAMETERS, zend_class_entry *ce) noexcept
 		std::string ret = zplo->results->str();
 		add_assoc_long_ex(return_value, "id", sizeof("id")-1, static_cast<zend_long>(zplo->results->id));
 #if PHP_MAJOR_VERSION > 7 || PHP_MAJOR_VERSION >= 7 && PHP_MINOR_VERSION >= 2
-		add_assoc_stringl_ex(return_value, "token", sizeof("token")-1, ret.c_str(), ret.size());
+		add_assoc_stringl_ex(return_value, "value", sizeof("value")-1, ret.c_str(), ret.size());
 #else
-		add_assoc_stringl_ex(return_value, "token", sizeof("token")-1, (char *)ret.c_str(), ret.size());
+		add_assoc_stringl_ex(return_value, "value", sizeof("value")-1, (char *)ret.c_str(), ret.size());
 #endif
 		add_assoc_long(return_value, "offset", zplo->results->first - zplo->in->begin());
 //		add_assoc_long(return_value, "state", zplo->results->state);
@@ -1214,9 +1214,9 @@ PHP_METHOD(ParleParser, errorInfo)
 			std::string ret = (*zppo->iter)->str();
 			array_init(&token);
 #if PHP_MAJOR_VERSION > 7 || PHP_MAJOR_VERSION >= 7 && PHP_MINOR_VERSION >= 2
-			add_assoc_stringl_ex(&token, "token", sizeof("token")-1, ret.c_str(), ret.size());
+			add_assoc_stringl_ex(&token, "value", sizeof("value")-1, ret.c_str(), ret.size());
 #else
-			add_assoc_stringl_ex(&token, "token", sizeof("token")-1, (char *)ret.c_str(), ret.size());
+			add_assoc_stringl_ex(&token, "value", sizeof("value")-1, (char *)ret.c_str(), ret.size());
 #endif
 			add_assoc_long(&token, "offset", (*zppo->iter)->first - zppo->in->begin());
 			add_assoc_zval_ex(return_value, "token", sizeof("token")-1, &token);

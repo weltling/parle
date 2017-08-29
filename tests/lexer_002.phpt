@@ -42,7 +42,7 @@ foreach ($nums as $in) {
 array(3) {
   ["id"]=>
   int(4)
-  ["token"]=>
+  ["value"]=>
   string(4) "0x42"
   ["offset"]=>
   int(0)
@@ -50,7 +50,7 @@ array(3) {
 array(3) {
   ["id"]=>
   int(1)
-  ["token"]=>
+  ["value"]=>
   string(8) "0b010101"
   ["offset"]=>
   int(5)
@@ -58,7 +58,7 @@ array(3) {
 array(3) {
   ["id"]=>
   int(2)
-  ["token"]=>
+  ["value"]=>
   string(3) "075"
   ["offset"]=>
   int(14)
@@ -66,7 +66,7 @@ array(3) {
 array(3) {
   ["id"]=>
   int(3)
-  ["token"]=>
+  ["value"]=>
   string(2) "24"
   ["offset"]=>
   int(18)
