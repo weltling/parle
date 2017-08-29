@@ -86,8 +86,9 @@ struct ze_parle_parser_obj {/*{{{*/
 	parsertl::rules *rules;
 	parsertl::state_machine *sm;
 	parsertl::match_results *results;
-	parsertl::token<lexertl::citerator>::token_vector *productions;
-	lexertl::citerator *iter;
+	std::string *in;
+	parsertl::token<lexertl::siterator>::token_vector *productions;
+	lexertl::siterator *iter;
 	bool complete;
 	zend_object zo;
 };/*}}}*/
@@ -1021,13 +1022,10 @@ PHP_METHOD(ParleParser, dollar)
 
 	try {
 		auto ret = zppo->results->dollar(*zppo->sm, static_cast<size_t>(idx), *zppo->productions);
-		if (!ret.first) {
-			RETURN_NULL();
-		}
-
-		const char *first = ret.first;
-		const char *second = ret.second;
-		RETURN_STRINGL(first, second - first);
+		RETURN_STRINGL(
+				zppo->in->substr(ret.first - zppo->in->begin(), ret.second - zppo->in->begin()).c_str(),
+				ret.second - ret.first
+		)
 	} catch (const std::exception &e) {
 		zend_throw_exception(ParleParserException_ce, e.what(), 0);
 	}
@@ -1087,11 +1085,15 @@ PHP_METHOD(ParleParser, consume)
 		if (zppo->productions) {
 			delete zppo->productions;
 		}
-		zppo->productions = new parsertl::token<lexertl::citerator>::token_vector{};
+		zppo->productions = new parsertl::token<lexertl::siterator>::token_vector{};
+		if (zppo->in) {
+			delete zppo->in;
+		}
+		zppo->in = new std::string{ZSTR_VAL(in)};
 		if (zppo->iter) {
 			delete zppo->iter;
 		}
-		zppo->iter = new lexertl::citerator(ZSTR_VAL(in), ZSTR_VAL(in) + ZSTR_LEN(in), *zplo->sm);
+		zppo->iter = new lexertl::siterator(zppo->in->begin(), zppo->in->end(), *zplo->sm);
 		if (zppo->results) {
 			delete zppo->results;
 		}
@@ -1180,6 +1182,46 @@ PHP_METHOD(ParleParser, trace)
 				RETURN_STRINGL(s.c_str(), s.size());
 				break;
 		}
+	} catch (const std::exception &e) {
+		zend_throw_exception(ParleLexerException_ce, e.what(), 0);
+	}
+}
+/* }}} */
+
+/* {{{ public array Parser::errorInfo(void) */
+PHP_METHOD(ParleParser, errorInfo)
+{
+	struct ze_parle_parser_obj *zppo;
+	zval *me;
+
+	if(zend_parse_method_parameters(ZEND_NUM_ARGS(), getThis(), "O", &me, ParleParser_ce) == FAILURE) {
+		return;
+	}
+
+	zppo = php_parle_parser_fetch_obj(Z_OBJ_P(me));
+
+	array_init(return_value);
+
+	if (zppo->results->entry.action != parsertl::error) {
+		return;
+	}
+
+
+	try {
+		add_assoc_long_ex(return_value, "id", sizeof("id")-1, static_cast<zend_long>(zppo->results->entry.param));
+		if (zppo->results->entry.param == parsertl::unknown_token) {
+			zval token;
+			std::string ret = (*zppo->iter)->str();
+			array_init(&token);
+#if PHP_MAJOR_VERSION > 7 || PHP_MAJOR_VERSION >= 7 && PHP_MINOR_VERSION >= 2
+			add_assoc_stringl_ex(&token, "token", sizeof("token")-1, ret.c_str(), ret.size());
+#else
+			add_assoc_stringl_ex(&token, "token", sizeof("token")-1, (char *)ret.c_str(), ret.size());
+#endif
+			add_assoc_long(&token, "offset", (*zppo->iter)->first - zppo->in->begin());
+			add_assoc_zval_ex(return_value, "token", sizeof("token")-1, &token);
+		}
+		/* TODO provide details also for other error types, if possible. */
 	} catch (const std::exception &e) {
 		zend_throw_exception(ParleLexerException_ce, e.what(), 0);
 	}
@@ -1494,6 +1536,7 @@ const zend_function_entry ParleParser_methods[] = {
 	PHP_ME(ParleParser, consume, arginfo_parle_parser_consume, ZEND_ACC_PUBLIC)
 	PHP_ME(ParleParser, dump, arginfo_parle_parser_dump, ZEND_ACC_PUBLIC)
 	PHP_ME(ParleParser, trace, NULL, ZEND_ACC_PUBLIC)
+	PHP_ME(ParleParser, errorInfo, NULL, ZEND_ACC_PUBLIC)
 	PHP_FE_END
 };
 
@@ -1574,6 +1617,7 @@ php_parle_parser_obj_destroy(zend_object *obj) noexcept
 	delete zppo->rules;
 	delete zppo->sm;
 	delete zppo->results;
+	delete zppo->in;
 	delete zppo->iter;
 	delete zppo->productions;
 }/*}}}*/
@@ -1592,6 +1636,7 @@ php_parle_parser_object_init(zend_class_entry *ce) noexcept
 	zppo->rules = new parsertl::rules{};
 	zppo->sm = new parsertl::state_machine{};
 	zppo->results = nullptr;
+	zppo->in = nullptr;
 	zppo->iter = nullptr;
 	zppo->productions = nullptr;
 
