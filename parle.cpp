@@ -1022,10 +1022,9 @@ PHP_METHOD(ParleParser, dollar)
 
 	try {
 		auto ret = zppo->results->dollar(*zppo->sm, static_cast<size_t>(idx), *zppo->productions);
-		RETURN_STRINGL(
-			zppo->in->substr(ret.first - zppo->in->begin(), ret.second - zppo->in->begin()).c_str(),
-			ret.second - ret.first
-		)
+		size_t start_pos = ret.first - zppo->in->begin();
+		const char *in = zppo->in->c_str();
+		RETURN_STRINGL(in + start_pos, ret.second - ret.first);
 	} catch (const std::exception &e) {
 		zend_throw_exception(ParleParserException_ce, e.what(), 0);
 	}
