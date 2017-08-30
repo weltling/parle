@@ -60,28 +60,28 @@ foreach ($exp as $in) {
 			case Parser::ACTION_REDUCE:
 				$rid = $p->reduceId();
 
-				/*$l = $p->dollar(0);
-				$r = $p->dollar(2);*/
+				/*$l = $p->sigil(0);
+				$r = $p->sigil(2);*/
 
 				switch ($rid) {
 					case $add_idx:
-						$l = $p->dollar(0);
-						$r = $p->dollar(2);
+						$l = $p->sigil(0);
+						$r = $p->sigil(2);
 						echo "$l + $r = " . ($l + $r) . "\n";
 						break;
 					case $sub_idx:
-						$l = $p->dollar(0);
-						$r = $p->dollar(2);
+						$l = $p->sigil(0);
+						$r = $p->sigil(2);
 						echo "$l - $r = " . ($l - $r) . "\n";
 						break;
 					case $mul_idx:
-						$l = $p->dollar(0);
-						$r = $p->dollar(2);
+						$l = $p->sigil(0);
+						$r = $p->sigil(2);
 						echo "$l * $r = " . ($l * $r) . "\n";
 						break;
 					case $div_idx:
-						$l = $p->dollar(0);
-						$r = $p->dollar(2);
+						$l = $p->sigil(0);
+						$r = $p->sigil(2);
 						echo "$l / $r = " . ($l / $r) . "\n";
 						break;
 				}

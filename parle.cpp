@@ -997,8 +997,8 @@ PHP_METHOD(ParleParser, action)
 }
 /* }}} */
 
-/* {{{ public string Parser::dollar(int $idx) */
-PHP_METHOD(ParleParser, dollar)
+/* {{{ public string Parser::sigil(int $idx) */
+PHP_METHOD(ParleParser, sigil)
 {
 	struct ze_parle_parser_obj *zppo;
 	zval *me;
@@ -1440,7 +1440,7 @@ ZEND_END_ARG_INFO();
 PARLE_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(arginfo_parle_parser_action, 0, 0, IS_LONG, 0)
 ZEND_END_ARG_INFO();
 
-PARLE_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(arginfo_parle_parser_dollar, 0, 0, IS_STRING, 0)
+PARLE_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(arginfo_parle_parser_sigil, 0, 0, IS_STRING, 0)
 	ZEND_ARG_TYPE_INFO(0, idx, IS_LONG, 0)
 ZEND_END_ARG_INFO();
 
@@ -1530,7 +1530,7 @@ const zend_function_entry ParleParser_methods[] = {
 	PHP_ME(ParleParser, tokenId, arginfo_parle_parser_tokenid, ZEND_ACC_PUBLIC)
 	PHP_ME(ParleParser, reduceId, arginfo_parle_parser_reduceid, ZEND_ACC_PUBLIC)
 	PHP_ME(ParleParser, action, arginfo_parle_parser_action, ZEND_ACC_PUBLIC)
-	PHP_ME(ParleParser, dollar, arginfo_parle_parser_dollar, ZEND_ACC_PUBLIC)
+	PHP_ME(ParleParser, sigil, arginfo_parle_parser_sigil, ZEND_ACC_PUBLIC)
 	PHP_ME(ParleParser, advance, arginfo_parle_parser_advance, ZEND_ACC_PUBLIC)
 	PHP_ME(ParleParser, consume, arginfo_parle_parser_consume, ZEND_ACC_PUBLIC)
 	PHP_ME(ParleParser, dump, arginfo_parle_parser_dump, ZEND_ACC_PUBLIC)

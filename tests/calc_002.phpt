@@ -102,7 +102,7 @@ foreach ($exp as $in) {
 						$stack->top(-$top);
 						break;
 					case $int_idx:
-						$i = (int)$p->dollar();
+						$i = (int)$p->sigil();
 						$stack->push($i);
 						break;
 				}
