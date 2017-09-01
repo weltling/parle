@@ -47,7 +47,6 @@
 #include "parsertl/parse.hpp"
 #include "parsertl/token.hpp"
 #include "parsertl/debug.hpp"
-//#include "variant.hpp"
 
 #include "php.h"
 #include "php_ini.h"
@@ -98,6 +97,7 @@ struct ze_parle_stack_obj {/*{{{*/
 	zend_object zo;
 };/*}}}*/
 
+/* {{{ Class entries and handlers declarations. */
 zend_object_handlers parle_lexer_handlers;
 zend_object_handlers parle_rlexer_handlers;
 zend_object_handlers parle_parser_handlers;
@@ -109,6 +109,7 @@ static zend_class_entry *ParleParser_ce;
 static zend_class_entry *ParleStack_ce;
 static zend_class_entry *ParleLexerException_ce;
 static zend_class_entry *ParleParserException_ce;
+/* }}} */
 
 template<typename lexer_obj_type> lexer_obj_type *
 _php_parle_lexer_fetch_zobj(zend_object *obj) noexcept
