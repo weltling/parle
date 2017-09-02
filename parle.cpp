@@ -357,9 +357,10 @@ _lexer_token(INTERNAL_FUNCTION_PARAMETERS, zend_class_entry *ce) noexcept
 
 	zplo = _php_parle_lexer_fetch_zobj<lexer_obj_type>(Z_OBJ_P(me));
 
-	/*if (0 == zplo->results->id) {
-		RETURN_NULL();
-	}*/
+	if (!zplo->results) {
+		zend_throw_exception(ParleLexerException_ce, "No results available", 0);
+		return;
+	}
 
 	try {
 		array_init(return_value);
@@ -501,6 +502,11 @@ _lexer_bol(INTERNAL_FUNCTION_PARAMETERS, zend_class_entry *ce) noexcept
 
 	zplo = _php_parle_lexer_fetch_zobj<lexer_obj_type>(Z_OBJ_P(me));
 
+	if (!zplo->results) {
+		zend_throw_exception(ParleLexerException_ce, "No results available", 0);
+		return;
+	}
+
 	if (1 == ZEND_NUM_ARGS()) {
 		RETURN_BOOL(zplo->results->bol);
 	} else {
@@ -535,7 +541,10 @@ _lexer_restart(INTERNAL_FUNCTION_PARAMETERS, zend_class_entry *ce) noexcept
 
 	zplo = _php_parle_lexer_fetch_zobj<lexer_obj_type>(Z_OBJ_P(me));
 
-	if (pos < 0 || static_cast<size_t>(pos) > zplo->in->length()) {
+	if (!zplo->results) {
+		zend_throw_exception(ParleLexerException_ce, "No results available", 0);
+		return;
+	} else if (pos < 0 || static_cast<size_t>(pos) > zplo->in->length()) {
 		zend_throw_exception_ex(ParleLexerException_ce, 0, "Invalid offset " ZEND_LONG_FMT, pos);
 		return;
 	}
@@ -602,6 +611,11 @@ _lexer_npos(INTERNAL_FUNCTION_PARAMETERS, zend_class_entry *ce) noexcept
 	}
 
 	zplo = _php_parle_lexer_fetch_zobj<lexer_obj_type>(Z_OBJ_P(me));
+
+	if (!zplo->results) {
+		zend_throw_exception(ParleLexerException_ce, "No results available", 0);
+		return;
+	}
 
 	RETURN_LONG(zplo->results->npos());
 }/*}}}*/
@@ -962,6 +976,9 @@ PHP_METHOD(ParleParser, reduceId)
 	if (!zppo->complete) {
 		zend_throw_exception(ParleParserException_ce, "Parser state machine is not ready", 0);
 		return;
+	} else if (!zppo->results) {
+		zend_throw_exception(ParleParserException_ce, "No results available", 0);
+		return;
 	}
 
 	try {
@@ -986,6 +1003,9 @@ PHP_METHOD(ParleParser, action)
 
 	if (!zppo->complete) {
 		zend_throw_exception(ParleParserException_ce, "Parser state machine is not ready", 0);
+		return;
+	} else if (!zppo->results) {
+		zend_throw_exception(ParleParserException_ce, "No results available", 0);
 		return;
 	}
 
@@ -1012,6 +1032,9 @@ PHP_METHOD(ParleParser, sigil)
 
 	if (!zppo->complete) {
 		zend_throw_exception(ParleParserException_ce, "Parser state machine is not ready", 0);
+		return;
+	} else if (!zppo->results) {
+		zend_throw_exception(ParleParserException_ce, "No results available", 0);
 		return;
 	}
 
@@ -1045,6 +1068,9 @@ PHP_METHOD(ParleParser, advance)
 
 	if (!zppo->complete) {
 		zend_throw_exception(ParleParserException_ce, "Parser state machine is not ready", 0);
+		return;
+	} else if (!zppo->results) {
+		zend_throw_exception(ParleParserException_ce, "No results available", 0);
 		return;
 	}
 
@@ -1144,6 +1170,9 @@ PHP_METHOD(ParleParser, trace)
 	if (!zppo->complete) {
 		zend_throw_exception(ParleParserException_ce, "Parser state machine is not ready", 0);
 		return;
+	} else if (!zppo->results) {
+		zend_throw_exception(ParleParserException_ce, "No results available", 0);
+		return;
 	}
 
 	try {
@@ -1201,7 +1230,10 @@ PHP_METHOD(ParleParser, errorInfo)
 
 	array_init(return_value);
 
-	if (zppo->results->entry.action != parsertl::error) {
+	if (!zppo->results) {
+		zend_throw_exception(ParleParserException_ce, "No results available", 0);
+		return;
+	} else if (zppo->results->entry.action != parsertl::error) {
 		return;
 	}
 
