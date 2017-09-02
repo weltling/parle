@@ -275,7 +275,13 @@ _lexer_consume(INTERNAL_FUNCTION_PARAMETERS, zend_class_entry *ce) noexcept
 	}
 
 	try {
+		if (zplo->in) {
+			delete zplo->in;
+		}
 		zplo->in = new std::string{in};
+		if (zplo->results) {
+			delete zplo->results;
+		}
 		zplo->results = new lexer_type(zplo->in->begin(), zplo->in->end());
 	} catch (const std::exception &e) {
 		zend_throw_exception(ParleLexerException_ce, e.what(), 0);
