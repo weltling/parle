@@ -8,7 +8,7 @@ The implementation bases on the work of [Ben Hanson](http://www.benhanson.net/)w
 
 Example parsing comma separated integer list
 ============================================
-```<?php
+```php
 
 use Parle\Lexer;
 
@@ -42,7 +42,8 @@ do {
 
         echo "TOKEN: ", $token_rev[$tok["id"]], PHP_EOL;
 } while ($lex->eoi() != $tok["id"]);
-?>```
+```
+
 
 More is to come, stay tuned
 ===========================
