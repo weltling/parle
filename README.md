@@ -1,6 +1,6 @@
-Parle is a lexer and parsing facility for PHP
+Parle provides lexing and parsing facilities for PHP
 =============================================
-The Lexer and Parser classes iare there in the Parle namespace.
+Lexing and parsing is used widely in the PHP core and extensions. Usually such a functionality is packed into a PHP extension written in C/C++ and depends on tools like [re2c](http://re2c.org/), [Bison](http://www.gnu.org/software/bison/) or [LEMON](http://www.hwaci.com/sw/lemon/). With Parle, it is possible to implement lexing and parsing in PHP while relying on features and principles of the parser/lexer generator tools. The Lexer and Parser classes are there in the Parle namespace.
 The implementation bases on the work of [Ben Hanson](http://www.benhanson.net/)
 
 - https://github.com/BenHanson/lexertl14
