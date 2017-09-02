@@ -11,6 +11,7 @@ Example parsing comma separated integer list
 ```php
 
 use Parle\Lexer;
+use Parle\LexerException;
 
 /* name => id */
 $token = array(
@@ -37,7 +38,7 @@ do {
         $tok = $lex->getToken();
 
         if ($tok["id"] < 0) {
-                throw new \Exception("Unknown token '$tok[value]' at offset $tok[offset].");
+                throw new LexerException("Unknown token '$tok[value]' at offset $tok[offset].");
         }
 
         echo "TOKEN: ", $token_rev[$tok["id"]], PHP_EOL;
