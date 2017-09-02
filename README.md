@@ -1,6 +1,6 @@
 Parle provides lexing and parsing facilities for PHP
 =============================================
-Lexing and parsing is used widely in the PHP core and extensions. Usually such a functionality is packed into a PHP extension written in C/C++ and depends on tools like [re2c](http://re2c.org/), [Bison](http://www.gnu.org/software/bison/) or [LEMON](http://www.hwaci.com/sw/lemon/). With Parle, it is possible to implement lexing and parsing in PHP while relying on features and principles of the parser/lexer generator tools. The Lexer and Parser classes are there in the Parle namespace.
+Lexing and parsing is used widely in the PHP core and extensions. Usually such a functionality is packed into a PHP extension written in C/C++ and depends on tools like [flex](http://flex.sourceforge.net/), [re2c](http://re2c.org/), [Bison](http://www.gnu.org/software/bison/), [LEMON](http://www.hwaci.com/sw/lemon/) or similar. With Parle, it is possible to implement lexing and parsing in PHP while relying on features and principles of the parser/lexer generator tools. The Lexer and Parser classes are there in the Parle namespace.
 The implementation bases on the work of [Ben Hanson](http://www.benhanson.net/)
 
 - https://github.com/BenHanson/lexertl14
@@ -8,7 +8,7 @@ The implementation bases on the work of [Ben Hanson](http://www.benhanson.net/)
 
 Supported is PHP 7.0 and above. A [C++14](http://en.cppreference.com/w/cpp/compiler_support) capable compiler is required.
 
-Example parsing comma separated integer list
+Example tokenizing comma separated integer list
 ============================================
 ```php
 
