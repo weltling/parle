@@ -908,16 +908,9 @@ PHP_METHOD(ParleParser, validate)
 	try {
 		lexertl::citerator iter(ZSTR_VAL(in), ZSTR_VAL(in) + ZSTR_LEN(in), *zplo->sm);
 		
-		/*if (zppo->results) {
-			delete zppo->results;
-		}
-		zppo->results = new parsertl::match_results(iter->id, *zppo->sm);
-		RETURN_BOOL(parsertl::parse(*zppo->sm, iter, *zppo->results));*/
-
 		/* Since it's not more than parse, nothing is saved into the object. */
 		parsertl::match_results results(iter->id, *zppo->sm);
 
-		zppo->results = new parsertl::match_results(iter->id, *zppo->sm);
 		RETURN_BOOL(parsertl::parse(*zppo->sm, iter, results));
 	} catch (const std::exception &e) {
 		zend_throw_exception(ParleParserException_ce, e.what(), 0);
