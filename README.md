@@ -6,7 +6,7 @@ The implementation bases on the work of [Ben Hanson](http://www.benhanson.net/)
 - https://github.com/BenHanson/lexertl14
 - https://github.com/BenHanson/parsertl14
 
-Supported is PHP 7.0 and above. A C++14 capable compiler is required.
+Supported is PHP 7.0 and above. A [C++14](http://en.cppreference.com/w/cpp/compiler_support) capable compiler is required.
 
 Example parsing comma separated integer list
 ============================================
