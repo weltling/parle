@@ -10,20 +10,18 @@ php:
 matrix:
         allow_failures:
                 - php: nightly
-        include:
-                - os: linux
-                  addons:
-                    apt:
-                      sources:
-                        - ubuntu-toolchain-r-test
-                      packages:
-                        - g++-5
-                  env:
-                      - MATRIX_EVAL="CC=gcc-5 && CXX=g++-5"
+
+
+addons:
+        apt:
+                sources:
+                        - llvm-toolchain-trusty-5.0
+                packages:
+                        - clang-5.0
 
 before_script:
         - phpize
-        - ./configure
+        - CC=clang-5.0 CXX=clang++-5.0 ./configure
         - make
         - make install
         - echo "extension=parle.so" >> ~/.phpenv/versions/$(phpenv version-name)/etc/php.ini
