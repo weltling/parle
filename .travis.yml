@@ -1,0 +1,23 @@
+sudo: false
+language: php
+
+php:
+        - 7.0
+        - 7.1
+        - nightly
+
+matrix:
+        allow_failures:
+                - php: nightly
+
+
+before_script:
+        - phpize
+        - ./configure
+        - make
+        - make install
+        - echo "extension=parle.so" >> ~/.phpenv/versions/$(phpenv version-name)/etc/php.ini
+
+script:
+        - REPORT_EXIT_STATUS=1 php ./run-tests.php -P -q --show-diff
+
