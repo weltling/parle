@@ -55,7 +55,7 @@ environment:
 build_script:
         ps: |
                 $ts_part = ''
-                if ($env:TS) { $ts_part = 'nts-' }
+                if ($env:TS) { $ts_part = '-nts' }
                 $bname = 'php-devel-pack-' + $env:PHP_VER + $ts_part + '-Win32-' + $env:VC.toUpper() + '-' + $env:ARCH + '.zip'
                 if (-not (Test-Path c:\build-cache\$bname)) {
                         (new-object net.webclient).DownloadFile('http://windows.php.net/downloads/releases/archives/' + $bname, 'c:\build-cache\' + $bname)
