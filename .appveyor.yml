@@ -72,5 +72,6 @@ build_script:
                 echo "phpize" >> task.bat
                 echo "configure --enable-parle" >> task.bat
                 echo "nmake" >> task.bat
-                & c:\build-cache\php-sdk-$env:BIN_SDK_VER\phpsdk-$env:VC-$env:ARCH.bat -t task.bat
+                $here = (Get-Item -Path ".\" -Verbose).FullName
+                & c:\build-cache\php-sdk-$env:BIN_SDK_VER\phpsdk-$env:VC-$env:ARCH.bat -t "$here\task.bat"
 
