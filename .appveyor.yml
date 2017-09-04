@@ -76,5 +76,8 @@ build_script:
                 $here = (Get-Item -Path ".\" -Verbose).FullName
                 $runner = 'c:\build-cache\php-sdk-' + $env:BIN_SDK_VER + '\phpsdk' + '-' + $env:VC + '-' + $env:ARCH + '.bat'
                 $task = $here + '\task.bat'
+                echo $runner
+                echo $task
+                type $task
                 & $runner -t $task
 
