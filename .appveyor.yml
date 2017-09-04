@@ -66,6 +66,7 @@ build_script:
                         7z x c:\build-cache\$bname -oc:\build-cache
                         move c:\build-cache\$dname0 c:\build-cache\$dname1
                 }
+                cd c:\projects\parle
                 $env:PATH = 'c:\build-cache\' + $dname1 + ';' + $env:PATH
                 echo "@echo off" > task.bat
                 echo "" > task.bat
