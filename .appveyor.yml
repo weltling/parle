@@ -67,7 +67,7 @@ build_script:
                         move c:\build-cache\$dname0 c:\build-cache\$dname1
                 }
                 $env:PATH = 'c:\build-cache\' + $dname1 + ';' + $env:PATH
-                c:\php-sdk-$env:BIN_SDK_VER\phpsdk-$env:VC-$env:ARCH.bat
+                & c:\php-sdk-$env:BIN_SDK_VER\phpsdk-$env:VC-$env:ARCH.bat
                 phpize
                 configure --enable-parle
                 nmake
