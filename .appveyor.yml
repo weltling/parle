@@ -71,11 +71,12 @@ build_script:
                 #echo "@echo off" | Out-File -Encoding "ASCII" task.bat
                 #echo "" | Out-File -Encoding "ASCII" -Append task.bat
                 echo "" | Out-File -Encoding "ASCII" task.bat
-                echo "call phpize" | Out-File -Encoding "ASCII" -Append task.bat
-                echo "call configure --enable-parle" | Out-File -Encoding "ASCII" -Append task.bat
-                echo "nmake" | Out-File -Encoding "ASCII" -Append task.bat
+                echo "call phpize 2>&1" | Out-File -Encoding "ASCII" -Append task.bat
+                echo "call configure --enable-parle 2>&1" | Out-File -Encoding "ASCII" -Append task.bat
+                echo "nmake /nologo 2>&1" | Out-File -Encoding "ASCII" -Append task.bat
                 $here = (Get-Item -Path ".\" -Verbose).FullName
                 $runner = 'c:\build-cache\php-sdk-' + $env:BIN_SDK_VER + '\phpsdk' + '-' + $env:VC + '-' + $env:ARCH + '.bat'
                 $task = $here + '\task.bat'
+                type $task
                 & $runner -t $task
 
