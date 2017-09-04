@@ -19,7 +19,7 @@ install:
                 $dname0 = 'php-sdk-binary-tools-php-sdk-' + $env:BIN_SDK_VER
                 $dname1 = 'php-sdk-' + $env:BIN_SDK_VER
                 if (-not (Test-Path c:\build-cache\$dname1)) {
-                        7z e c:\build-cache\$bname -o c:\build-cache
+                        7z x c:\build-cache\$bname -oc:\build-cache
                         move c:\build-cache\$dname0 c:\build-cache\$dname1
                 }
 
@@ -63,7 +63,7 @@ build_script:
                 $dname0 = 'php-' + $env:PHP_VER + '-devel-' $env:VC.toUpper() + '-' + $env:ARCH
                 $dname1 = 'php-' + $env:PHP_VER + $ts_part + '-devel-' $env:VC.toUpper() + '-' + $env:ARCH
                 if (-not (Test-Path c:\build-cache\$dname1)) {
-                        7z e c:\build-cache\$bname -o c:\build-cache
+                        7z x c:\build-cache\$bname -oc:\build-cache
                         move c:\build-cache\$dname0 c:\build-cache\$dname1
                 }
                 $env:PATH = 'c:\build-cache\' + $dname1 + ';' + $env:PATH
