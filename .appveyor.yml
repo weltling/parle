@@ -69,7 +69,7 @@ build_script:
                 cd c:\projects\parle
                 $env:PATH = 'c:\build-cache\' + $dname1 + ';' + $env:PATH
                 echo "@echo off" > task.bat
-                echo "" > task.bat
+                echo "" >> task.bat
                 echo "phpize" >> task.bat
                 echo "configure --enable-parle" >> task.bat
                 echo "nmake" >> task.bat
