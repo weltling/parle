@@ -94,4 +94,8 @@ test_script:
                 echo "" | Out-File -Encoding "ASCII" task.bat
                 echo 'call configure --enable-parle --with-prefix=c:\build-cache\' + $dname + " 2>&1" | Out-File -Encoding "ASCII" -Append task.bat
                 echo "nmake /nologo test 2>&1" | Out-File -Encoding "ASCII" -Append task.bat
+                $here = (Get-Item -Path ".\" -Verbose).FullName
+                $runner = 'c:\build-cache\php-sdk-' + $env:BIN_SDK_VER + '\phpsdk' + '-' + $env:VC + '-' + $env:ARCH + '.bat'
+                $task = $here + '\task.bat'
+                & $runner -t $task
 
