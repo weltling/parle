@@ -9,16 +9,16 @@ clone_folder:  c:\projects\parle
 
 install:
         ps: |
-                if (-not Test-Path c:\build-cache) {
+                if (-not (Test-Path c:\build-cache)) {
                         mkdir c:\build-cache
                 }
                 $bname = 'php-sdk-' + $env:BIN_SDK_VER + '.zip'
-                if (-not Test-Path c:\build-cache\$bname) {
+                if (-not (Test-Path c:\build-cache\$bname)) {
                         (new-object net.webclient).DownloadFile('https://github.com/OSTC/php-sdk-binary-tools/archive/' + $bname, 'c:\build-cache\' + $bname)
                 }
                 $dname0 = 'php-sdk-binary-tools-php-sdk-' + $env:BIN_SDK_VER
                 $dname1 = 'php-sdk-' + $env:BIN_SDK_VER
-                if (-not Test-Path c:\build-cache\$dname1) {
+                if (-not (Test-Path c:\build-cache\$dname1)) {
                         7z e c:\build-cache\$bname -o c:\build-cache
                         move c:\build-cache\$dname0 c:\build-cache\$dname1
                 }
@@ -57,12 +57,12 @@ build_script:
                 $ts_part = ''
                 if ($env:TS) { $ts_part = 'nts-' }
                 $bname = 'php-devel-pack-' + $env:PHP_VER + $ts_part + '-Win32-' + $env:VC.toUpper() + '-' + $env:ARCH + '.zip'
-                if (-not Test-Path c:\build-cache\$bname) {
+                if (-not (Test-Path c:\build-cache\$bname)) {
                         (new-object net.webclient).DownloadFile('https://github.com/OSTC/php-sdk-binary-tools/archive/' + $bname, 'c:\build-cache\' + $bname)
                 }
                 $dname0 = 'php-' + $env:PHP_VER + '-devel-' $env:VC.toUpper() + '-' + $env:ARCH
                 $dname1 = 'php-' + $env:PHP_VER + $ts_part + '-devel-' $env:VC.toUpper() + '-' + $env:ARCH
-                if (-not Test-Path c:\build-cache\$dname1) {
+                if (-not (Test-Path c:\build-cache\$dname1)) {
                         7z e c:\build-cache\$bname -o c:\build-cache
                         move c:\build-cache\$dname0 c:\build-cache\$dname1
                 }
