@@ -54,7 +54,6 @@ environment:
 
 build_script:
         ps: |
-                $OutputEncoding = [Console]::OutputEncoding
                 $ts_part = ''
                 if ($env:TS) { $ts_part = '-nts' }
                 $bname = 'php-devel-pack-' + $env:PHP_VER + $ts_part + '-Win32-' + $env:VC.toUpper() + '-' + $env:ARCH + '.zip'
