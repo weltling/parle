@@ -60,8 +60,8 @@ build_script:
                 if (-not (Test-Path c:\build-cache\$bname)) {
                         (new-object net.webclient).DownloadFile('https://github.com/OSTC/php-sdk-binary-tools/archive/' + $bname, 'c:\build-cache\' + $bname)
                 }
-                $dname0 = 'php-' + $env:PHP_VER + '-devel-' $env:VC.toUpper() + '-' + $env:ARCH
-                $dname1 = 'php-' + $env:PHP_VER + $ts_part + '-devel-' $env:VC.toUpper() + '-' + $env:ARCH
+                $dname0 = 'php-' + $env:PHP_VER + '-devel-' + $env:VC.toUpper() + '-' + $env:ARCH
+                $dname1 = 'php-' + $env:PHP_VER + $ts_part + '-devel-' + $env:VC.toUpper() + '-' + $env:ARCH
                 if (-not (Test-Path c:\build-cache\$dname1)) {
                         7z x c:\build-cache\$bname -oc:\build-cache
                         move c:\build-cache\$dname0 c:\build-cache\$dname1
