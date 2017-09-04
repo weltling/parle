@@ -18,8 +18,8 @@ addons:
                         #- llvm-toolchain-trusty-5.0
                         - ubuntu-toolchain-r-test
                 packages:
-                        - clang-5.0
-                        #- g++-6
+                        #- clang-5.0
+                        - g++-6
 
 before_script:
         - phpize
