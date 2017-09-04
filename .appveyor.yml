@@ -33,22 +33,22 @@ environment:
                 - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2015
                   ARCH: x64
                   VC: vc14
-                  PHP_VER: 7.0.22
+                  PHP_VER: 7.0.23
                   TS: 0
                 - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2015
                   ARCH: x64
                   VC: vc14
-                  PHP_VER: 7.0.22
+                  PHP_VER: 7.0.23
                   TS: 1
                 - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2015
                   ARCH: x86
                   VC: vc14
-                  PHP_VER: 7.0.22
+                  PHP_VER: 7.0.23
                   TS: 0
                 - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2015
                   ARCH: x86
                   VC: vc14
-                  PHP_VER: 7.0.22
+                  PHP_VER: 7.0.23
                   TS: 1
 
 
@@ -58,7 +58,7 @@ build_script:
                 if ($env:TS) { $ts_part = '-nts' }
                 $bname = 'php-devel-pack-' + $env:PHP_VER + $ts_part + '-Win32-' + $env:VC.toUpper() + '-' + $env:ARCH + '.zip'
                 if (-not (Test-Path c:\build-cache\$bname)) {
-                        (new-object net.webclient).DownloadFile('http://windows.php.net/downloads/releases/archives/' + $bname, 'c:\build-cache\' + $bname)
+                        (new-object net.webclient).DownloadFile('http://windows.php.net/downloads/releases/' + $bname, 'c:\build-cache\' + $bname)
                 }
                 $dname0 = 'php-' + $env:PHP_VER + '-devel-' + $env:VC.toUpper() + '-' + $env:ARCH
                 $dname1 = 'php-' + $env:PHP_VER + $ts_part + '-devel-' + $env:VC.toUpper() + '-' + $env:ARCH
@@ -77,6 +77,5 @@ build_script:
                 $here = (Get-Item -Path ".\" -Verbose).FullName
                 $runner = 'c:\build-cache\php-sdk-' + $env:BIN_SDK_VER + '\phpsdk' + '-' + $env:VC + '-' + $env:ARCH + '.bat'
                 $task = $here + '\task.bat'
-                dir
                 & $runner -t $task
 
