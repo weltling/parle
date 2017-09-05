@@ -82,7 +82,7 @@ after_build:
         ps: |
                 $ts_part = 'ts'
                 if ('0' -eq $env:TS) { $ts_part = 'nts' }
-                $zip_bname = 'php_parle-' + $env:APPVEYOR_REPO_COMMIT.substring(0, 8) + '-' + $env:PHP_VER + '-' + $ts_part + '-' + $env:VC + '-' + $env:ARCH + '.zip'
+                $zip_bname = 'php_parle-' + $env:APPVEYOR_REPO_COMMIT.substring(0, 8) + '-' + $env:PHP_VER.substring(0, 3) + '-' + $ts_part + '-' + $env:VC + '-' + $env:ARCH + '.zip'
                 $dir = 'c:\projects\parle\';
                 if ('x64' -eq $env:ARCH) { $dir = $dir + 'x64\Release' }
                 if ('1' -eq $env:TS) { $dir = $dir + '_TS' }
