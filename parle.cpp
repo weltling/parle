@@ -1486,6 +1486,12 @@ ZEND_END_ARG_INFO();
 ZEND_BEGIN_ARG_INFO_EX(arginfo_parle_parser_dump, 0, 0, 0)
 ZEND_END_ARG_INFO();
 
+PARLE_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(arginfo_parle_parser_trace, 0, 0, IS_STRING, 0)
+ZEND_END_ARG_INFO();
+
+PARLE_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(arginfo_parle_parser_errorinfo, 0, 0, IS_ARRAY, 0)
+ZEND_END_ARG_INFO();
+
 PARLE_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(arginfo_parle_stack_empty, 0, 0, _IS_BOOL, 0)
 ZEND_END_ARG_INFO();
 
@@ -1565,8 +1571,8 @@ const zend_function_entry ParleParser_methods[] = {
 	PHP_ME(ParleParser, advance, arginfo_parle_parser_advance, ZEND_ACC_PUBLIC)
 	PHP_ME(ParleParser, consume, arginfo_parle_parser_consume, ZEND_ACC_PUBLIC)
 	PHP_ME(ParleParser, dump, arginfo_parle_parser_dump, ZEND_ACC_PUBLIC)
-	PHP_ME(ParleParser, trace, NULL, ZEND_ACC_PUBLIC)
-	PHP_ME(ParleParser, errorInfo, NULL, ZEND_ACC_PUBLIC)
+	PHP_ME(ParleParser, trace, arginfo_parle_parser_trace, ZEND_ACC_PUBLIC)
+	PHP_ME(ParleParser, errorInfo, arginfo_parle_parser_errorinfo, ZEND_ACC_PUBLIC)
 	PHP_FE_END
 };
 
