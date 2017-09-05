@@ -71,12 +71,23 @@ build_script:
                 #echo "" | Out-File -Encoding "ASCII" -Append task.bat
                 echo "" | Out-File -Encoding "ASCII" task.bat
                 echo "call phpize 2>&1" | Out-File -Encoding "ASCII" -Append task.bat
-                echo "call configure --enable-parle 2>&1" | Out-File -Encoding "ASCII" -Append task.bat
+                echo "call configure --enable-parle --enable-debug-pack 2>&1" | Out-File -Encoding "ASCII" -Append task.bat
                 echo "nmake /nologo 2>&1" | Out-File -Encoding "ASCII" -Append task.bat
                 $here = (Get-Item -Path ".\" -Verbose).FullName
                 $runner = 'c:\build-cache\php-sdk-' + $env:BIN_SDK_VER + '\phpsdk' + '-' + $env:VC + '-' + $env:ARCH + '.bat'
                 $task = $here + '\task.bat'
                 & $runner -t $task
+
+after_build:
+        ps: |
+                $ts_part = 'ts'
+                if ('0' -eq $env:TS) { $ts_part = 'nts' }
+                $zip_bname = 'php_parle-' + $env:APPVEYOR_REPO_COMMIT.substring(0, 8) + '-' + $env:PHP_VER + '-' + $ts_part + '-' + $env:VC + '-' + $env:ARCH + '.zip'
+                $dir = 'c:\projects\parle\';
+                if ('x64' -eq $env:ARCH) { $dir = $dir + 'x64\Release' }
+                if ('1' -eq $env:TS) { $dir = $dir + '_TS' }
+                & 7z a c:\$zip_bname $dir\php_parle.dll $dir\php_parle.pdb
+                Push-AppveyorArtifact c:\$zip_bname
 
 test_script:
         ps: |
