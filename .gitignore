@@ -33,3 +33,11 @@ tests/*/*.php
 tests/*/*.exp
 tests/*/*.log
 tests/*/*.sh
+config.nice.bat
+configure.bat
+configure.js
+x64
+Release
+Release_TS
+Debug
+Debug_TS
