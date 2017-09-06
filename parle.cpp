@@ -65,7 +65,7 @@ ZEND_DECLARE_MODULE_GLOBALS(parle)
 
 struct ze_parle_lexer_obj {/*{{{*/
 	lexertl::rules *rules;
-	lexertl::state_machine *sm;
+	lexertl::state_machine sm;
 	lexertl::smatch *results;
 	std::string *in;
 	bool complete;
@@ -74,7 +74,7 @@ struct ze_parle_lexer_obj {/*{{{*/
 
 struct ze_parle_rlexer_obj {/*{{{*/
 	lexertl::rules *rules;
-	lexertl::state_machine *sm;
+	lexertl::state_machine sm;
 	lexertl::srmatch *results;
 	std::string *in;
 	bool complete;
@@ -83,7 +83,7 @@ struct ze_parle_rlexer_obj {/*{{{*/
 
 struct ze_parle_parser_obj {/*{{{*/
 	parsertl::rules *rules;
-	parsertl::state_machine *sm;
+	parsertl::state_machine sm;
 	parsertl::match_results *results;
 	std::string *in;
 	parsertl::token<lexertl::siterator>::token_vector *productions;
@@ -233,7 +233,7 @@ _lexer_build(INTERNAL_FUNCTION_PARAMETERS, zend_class_entry *ce) noexcept
 	}
 
 	try {
-		lexertl::generator::build(*zplo->rules, *zplo->sm);
+		lexertl::generator::build(*zplo->rules, zplo->sm);
 	} catch (const std::exception &e) {
 		zend_throw_exception(ParleLexerException_ce, e.what(), 0);
 	}
@@ -410,7 +410,7 @@ _lexer_advance(INTERNAL_FUNCTION_PARAMETERS, zend_class_entry *ce) noexcept
 	}
 
 	try {
-		lexertl::lookup(*zplo->sm, *zplo->results);
+		lexertl::lookup(zplo->sm, *zplo->results);
 	} catch (const std::exception &e) {
 		zend_throw_exception(ParleLexerException_ce, e.what(), 0);
 	}
@@ -689,7 +689,7 @@ _lexer_dump(INTERNAL_FUNCTION_PARAMETERS, zend_class_entry *ce) noexcept
 	try {
 		/* XXX std::cout might be not thread safe, need to gather the right
 			descriptor from the SAPI and convert to a usable stream. */
-		lexertl::debug::dump(*zplo->sm, *zplo->rules, std::cout);
+		lexertl::debug::dump(zplo->sm, *zplo->rules, std::cout);
 	} catch (const std::exception &e) {
 		zend_throw_exception(ParleLexerException_ce, e.what(), 0);
 	}
@@ -865,7 +865,7 @@ PHP_METHOD(ParleParser, build)
 	}
 
 	try {
-		parsertl::generator::build(*zppo->rules, *zppo->sm);
+		parsertl::generator::build(*zppo->rules, zppo->sm);
 	} catch (const std::exception &e) {
 		zend_throw_exception(ParleParserException_ce, e.what(), 0);
 	}
@@ -925,12 +925,12 @@ PHP_METHOD(ParleParser, validate)
 	}
 
 	try {
-		lexertl::citerator iter(ZSTR_VAL(in), ZSTR_VAL(in) + ZSTR_LEN(in), *zplo->sm);
+		lexertl::citerator iter(ZSTR_VAL(in), ZSTR_VAL(in) + ZSTR_LEN(in), zplo->sm);
 		
 		/* Since it's not more than parse, nothing is saved into the object. */
-		parsertl::match_results results(iter->id, *zppo->sm);
+		parsertl::match_results results(iter->id, zppo->sm);
 
-		RETURN_BOOL(parsertl::parse(*zppo->sm, iter, results));
+		RETURN_BOOL(parsertl::parse(zppo->sm, iter, results));
 	} catch (const std::exception &e) {
 		zend_throw_exception(ParleParserException_ce, e.what(), 0);
 	}
@@ -1043,7 +1043,7 @@ PHP_METHOD(ParleParser, sigil)
 	}
 
 	try {
-		auto ret = zppo->results->dollar(*zppo->sm, static_cast<size_t>(idx), *zppo->productions);
+		auto ret = zppo->results->dollar(zppo->sm, static_cast<size_t>(idx), *zppo->productions);
 		size_t start_pos = ret.first - zppo->in->begin();
 		const char *in = zppo->in->c_str();
 		RETURN_STRINGL(in + start_pos, ret.second - ret.first);
@@ -1074,7 +1074,7 @@ PHP_METHOD(ParleParser, advance)
 	}
 
 	try {
-		parsertl::lookup(*zppo->sm, *zppo->iter, *zppo->results, *zppo->productions);
+		parsertl::lookup(zppo->sm, *zppo->iter, *zppo->results, *zppo->productions);
 	} catch (const std::exception &e) {
 		zend_throw_exception(ParleParserException_ce, e.what(), 0);
 	}
@@ -1117,11 +1117,11 @@ PHP_METHOD(ParleParser, consume)
 		if (zppo->iter) {
 			delete zppo->iter;
 		}
-		zppo->iter = new lexertl::siterator(zppo->in->begin(), zppo->in->end(), *zplo->sm);
+		zppo->iter = new lexertl::siterator(zppo->in->begin(), zppo->in->end(), zplo->sm);
 		if (zppo->results) {
 			delete zppo->results;
 		}
-		zppo->results = new parsertl::match_results((*zppo->iter)->id, *zppo->sm);
+		zppo->results = new parsertl::match_results((*zppo->iter)->id, zppo->sm);
 	} catch (const std::exception &e) {
 		zend_throw_exception(ParleLexerException_ce, e.what(), 0);
 	}
@@ -1193,7 +1193,7 @@ PHP_METHOD(ParleParser, trace)
 				parsertl::rules::string_vector symbols;
 				zppo->rules->terminals(symbols);
 				zppo->rules->non_terminals(symbols);
-				parsertl::state_machine::size_t_size_t_pair &pair_ = zppo->sm->_rules[zppo->results->entry.param];
+				parsertl::state_machine::size_t_size_t_pair &pair_ = zppo->sm._rules[zppo->results->entry.param];
 
 				s = "reduce by " + symbols[pair_.first] + " ->";
 
@@ -1593,7 +1593,6 @@ php_parle_lexer_obj_dtor(lexer_type *zplo) noexcept
 	zend_object_std_dtor(&zplo->zo);
 
 	delete zplo->rules;
-	delete zplo->sm;
 	delete zplo->results;
 	delete zplo->in;
 }/*}}}*/
@@ -1610,7 +1609,7 @@ php_parle_lexer_obj_ctor(zend_class_entry *ce) noexcept
 
 	zplo->complete = false;
 	zplo->rules = new lexertl::rules{};
-	zplo->sm = new lexertl::state_machine{};
+	zplo->sm = lexertl::state_machine{};
 	zplo->results = nullptr;
 	zplo->in = nullptr;
 
@@ -1651,7 +1650,6 @@ php_parle_parser_obj_destroy(zend_object *obj) noexcept
 	zend_object_std_dtor(&zppo->zo);
 
 	delete zppo->rules;
-	delete zppo->sm;
 	delete zppo->results;
 	delete zppo->in;
 	delete zppo->iter;
@@ -1670,7 +1668,7 @@ php_parle_parser_object_init(zend_class_entry *ce) noexcept
 
 	zppo->complete = false;
 	zppo->rules = new parsertl::rules{};
-	zppo->sm = new parsertl::state_machine{};
+	zppo->sm = parsertl::state_machine{};
 	zppo->results = nullptr;
 	zppo->in = nullptr;
 	zppo->iter = nullptr;
