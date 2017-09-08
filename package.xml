@@ -115,6 +115,13 @@
 			</dir>
 		</dir>
 	</contents>
+	<dependencies>
+		<required>
+			<php>
+				<min>7.0</min>
+			</php>
+		</required>
+	</dependencies>
 	<providesextension>parle</providesextension>
 	<extsrcrelease />
 </package>
