@@ -710,12 +710,6 @@ PHP_METHOD(ParleRLexer, dump)
 }
 /* }}} */
 
-/* {{{ public void Parser::__construct(void) */
-PHP_METHOD(ParleParser, __construct)
-{
-}
-/* }}} */
-
 /* {{{ public void Parser::token(string $token) */
 PHP_METHOD(ParleParser, token)
 {
@@ -1555,7 +1549,6 @@ const zend_function_entry ParleRLexer_methods[] = {
 };
 
 const zend_function_entry ParleParser_methods[] = {
-	PHP_ME(ParleParser, __construct, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(ParleParser, token, arginfo_parle_parser_token, ZEND_ACC_PUBLIC)
 	PHP_ME(ParleParser, left, arginfo_parle_parser_left, ZEND_ACC_PUBLIC)
 	PHP_ME(ParleParser, right, arginfo_parle_parser_right, ZEND_ACC_PUBLIC)
