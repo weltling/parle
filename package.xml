@@ -3,7 +3,7 @@
 	<name>parle</name>
 	<channel>pecl.php.net</channel>
 	<summary>Parsing and lexing</summary>
-	<description>Parsing and lexing on runtime comes true.</description>
+	<description>With Parle, it is possible to implement lexing and parsing in PHP while relying on features and principles of the parser/lexer generator tools for C/C++.</description>
 	<lead>
 		<name>Anatol Belski</name>
 		<user>ab</user>
