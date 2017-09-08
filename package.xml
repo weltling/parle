@@ -84,7 +84,7 @@
 						</dir>
 						<dir name="parser">
 							<file role="src" name="parser.hpp"/>
-							<dir name="tokenizer">
+							<dir name="tokeniser">
 								<file role="src" name="re_token.hpp"/>
 								<file role="src" name="re_tokeniser_helper.hpp"/>
 								<file role="src" name="re_tokeniser.hpp"/>
