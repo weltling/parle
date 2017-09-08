@@ -1604,7 +1604,7 @@ php_parle_lexer_obj_ctor(zend_class_entry *ce) noexcept
 
 	zplo->complete = false;
 	zplo->rules = new lexertl::rules{};
-	zplo->sm = lexertl::state_machine{};
+	new ((void *)&zplo->sm) lexertl::state_machine{};
 	zplo->results = nullptr;
 	new ((void *) &zplo->in) std::string{};
 
@@ -1662,9 +1662,9 @@ php_parle_parser_object_init(zend_class_entry *ce) noexcept
 
 	zppo->complete = false;
 	zppo->rules = new parsertl::rules{};
-	zppo->sm = parsertl::state_machine{};
+	new ((void *)&zppo->sm) parsertl::state_machine{};
 	zppo->results = nullptr;
-	new ((void *) &zppo->in) std::string{};
+	new ((void *)&zppo->in) std::string{};
 	zppo->iter = nullptr;
 	zppo->productions = nullptr;
 
