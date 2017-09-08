@@ -1,0 +1,130 @@
+<?xml version="1.0"?>
+<package xmlns="http://pear.php.net/dtd/package-2.0" xmlns:tasks="http://pear.php.net/dtd/tasks-1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" packagerversion="1.7.2" version="2.0" xsi:schemaLocation="http://pear.php.net/dtd/tasks		-1.0 http://pear.php.net/dtd/tasks-1.0.xsd http://pear.php.net/dtd/package-2.0 http://pear.php.net/dtd/package-2.0.xsd">
+	<name>parle</name>
+	<channel>pecl.php.net</channel>
+	<summary>Parsing and lexing</summary>
+	<description>Parsing and lexing on runtime comes true.</description>
+	<lead>
+		<name>Anatol Belski</name>
+		<user>ab</user>
+		<email>ab@php.net</email>
+		<active>yes</active>
+	</lead>
+	<date>2015-02-17</date>
+	<version>
+		<release>0.5.1</release>
+		<api>0.5.1</api>
+	</version>
+	<stability>
+		<release>alpha</release>
+		<api>alpha</api>
+	</stability>
+	<license uri="http://opensource.org/licenses/BSD-2-Clause">BSD 2-clause</license>
+	<notes>
+		- initial release
+	</notes>
+	<contents>
+		<dir name="/">
+			<file role="src" name="php_parle.h"/>
+			<file role="src" name="parle.cpp"/>
+			<file role="doc" name="CREDITS"/>
+			<file role="doc" name="LICENSE"/>
+			<file role="src" name="config.w32"/>
+			<file role="src" name="config.m4"/>
+			<dir name="lib">
+				<dir name="parsertl14">
+					<file role="doc" name="README.md"/>
+					<dir name="parsertl">
+						<file role="src" name="bison_lookup.hpp"/>
+						<file role="src" name="debug.hpp"/>
+						<file role="src" name="dfa.hpp"/>
+						<file role="src" name="enums.hpp"/>
+						<file role="src" name="generator.hpp"/>
+						<file role="src" name="lookup.hpp"/>
+						<file role="src" name="match_results.hpp"/>
+						<file role="src" name="narrow.hpp"/>
+						<file role="src" name="nt_info.hpp"/>
+						<file role="src" name="parse.hpp"/>
+						<file role="src" name="read_bison.hpp"/>
+						<file role="src" name="rules.hpp"/>
+						<file role="src" name="runtime_error.hpp"/>
+						<file role="src" name="search.hpp"/>
+						<file role="src" name="state_machine.hpp"/>
+						<file role="src" name="token.hpp"/>
+					</dir>
+				</dir>
+				<dir name="lexertl14">
+					<file role="doc" name="README.md"/>
+					<dir name="lexertl">
+						<file role="src" name="char_traits.hpp"/>
+						<file role="src" name="debug.hpp"/>
+						<file role="src" name="dot.hpp"/>
+						<file role="src" name="enums.hpp"/>
+						<file role="src" name="generate_cpp.hpp"/>
+						<file role="src" name="generator.hpp"/>
+						<file role="src" name="internals.hpp"/>
+						<file role="src" name="iterator.hpp"/>
+						<file role="src" name="lookup.hpp"/>
+						<file role="src" name="match_results.hpp"/>
+						<file role="src" name="memory_file.hpp"/>
+						<file role="src" name="narrow.hpp"/>
+						<file role="src" name="observer_ptr.hpp"/>
+						<file role="src" name="rules.hpp"/>
+						<file role="src" name="runtime_error.hpp"/>
+						<file role="src" name="serialise.hpp"/>
+						<file role="src" name="sm_to_csm.hpp"/>
+						<file role="src" name="sm_traits.hpp"/>
+						<file role="src" name="state_machine.hpp"/>
+						<file role="src" name="stream_shared_iterator.hpp"/>
+						<file role="src" name="string_token.hpp"/>
+						<file role="src" name="utf_iterators.hpp"/>
+						<dir name="partition">
+							<file role="src" name="charset.hpp"/>
+							<file role="src" name="equivset.hpp"/>
+						</dir>
+						<dir name="parser">
+							<file role="src" name="parser.hpp"/>
+							<dir name="tokenizer">
+								<file role="src" name="re_token.hpp"/>
+								<file role="src" name="re_tokeniser_helper.hpp"/>
+								<file role="src" name="re_tokeniser.hpp"/>
+								<file role="src" name="re_tokeniser_state.hpp"/>
+							</dir>
+							<dir name="tree">
+								<file role="src" name="end_node.hpp"/>
+								<file role="src" name="iteration_node.hpp"/>
+								<file role="src" name="leaf_node.hpp"/>
+								<file role="src" name="node.hpp"/>
+								<file role="src" name="selection_node.hpp"/>
+								<file role="src" name="sequence_node.hpp"/>
+							</dir>
+						</dir>
+					</dir>
+				</dir>
+			</dir>
+			<dir name="tests">
+				<file role="src" name="calc_001.phpt"/>
+				<file role="src" name="calc_002.phpt"/>
+				<file role="src" name="lexer_001.phpt"/>
+				<file role="src" name="lexer_002.phpt"/>
+				<file role="src" name="lexer_003.phpt"/>
+				<file role="data" name="lexer_003.json"/>
+				<file role="src" name="lexer_004.phpt"/>
+				<file role="src" name="words_001.phpt"/>
+				<file role="src" name="words_002.phpt"/>
+			</dir>
+		</dir>
+	</contents>
+	<providesextension>parle</providesextension>
+	<extsrcrelease />
+</package>
+<!--
+/*
+ * Local variables:
+ * tab-width: 4
+ * c-basic-offset: 4
+ * End:
+ * vim600: noet sw=4 ts=4 fdm=marker
+ * vim<600: noet sw=4 ts=4
+ */
+-->
