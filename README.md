@@ -11,6 +11,13 @@ The implementation bases on the work of [Ben Hanson](http://www.benhanson.net/)
 
 Supported is PHP 7.0 and above. A [C++14](http://en.cppreference.com/w/cpp/compiler_support) capable compiler is required.
 
+
+Installation
+============
+
+Read the [INSTALL.md](./INSTALL.md) documentation.
+
+
 Example tokenizing comma separated integer list
 ============================================
 ```php
