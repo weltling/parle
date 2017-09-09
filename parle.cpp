@@ -110,6 +110,7 @@ static zend_class_entry *ParleStack_ce;
 static zend_class_entry *ParleLexerException_ce;
 static zend_class_entry *ParleParserException_ce;
 static zend_class_entry *ParleToken_ce;
+static zend_class_entry *ParleErrorInfo_ce;
 /* }}} */
 
 template<typename lexer_obj_type> lexer_obj_type *
@@ -1118,7 +1119,7 @@ PHP_METHOD(ParleParser, trace)
 }
 /* }}} */
 
-/* {{{ public array Parser::errorInfo(void) */
+/* {{{ public Parle\ErrorInfo Parser::errorInfo(void) */
 PHP_METHOD(ParleParser, errorInfo)
 {
 	struct ze_parle_parser_obj *zppo;
@@ -1130,7 +1131,7 @@ PHP_METHOD(ParleParser, errorInfo)
 
 	zppo = php_parle_parser_fetch_obj(Z_OBJ_P(me));
 
-	array_init(return_value);
+	object_init_ex(return_value, ParleErrorInfo_ce);
 
 	if (!zppo->results) {
 		zend_throw_exception(ParleParserException_ce, "No results available", 0);
@@ -1141,7 +1142,7 @@ PHP_METHOD(ParleParser, errorInfo)
 
 
 	try {
-		add_assoc_long_ex(return_value, "id", sizeof("id")-1, static_cast<zend_long>(zppo->results->entry.param));
+		add_property_long_ex(return_value, "id", sizeof("id")-1, static_cast<zend_long>(zppo->results->entry.param));
 		if (zppo->results->entry.param == parsertl::unknown_token) {
 			zval token;
 			std::string ret = (*zppo->iter)->str();
@@ -1152,7 +1153,7 @@ PHP_METHOD(ParleParser, errorInfo)
 			add_property_stringl_ex(&token, "value", sizeof("value")-1, (char *)ret.c_str(), ret.size());
 #endif
 			add_property_long(&token, "offset", (*zppo->iter)->first - zppo->in->begin());
-			add_assoc_zval_ex(return_value, "token", sizeof("token")-1, &token);
+			add_property_zval_ex(return_value, "token", sizeof("token")-1, &token);
 		}
 		/* TODO provide details also for other error types, if possible. */
 	} catch (const std::exception &e) {
@@ -1388,8 +1389,13 @@ ZEND_END_ARG_INFO();
 PARLE_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(arginfo_parle_parser_trace, 0, 0, IS_STRING, 0)
 ZEND_END_ARG_INFO();
 
-PARLE_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(arginfo_parle_parser_errorinfo, 0, 0, IS_ARRAY, 0)
+#if PHP_MAJOR_VERSION >= 7 && PHP_MINOR_VERSION < 2
+PARLE_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(arginfo_parle_parser_errorinfo, 0, 0, IS_OBJECT, 0)
 ZEND_END_ARG_INFO();
+#elif PHP_MAJOR_VERSION >= 7
+ZEND_BEGIN_ARG_WITH_RETURN_OBJ_INFO(arginfo_parle_lexer_gettoken, "Parle\\ErrorInfo", 0)
+ZEND_END_ARG_INFO();
+#endif
 
 PARLE_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(arginfo_parle_stack_empty, 0, 0, _IS_BOOL, 0)
 ZEND_END_ARG_INFO();
@@ -1415,6 +1421,10 @@ ZEND_END_ARG_INFO();
  */
 const zend_function_entry parle_functions[] = {
 	PHP_FE_END	/* Must be the last line in parle_functions[] */
+};
+
+const zend_function_entry ParleErrorInfo_methods[] = {
+	PHP_FE_END
 };
 
 const zend_function_entry ParleToken_methods[] = {
@@ -1640,16 +1650,20 @@ PHP_MINIT_FUNCTION(parle)
 	REGISTER_INI_ENTRIES();
 	*/
 
+	INIT_CLASS_ENTRY(ce, "Parle\\ErrorInfo", ParleErrorInfo_methods);
+	ParleErrorInfo_ce = zend_register_internal_class(&ce);
+	zend_declare_property_long(ParleErrorInfo_ce, "id", sizeof("id")-1, Z_L(0), ZEND_ACC_PUBLIC);
+	zend_declare_property_null(ParleErrorInfo_ce, "token", sizeof("token")-1, ZEND_ACC_PUBLIC);
+
 	INIT_CLASS_ENTRY(ce, "Parle\\Token", ParleToken_methods);
 	ParleToken_ce = zend_register_internal_class(&ce);
 #define DECL_CONST(name, val) zend_declare_class_constant_long(ParleToken_ce, name, sizeof(name) - 1, val);
-	DECL_CONST("EOI", Z_L(0))
 	DECL_CONST("UNKNOWN", static_cast<zend_long>(lexertl::smatch::npos()));
 	DECL_CONST("SKIP", static_cast<zend_long>(lexertl::smatch::skip()));
 #undef DECL_CONST
-	zend_declare_property_long(ParleToken_ce, "id", sizeof("id")-1, Z_L(0), ZEND_ACC_PUBLIC);
-	zend_declare_property_long(ParleToken_ce, "value", sizeof("value")-1, NULL, ZEND_ACC_PUBLIC);
-	zend_declare_property_long(ParleToken_ce, "offset", sizeof("offset")-1, Z_L(0), ZEND_ACC_PUBLIC);
+	zend_declare_property_long(ParleToken_ce, "id", sizeof("id")-1, static_cast<zend_long>(lexertl::smatch::npos()), ZEND_ACC_PUBLIC);
+	zend_declare_property_null(ParleToken_ce, "value", sizeof("value")-1, ZEND_ACC_PUBLIC);
+	zend_declare_property_long(ParleToken_ce, "offset", sizeof("offset")-1, Z_L(-1), ZEND_ACC_PUBLIC);
 
 	memcpy(&parle_lexer_handlers, zend_get_std_object_handlers(), sizeof(zend_object_handlers));
 	parle_lexer_handlers.clone_obj = NULL;
@@ -1665,6 +1679,7 @@ PHP_MINIT_FUNCTION(parle)
 	DECL_CONST("FLAG_REGEX_DOT_NOT_CR_LF", lexertl::dot_not_cr_lf)
 	DECL_CONST("FLAG_REGEX_SKIP_WS", lexertl::skip_ws)
 	DECL_CONST("FLAG_REGEX_MATCH_ZERO_LEN", lexertl::match_zero_len)
+	DECL_CONST("EOI", Z_L(0))
 #undef DECL_CONST
 
 	memcpy(&parle_rlexer_handlers, zend_get_std_object_handlers(), sizeof(zend_object_handlers));

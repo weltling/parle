@@ -59,5 +59,92 @@ do {
 ```
 
 
-More is to come, stay tuned.
+Example parsing comma separated list of integers and decimals with comma as the decimal mark
 ===========================
+```php
+
+use Parle\Lexer;
+use Parle\Parser;
+use Parle\ParserException;
+
+$token = array();
+
+$p = new Parser;
+$p->token("CRLF");
+$p->token("COMMA");
+$p->token("INTEGER");
+$p->token("'\"'");
+$p->push("START", "RECORDS");
+$records_idx_0 = $p->push("RECORDS", "RECORD CRLF");
+$records_idx_1 = $p->push("RECORDS", "RECORDS RECORD CRLF");
+$int_idx_0 = $p->push("RECORD", "INTEGER");
+$int_idx_1 = $p->push("RECORD", "RECORD COMMA INTEGER");
+$dec_idx_0 = $p->push("DECIMAL", "INTEGER COMMA INTEGER");
+$dec_idx_1 = $p->push("RECORD", "'\"' DECIMAL '\"'");
+$dec_idx_2 = $p->push("RECORD", "RECORD COMMA '\"' DECIMAL '\"'");
+$p->build();
+
+$lex = new Lexer;
+$lex->push("[\x2c]", $p->tokenId("COMMA"));
+$lex->push("[\r][\n]", $p->tokenId("CRLF"));
+$lex->push("[\d]+", $p->tokenId("INTEGER"));
+$lex->push("[\x22]", $p->tokenId("'\"'"));
+$lex->build();
+
+$in = "000,111,222\r\n\"333,3\",444,555\r\n666,777,\"888,8\"\r\n";
+
+$p->consume($in, $lex);
+
+do {
+	$act = $p->action();
+
+	switch ($act) {
+		case Parser::ACTION_ERROR:
+			$err = $p->errorInfo();
+			if (Parser::ERROR_UNKOWN_TOKEN == $err->id) {
+				$tok = $err->token;
+				throw new ParserException("Unknown token '" . $tok->value . "' at offset " . $tok->offset);
+			} else if (Parser::ERROR_NON_ASSOCIATIVE == $err->id) {
+				throw new ParserException("Non associative");
+			} else if (Parser::ERROR_SYNTAX == $err->id) {
+				throw new ParserException("Syntax error");
+			}
+			throw new ParserException("Parse error");
+			break;
+		case Parser::ACTION_SHIFT:
+		case Parser::ACTION_GOTO:
+		case Parser::ACTION_ACCEPT:
+			continue;
+			break;
+		case Parser::ACTION_REDUCE:
+			$rid = $p->reduceId();
+			switch ($rid) {
+				case $int_idx_0:
+					/* INTEGER */
+					echo $p->sigil(), PHP_EOL;
+					break;
+				case $int_idx_1:
+					/* RECORD COMMA INTEGER */
+					echo $p->sigil(2), PHP_EOL;
+					break;
+				case $dec_idx_1:
+					/* '\"' DECIMAL '\"' */
+					echo $p->sigil(1), PHP_EOL;
+					break;
+				case $dec_idx_2:
+					/* RECORD COMMA '\"' DECIMAL '\"' */
+					echo $p->sigil(3), PHP_EOL;
+					break;
+				case $p->tokenId("CRLF"):
+				case $records_idx_0:
+				case $records_idx_1:
+					echo "=====", PHP_EOL;
+					break;
+			}
+			break;
+	}
+	$p->advance();
+} while (Parser::ACTION_ACCEPT != $act);
+
+```
+
