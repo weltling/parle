@@ -6,6 +6,7 @@ Lex JSON
 <?php
 
 use Parle\RLexer;
+use Parle\Token;
 
 const eOpenOb = 42;
 const eCloseOb = 43;
@@ -44,7 +45,7 @@ $lex->push("INITIAL", "[[]", eOpenArr, ">ARRAY:END");
 
 $lex->push("OBJECT,OB_COMMA", "[}]", eCloseOb, "<");
 $lex->push("OBJECT,NAME", "{STRING}", eName, "COLON");
-$lex->push("COLON", ":", $lex->skip(), "OB_VALUE");
+$lex->push("COLON", ":", Token::SKIP, "OB_VALUE");
 
 $lex->push("OB_VALUE", "{STRING}", eString, "OB_COMMA");
 $lex->push("OB_VALUE", "{NUMBER}", eNumber, "OB_COMMA");
@@ -53,7 +54,7 @@ $lex->push("OB_VALUE", "{NULL}", eNull, "OB_COMMA");
 $lex->push("OB_VALUE", "[{]", eOpenOb, ">OBJECT:OB_COMMA");
 $lex->push("OB_VALUE", "[[]", eOpenArr, ">ARRAY:OB_COMMA");
 
-$lex->push("OB_COMMA", ",", $lex->skip(), "NAME");
+$lex->push("OB_COMMA", ",", Token::SKIP, "NAME");
 
 $lex->push("ARRAY,ARR_COMMA", "\\]", eCloseArr, "<");
 $lex->push("ARRAY,ARR_VALUE", "{STRING}", eString, "ARR_COMMA");
@@ -63,8 +64,8 @@ $lex->push("ARRAY,ARR_VALUE", "{NULL}", eNull, "ARR_COMMA");
 $lex->push("ARRAY,ARR_VALUE", "[{]", eOpenOb, ">OBJECT:ARR_COMMA");
 $lex->push("ARRAY,ARR_VALUE", "[[]", eOpenArr, ">ARRAY:ARR_COMMA");
 
-$lex->push("ARR_COMMA", ",", $lex->skip(), "ARR_VALUE");
-$lex->push("*", "[ \t\r\n]+", $lex->skip(), ".");
+$lex->push("ARR_COMMA", ",", Token::SKIP, "ARR_VALUE");
+$lex->push("*", "[ \t\r\n]+", Token::SKIP, ".");
 
 $lex->build();
 
@@ -75,7 +76,7 @@ $lex->consume($in);
 
 $lex->advance();
 $tok = $lex->getToken();
-while (RLexer::EOI != $tok["id"]) {
+while (Token::EOI != $tok->id) {
 	var_dump($tok);
 	$lex->advance();
 	$tok = $lex->getToken();
@@ -83,8 +84,8 @@ while (RLexer::EOI != $tok["id"]) {
 
 ?>
 ==DONE==
---EXPECT--
-array(3) {
+--EXPECTF--
+object(Parle\Token)#%d (3) {
   ["id"]=>
   int(42)
   ["value"]=>
@@ -92,7 +93,7 @@ array(3) {
   ["offset"]=>
   int(0)
 }
-array(3) {
+object(Parle\Token)#%d (3) {
   ["id"]=>
   int(46)
   ["value"]=>
@@ -100,7 +101,7 @@ array(3) {
   ["offset"]=>
   int(5)
 }
-array(3) {
+object(Parle\Token)#%d (3) {
   ["id"]=>
   int(44)
   ["value"]=>
@@ -108,7 +109,7 @@ array(3) {
   ["offset"]=>
   int(12)
 }
-array(3) {
+object(Parle\Token)#%d (3) {
   ["id"]=>
   int(47)
   ["value"]=>
@@ -116,7 +117,7 @@ array(3) {
   ["offset"]=>
   int(18)
 }
-array(3) {
+object(Parle\Token)#%d (3) {
   ["id"]=>
   int(48)
   ["value"]=>
@@ -124,7 +125,7 @@ array(3) {
   ["offset"]=>
   int(39)
 }
-array(3) {
+object(Parle\Token)#%d (3) {
   ["id"]=>
   int(47)
   ["value"]=>
@@ -132,7 +133,7 @@ array(3) {
   ["offset"]=>
   int(54)
 }
-array(3) {
+object(Parle\Token)#%d (3) {
   ["id"]=>
   int(45)
   ["value"]=>
@@ -140,7 +141,7 @@ array(3) {
   ["offset"]=>
   int(66)
 }
-array(3) {
+object(Parle\Token)#%d (3) {
   ["id"]=>
   int(46)
   ["value"]=>
@@ -148,7 +149,7 @@ array(3) {
   ["offset"]=>
   int(72)
 }
-array(3) {
+object(Parle\Token)#%d (3) {
   ["id"]=>
   int(42)
   ["value"]=>
@@ -156,7 +157,7 @@ array(3) {
   ["offset"]=>
   int(79)
 }
-array(3) {
+object(Parle\Token)#%d (3) {
   ["id"]=>
   int(46)
   ["value"]=>
@@ -164,7 +165,7 @@ array(3) {
   ["offset"]=>
   int(87)
 }
-array(3) {
+object(Parle\Token)#%d (3) {
   ["id"]=>
   int(48)
   ["value"]=>
@@ -172,7 +173,7 @@ array(3) {
   ["offset"]=>
   int(95)
 }
-array(3) {
+object(Parle\Token)#%d (3) {
   ["id"]=>
   int(43)
   ["value"]=>
@@ -180,7 +181,7 @@ array(3) {
   ["offset"]=>
   int(101)
 }
-array(3) {
+object(Parle\Token)#%d (3) {
   ["id"]=>
   int(46)
   ["value"]=>
@@ -188,7 +189,7 @@ array(3) {
   ["offset"]=>
   int(107)
 }
-array(3) {
+object(Parle\Token)#%d (3) {
   ["id"]=>
   int(50)
   ["value"]=>
@@ -196,7 +197,7 @@ array(3) {
   ["offset"]=>
   int(115)
 }
-array(3) {
+object(Parle\Token)#%d (3) {
   ["id"]=>
   int(43)
   ["value"]=>

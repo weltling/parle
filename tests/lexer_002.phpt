@@ -6,6 +6,7 @@ Lex various number formats
 <?php 
 
 use Parle\Lexer;
+use Parle\Token;
 
 $lex = new Lexer;
 
@@ -27,8 +28,8 @@ foreach ($nums as $in) {
 	$lex->advance();
 	$tok = $lex->getToken();
 
-	while (Lexer::EOI != $tok["id"]) {
-		if ($tok["id"] > 0) {
+	while (Token::EOI != $tok->id) {
+		if ($tok->id > 0) {
 			var_dump($tok);
 		}
 		$lex->advance();
@@ -38,8 +39,8 @@ foreach ($nums as $in) {
 
 ?>
 ==DONE==
---EXPECT--
-array(3) {
+--EXPECTF--
+object(Parle\Token)#%d (3) {
   ["id"]=>
   int(4)
   ["value"]=>
@@ -47,7 +48,7 @@ array(3) {
   ["offset"]=>
   int(0)
 }
-array(3) {
+object(Parle\Token)#%d (3) {
   ["id"]=>
   int(1)
   ["value"]=>
@@ -55,7 +56,7 @@ array(3) {
   ["offset"]=>
   int(5)
 }
-array(3) {
+object(Parle\Token)#%d (3) {
   ["id"]=>
   int(2)
   ["value"]=>
@@ -63,7 +64,7 @@ array(3) {
   ["offset"]=>
   int(14)
 }
-array(3) {
+object(Parle\Token)#%d (3) {
   ["id"]=>
   int(3)
   ["value"]=>

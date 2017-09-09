@@ -6,6 +6,7 @@ Lex PHP var statement
 <?php 
 
 use Parle\Lexer;
+use Parle\Token;
 
 $lex = new Lexer;
 $lex->push("\$[a-z]{1,}[a-zA-Z0-9_]+", 1);
@@ -21,7 +22,7 @@ $lex->consume($s);
 $lex->advance();
 $tok = $lex->getToken();
 
-while (Lexer::EOI != $tok["id"]) {
+while (Token::EOI != $tok->id) {
 	var_dump($tok);
 	$lex->advance();
 	$tok = $lex->getToken();
@@ -29,8 +30,8 @@ while (Lexer::EOI != $tok["id"]) {
 
 ?>
 ==DONE==
---EXPECT--
-array(3) {
+--EXPECTF--
+object(Parle\Token)#%d (3) {
   ["id"]=>
   int(1)
   ["value"]=>
@@ -38,7 +39,7 @@ array(3) {
   ["offset"]=>
   int(0)
 }
-array(3) {
+object(Parle\Token)#3 (3) {
   ["id"]=>
   int(2)
   ["value"]=>
@@ -46,7 +47,7 @@ array(3) {
   ["offset"]=>
   int(6)
 }
-array(3) {
+object(Parle\Token)#%d (3) {
   ["id"]=>
   int(3)
   ["value"]=>
@@ -54,7 +55,7 @@ array(3) {
   ["offset"]=>
   int(7)
 }
-array(3) {
+object(Parle\Token)#3 (3) {
   ["id"]=>
   int(4)
   ["value"]=>

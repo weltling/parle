@@ -8,6 +8,7 @@ Simple stackless calc
 use Parle\Parser;
 use Parle\ParserException;
 use Parle\RLexer;
+use Parle\Token;
 
 $p = new Parser;
 $p->token("INTEGER");
@@ -28,7 +29,7 @@ $lex->push("[-]", $p->tokenId("'-'"));
 $lex->push("[*]", $p->tokenId("'*'"));
 $lex->push("[/]", $p->tokenId("'/'"));
 $lex->push("\\d+", $p->tokenId("INTEGER"));
-$lex->push("\\s+", $lex->skip());
+$lex->push("\\s+", Token::SKIP);
 
 $lex->build();
 

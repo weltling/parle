@@ -7,6 +7,7 @@ Parse words from a string
 
 use Parle\Parser;
 use Parle\Lexer;
+use Parle\Token;
 
 $p = new Parser;
 $p->token("WORD");
@@ -18,7 +19,7 @@ $p->build();
 
 $lex = new Lexer;
 $lex->push("[^[:blank:][:punct:]]+", $p->tokenId("WORD"));
-$lex->push("\\s+", $lex->skip());
+$lex->push("\\s+", Token::SKIP);
 $lex->build();
 
 
@@ -36,9 +37,9 @@ foreach ($words as $in) {
 	$tok = $lex->getToken();
 
 	$out = array();
-	while (Lexer::EOI != $tok["id"]) {
-		if ($tok["id"] > 0) {
-			$out[] = $tok["value"];
+	while (Token::EOI != $tok->id) {
+		if ($tok->id > 0) {
+			$out[] = $tok->value;
 		}
 		$lex->advance();
 		$tok = $lex->getToken();

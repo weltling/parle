@@ -6,6 +6,7 @@ Restartable lexing
 <?php 
 
 use Parle\RLexer;
+use Parle\Token;
 
 $lex = new Parle\RLexer;
 $lex->push("can", 1);
@@ -26,7 +27,7 @@ $lex->bol(true);
 $lex->advance();
 $tok = $lex->getToken();
 
-while (RLexer::EOI != $tok["id"]) {
+while (Token::EOI != $tok->id) {
 	var_dump($tok);
 	$lex->advance();
 	$tok = $lex->getToken();
@@ -34,8 +35,8 @@ while (RLexer::EOI != $tok["id"]) {
 
 ?>
 ==DONE==
---EXPECT--
-array(3) {
+--EXPECTF--
+object(Parle\Token)#%d (3) {
   ["id"]=>
   int(2)
   ["value"]=>
@@ -43,7 +44,7 @@ array(3) {
   ["offset"]=>
   int(4)
 }
-array(3) {
+object(Parle\Token)#%d (3) {
   ["id"]=>
   int(100)
   ["value"]=>
@@ -52,7 +53,7 @@ array(3) {
   ["offset"]=>
   int(7)
 }
-array(3) {
+object(Parle\Token)#%d (3) {
   ["id"]=>
   int(50)
   ["value"]=>
@@ -60,7 +61,7 @@ array(3) {
   ["offset"]=>
   int(8)
 }
-array(3) {
+object(Parle\Token)#%d (3) {
   ["id"]=>
   int(100)
   ["value"]=>
@@ -68,7 +69,7 @@ array(3) {
   ["offset"]=>
   int(9)
 }
-array(3) {
+object(Parle\Token)#%d (3) {
   ["id"]=>
   int(4)
   ["value"]=>
@@ -76,7 +77,7 @@ array(3) {
   ["offset"]=>
   int(10)
 }
-array(3) {
+object(Parle\Token)#%d (3) {
   ["id"]=>
   int(100)
   ["value"]=>
@@ -85,7 +86,7 @@ array(3) {
   ["offset"]=>
   int(13)
 }
-array(3) {
+object(Parle\Token)#%d (3) {
   ["id"]=>
   int(3)
   ["value"]=>
@@ -93,7 +94,7 @@ array(3) {
   ["offset"]=>
   int(14)
 }
-array(3) {
+object(Parle\Token)#%d (3) {
   ["id"]=>
   int(100)
   ["value"]=>
@@ -101,7 +102,7 @@ array(3) {
   ["offset"]=>
   int(17)
 }
-array(3) {
+object(Parle\Token)#%d (3) {
   ["id"]=>
   int(50)
   ["value"]=>
@@ -109,7 +110,7 @@ array(3) {
   ["offset"]=>
   int(18)
 }
-array(3) {
+object(Parle\Token)#%d (3) {
   ["id"]=>
   int(100)
   ["value"]=>
@@ -118,7 +119,7 @@ array(3) {
   ["offset"]=>
   int(23)
 }
-array(3) {
+object(Parle\Token)#%d (3) {
   ["id"]=>
   int(50)
   ["value"]=>
@@ -126,7 +127,7 @@ array(3) {
   ["offset"]=>
   int(24)
 }
-array(3) {
+object(Parle\Token)#%d (3) {
   ["id"]=>
   int(100)
   ["value"]=>
@@ -134,7 +135,7 @@ array(3) {
   ["offset"]=>
   int(31)
 }
-array(3) {
+object(Parle\Token)#%d (3) {
   ["id"]=>
   int(4)
   ["value"]=>
