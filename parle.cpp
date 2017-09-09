@@ -431,35 +431,6 @@ PHP_METHOD(ParleRLexer, advance)
 /* }}} */
 
 template<typename lexer_obj_type> void
-_lexer_skip(INTERNAL_FUNCTION_PARAMETERS, zend_class_entry *ce) noexcept
-{/*{{{*/
-	lexer_obj_type *zplo;
-	zval *me;
-
-	if(zend_parse_method_parameters(ZEND_NUM_ARGS(), getThis(), "O", &me, ce) == FAILURE) {
-		return;
-	}
-
-	zplo = _php_parle_lexer_fetch_zobj<lexer_obj_type>(Z_OBJ_P(me));
-
-	RETURN_LONG(zplo->rules->skip());
-}/*}}}*/
-
-/* {{{ public int Lexer::skip(void) */
-PHP_METHOD(ParleLexer, skip)
-{
-	_lexer_skip<struct ze_parle_lexer_obj>(INTERNAL_FUNCTION_PARAM_PASSTHRU, ParleLexer_ce);
-}
-/* }}} */
-
-/* {{{ public int RLexer::skip(void) */
-PHP_METHOD(ParleRLexer, skip)
-{
-	_lexer_skip<struct ze_parle_rlexer_obj>(INTERNAL_FUNCTION_PARAM_PASSTHRU, ParleRLexer_ce);
-}
-/* }}} */
-
-template<typename lexer_obj_type> void
 _lexer_bol(INTERNAL_FUNCTION_PARAMETERS, zend_class_entry *ce) noexcept
 {/*{{{*/
 	lexer_obj_type *zplo;
@@ -1327,9 +1298,6 @@ ZEND_BEGIN_ARG_INFO_EX(arginfo_parle_lexer_consume, 0, 0, 1)
 	ZEND_ARG_TYPE_INFO(0, data, IS_STRING, 0)
 ZEND_END_ARG_INFO();
 
-PARLE_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(arginfo_parle_lexer_skip, 0, 0, IS_LONG, 0)
-ZEND_END_ARG_INFO();
-
 ZEND_BEGIN_ARG_INFO_EX(arginfo_parle_lexer_advance, 0, 0, 0)
 ZEND_END_ARG_INFO();
 
@@ -1448,7 +1416,6 @@ const zend_function_entry ParleLexer_methods[] = {
 	PHP_ME(ParleLexer, getToken, arginfo_parle_lexer_gettoken, ZEND_ACC_PUBLIC)
 	PHP_ME(ParleLexer, build, arginfo_parle_lexer_build, ZEND_ACC_PUBLIC)
 	PHP_ME(ParleLexer, consume, arginfo_parle_lexer_consume, ZEND_ACC_PUBLIC)
-	PHP_ME(ParleLexer, skip, arginfo_parle_lexer_skip, ZEND_ACC_PUBLIC)
 	PHP_ME(ParleLexer, advance, arginfo_parle_lexer_advance, ZEND_ACC_PUBLIC)
 	PHP_ME(ParleLexer, bol, arginfo_parle_lexer_bol, ZEND_ACC_PUBLIC)
 	PHP_ME(ParleLexer, restart, arginfo_parle_lexer_restart, ZEND_ACC_PUBLIC)
@@ -1463,7 +1430,6 @@ const zend_function_entry ParleRLexer_methods[] = {
 	PHP_ME(ParleRLexer, getToken, arginfo_parle_lexer_gettoken, ZEND_ACC_PUBLIC)
 	PHP_ME(ParleRLexer, build, arginfo_parle_lexer_build, ZEND_ACC_PUBLIC)
 	PHP_ME(ParleRLexer, consume, arginfo_parle_lexer_consume, ZEND_ACC_PUBLIC)
-	PHP_ME(ParleRLexer, skip, arginfo_parle_lexer_skip, ZEND_ACC_PUBLIC)
 	PHP_ME(ParleRLexer, advance, arginfo_parle_lexer_advance, ZEND_ACC_PUBLIC)
 	PHP_ME(ParleRLexer, bol, arginfo_parle_lexer_bol, ZEND_ACC_PUBLIC)
 	PHP_ME(ParleRLexer, restart, arginfo_parle_lexer_restart, ZEND_ACC_PUBLIC)
@@ -1679,7 +1645,8 @@ PHP_MINIT_FUNCTION(parle)
 	DECL_CONST("FLAG_REGEX_SKIP_WS", lexertl::skip_ws)
 	DECL_CONST("FLAG_REGEX_MATCH_ZERO_LEN", lexertl::match_zero_len)
 	DECL_CONST("EOI", Z_L(0))
-	DECL_CONST("UNKNOWN_TOKEN_ID", static_cast<zend_long>(lexertl::smatch::npos()));
+	DECL_CONST("UNKNOWN", static_cast<zend_long>(lexertl::smatch::npos()));
+	DECL_CONST("SKIP", static_cast<zend_long>(lexertl::smatch::skip()));
 #undef DECL_CONST
 
 	memcpy(&parle_rlexer_handlers, zend_get_std_object_handlers(), sizeof(zend_object_handlers));
