@@ -59,7 +59,7 @@ do {
 ```
 
 
-Example parsing comma separated list of integers and decimals with comma as the decimal mark
+Example tokenizing comma separated number list
 ===========================
 ```php
 
@@ -91,6 +91,7 @@ $lex->push("[\d]+", $p->tokenId("INTEGER"));
 $lex->push("[\x22]", $p->tokenId("'\"'"));
 $lex->build();
 
+/* Specifically using comma as both list separator and as a decimal mark. */
 $in = "000,111,222\r\n\"333,3\",444,555\r\n666,777,\"888,8\"\r\n";
 
 $p->consume($in, $lex);
@@ -103,7 +104,8 @@ do {
 			$err = $p->errorInfo();
 			if (Parser::ERROR_UNKOWN_TOKEN == $err->id) {
 				$tok = $err->token;
-				throw new ParserException("Unknown token '" . $tok->value . "' at offset " . $tok->offset);
+				$msg = "Unknown token '{$tok->value}' at offset {$tok->offset}";
+				throw new ParserException($msg);
 			} else if (Parser::ERROR_NON_ASSOCIATIVE == $err->id) {
 				throw new ParserException("Non associative");
 			} else if (Parser::ERROR_SYNTAX == $err->id) {
