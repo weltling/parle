@@ -11,7 +11,7 @@ if test "$PHP_PARLE" != "no"; then
   AC_DEFINE(HAVE_PARLE,1,[ ])
   PHP_SUBST(PARLE_SHARED_LIBADD)
 
-  PHP_NEW_EXTENSION(parle, parle.cpp, $ext_shared,, -DZEND_ENABLE_STATIC_TSRMLS_CACHE=1 -std=c++14)
+  PHP_NEW_EXTENSION(parle, parle.cpp, $ext_shared,, -DZEND_ENABLE_STATIC_TSRMLS_CACHE=1 -std=c++14, cxx)
 
   PHP_ADD_INCLUDE($ext_srcdir/lib/lexertl14)
   PHP_ADD_INCLUDE($ext_builddir/lib/lexertl14)
