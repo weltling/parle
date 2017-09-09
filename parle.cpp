@@ -1393,7 +1393,7 @@ ZEND_END_ARG_INFO();
 PARLE_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(arginfo_parle_parser_errorinfo, 0, 0, IS_OBJECT, 0)
 ZEND_END_ARG_INFO();
 #elif PHP_MAJOR_VERSION >= 7
-ZEND_BEGIN_ARG_WITH_RETURN_OBJ_INFO(arginfo_parle_lexer_gettoken, "Parle\\ErrorInfo", 0)
+ZEND_BEGIN_ARG_WITH_RETURN_OBJ_INFO(arginfo_parle_parser_errorinfo, "Parle\\ErrorInfo", 0)
 ZEND_END_ARG_INFO();
 #endif
 
