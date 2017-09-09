@@ -36,7 +36,7 @@ foreach ($words as $in) {
 	$tok = $lex->getToken();
 
 	$out = array();
-	while (0 != $tok["id"]) {
+	while (Lexer::EOI != $tok["id"]) {
 		if ($tok["id"] > 0) {
 			$out[] = $tok["value"];
 		}

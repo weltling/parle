@@ -27,7 +27,7 @@ foreach ($nums as $in) {
 	$lex->advance();
 	$tok = $lex->getToken();
 
-	while (0 != $tok["id"]) {
+	while (Lexer::EOI != $tok["id"]) {
 		if ($tok["id"] > 0) {
 			var_dump($tok);
 		}

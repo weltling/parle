@@ -54,7 +54,7 @@ do {
         }
 
         echo "TOKEN: ", $token_rev[$tok["id"]], PHP_EOL;
-} while ($lex->eoi() != $tok["id"]);
+} while (Lexer::EOI != $tok["id"]);
 ```
 
 

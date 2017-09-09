@@ -21,7 +21,7 @@ $lex->consume($s);
 $lex->advance();
 $tok = $lex->getToken();
 
-while (0 != $tok["id"]) {
+while (Lexer::EOI != $tok["id"]) {
 	var_dump($tok);
 	$lex->advance();
 	$tok = $lex->getToken();
