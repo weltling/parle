@@ -103,15 +103,15 @@
 				</dir>
 			</dir>
 			<dir name="tests">
-				<file role="src" name="calc_001.phpt"/>
-				<file role="src" name="calc_002.phpt"/>
-				<file role="src" name="lexer_001.phpt"/>
-				<file role="src" name="lexer_002.phpt"/>
-				<file role="src" name="lexer_003.phpt"/>
-				<file role="data" name="lexer_003.json"/>
-				<file role="src" name="lexer_004.phpt"/>
-				<file role="src" name="words_001.phpt"/>
-				<file role="src" name="words_002.phpt"/>
+				<file role="test" name="calc_001.phpt"/>
+				<file role="test" name="calc_002.phpt"/>
+				<file role="test" name="lexer_001.phpt"/>
+				<file role="test" name="lexer_002.phpt"/>
+				<file role="test" name="lexer_003.phpt"/>
+				<file role="test" name="lexer_003.json"/>
+				<file role="test" name="lexer_004.phpt"/>
+				<file role="test" name="words_001.phpt"/>
+				<file role="test" name="words_002.phpt"/>
 			</dir>
 		</dir>
 	</contents>
