@@ -1690,9 +1690,6 @@ PHP_MINIT_FUNCTION(parle)
 	INIT_CLASS_ENTRY(ce, "Parle\\RLexer", ParleRLexer_methods);
 	ce.create_object = php_parle_rlexer_object_init;
 	ParleRLexer_ce = zend_register_internal_class_ex(&ce, ParleLexer_ce);
-#define DECL_CONST(name, val) zend_declare_class_constant_long(ParleRLexer_ce, name, sizeof(name) - 1, val);
-	DECL_CONST("UNKNOWN_TOKEN_ID", static_cast<zend_long>(lexertl::srmatch::npos()));
-#undef DECL_CONST
 
 	memcpy(&parle_parser_handlers, zend_get_std_object_handlers(), sizeof(zend_object_handlers));
 	parle_parser_handlers.clone_obj = NULL;
