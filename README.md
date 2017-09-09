@@ -22,6 +22,7 @@ Example tokenizing comma separated integer list
 ============================================
 ```php
 
+use Parle\Token;
 use Parle\Lexer;
 use Parle\LexerException;
 
@@ -49,12 +50,12 @@ do {
         $lex->advance();
         $tok = $lex->getToken();
 
-        if ($tok["id"] < 0) {
-                throw new LexerException("Unknown token '$tok[value]' at offset $tok[offset].");
+        if (Token::UNKNOWN == $tok->id) {
+                throw new LexerException("Unknown token '{$tok->value}' at offset {$tok->offset}.");
         }
 
-        echo "TOKEN: ", $token_rev[$tok["id"]], PHP_EOL;
-} while (Lexer::EOI != $tok["id"]);
+        echo "TOKEN: ", $token_rev[$tok->id], PHP_EOL;
+} while (Token::EOI != $tok->id);
 ```
 
 
