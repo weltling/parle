@@ -12,8 +12,8 @@
 	</lead>
 	<date>2017-09-09</date>
 	<version>
-		<release>0.5.3</release>
-		<api>0.5.3</api>
+		<release>0.5.4</release>
+		<api>0.5.4</api>
 	</version>
 	<stability>
 		<release>alpha</release>
@@ -21,7 +21,6 @@
 	</stability>
 	<license uri="http://opensource.org/licenses/BSD-2-Clause">BSD 2-clause</license>
 	<notes>
-		- PHP 7.2 compilation failure (Remi Collet)
 	</notes>
 	<contents>
 		<dir name="/">
@@ -164,6 +163,21 @@
 				- Lexer methods skip(), eoi() and npos() are transformed into constants and are available in the Token class as SKIP, EOI and UNKNOWN constants
 				- Introduced ErrorInfo class
 			</notes>
+		</release>
+			<date>2017-09-09</date>
+			<version>
+				<release>0.5.3</release>
+				<api>0.5.3</api>
+			</version>
+			<stability>
+				<release>alpha</release>
+				<api>alpha</api>
+			</stability>
+			<license uri="http://opensource.org/licenses/BSD-2-Clause">BSD 2-clause</license>
+			<notes>
+				- PHP 7.2 compilation failure (Remi Collet)
+			</notes>
+		<release>
 		</release>
 	</changelog>
 </package>
