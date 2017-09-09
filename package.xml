@@ -56,6 +56,7 @@
 				<dir name="lexertl14">
 					<file role="doc" name="README.md"/>
 					<dir name="lexertl">
+						<file role="doc" name="licence_1_0.txt"/>
 						<file role="src" name="char_traits.hpp"/>
 						<file role="src" name="debug.hpp"/>
 						<file role="src" name="dot.hpp"/>
