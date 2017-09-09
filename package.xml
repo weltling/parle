@@ -10,10 +10,10 @@
 		<email>ab@php.net</email>
 		<active>yes</active>
 	</lead>
-	<date>2017-09-09</date>
+	<date>2017-xx-xx</date>
 	<version>
-		<release>0.5.2</release>
-		<api>0.5.2</api>
+		<release>0.5.3</release>
+		<api>0.5.3</api>
 	</version>
 	<stability>
 		<release>alpha</release>
@@ -21,10 +21,6 @@
 	</stability>
 	<license uri="http://opensource.org/licenses/BSD-2-Clause">BSD 2-clause</license>
 	<notes>
-		- Package fixes by Remi Collet
-		- Introduced Token class
-		- Lexer methods skip(), eoi() and npos() are transformed into constants and are available in the Token class as SKIP, EOI and UNKNOWN constants
-		- Introduced ErrorInfo class
 	</notes>
 	<contents>
 		<dir name="/">
@@ -147,6 +143,24 @@
 			<license uri="http://opensource.org/licenses/BSD-2-Clause">BSD 2-clause</license>
 			<notes>
 				- initial release
+			</notes>
+		</release>
+		<release>
+			<date>2017-09-09</date>
+			<version>
+				<release>0.5.2</release>
+				<api>0.5.2</api>
+			</version>
+			<stability>
+				<release>alpha</release>
+				<api>alpha</api>
+			</stability>
+			<license uri="http://opensource.org/licenses/BSD-2-Clause">BSD 2-clause</license>
+			<notes>
+				- Package fixes by Remi Collet
+				- Introduced Token class
+				- Lexer methods skip(), eoi() and npos() are transformed into constants and are available in the Token class as SKIP, EOI and UNKNOWN constants
+				- Introduced ErrorInfo class
 			</notes>
 		</release>
 	</changelog>
