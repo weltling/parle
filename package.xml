@@ -21,6 +21,7 @@
 	</stability>
 	<license uri="http://opensource.org/licenses/BSD-2-Clause">BSD 2-clause</license>
 	<notes>
+		- PHP 7.2 compilation failure (Remi Collet)
 	</notes>
 	<contents>
 		<dir name="/">
