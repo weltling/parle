@@ -22,6 +22,8 @@
 	<license uri="http://opensource.org/licenses/BSD-2-Clause">BSD 2-clause</license>
 	<notes>
 		- Package fixes by Remi Collet
+		- Introduce Token class
+		- Lexer methods skip(), eoi() and npos() are transformed into constants and are available in the Token class as SKIP, EOI and UNKNOWN constants
 	</notes>
 	<contents>
 		<dir name="/">
