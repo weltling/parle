@@ -36,6 +36,7 @@
 				<dir name="parsertl14">
 					<file role="doc" name="README.md"/>
 					<dir name="parsertl">
+						<file role="doc" name="licence_1_0.txt"/>
 						<file role="src" name="bison_lookup.hpp"/>
 						<file role="src" name="debug.hpp"/>
 						<file role="src" name="dfa.hpp"/>

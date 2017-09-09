@@ -12,12 +12,17 @@
 
 namespace parsertl
 {
-struct state_machine
+template<typename id_type>
+struct basic_state_machine
 {
+    // If you get a compile error here you have
+    // failed to define an unsigned id type.
+    static_assert(std::is_unsigned<id_type>::value, "Your id type is signed");
+
     struct entry
     {
         eaction action;
-        std::size_t param;
+        id_type param;
 
         entry() :
             action(error),
@@ -25,7 +30,7 @@ struct state_machine
         {
         }
 
-        entry(const eaction action_, const std::size_t param_) :
+        entry(const eaction action_, const id_type param_) :
             action(action_),
             param(param_)
         {
@@ -39,16 +44,16 @@ struct state_machine
     };
 
     using table = std::vector<entry>;
-    using size_t_vector = std::vector<std::size_t>;
-    using size_t_size_t_pair = std::pair<std::size_t, size_t_vector>;
-    using rules = std::vector<size_t_size_t_pair>;
+    using id_type_vector = std::vector<id_type>;
+    using id_type_pair = std::pair<id_type, id_type_vector>;
+    using rules = std::vector<id_type_pair>;
 
     table _table;
     std::size_t _columns;
     std::size_t _rows;
     rules _rules;
 
-    state_machine() :
+    basic_state_machine() :
         _columns(0),
         _rows(0)
     {
@@ -66,6 +71,8 @@ struct state_machine
         return _table.empty();
     }
 };
+
+using state_machine = basic_state_machine<std::size_t>;
 }
 
 #endif

@@ -1,4 +1,4 @@
-// lookup.hpp
+// bison_lookup.hpp
 // Copyright (c) 2017 Ben Hanson (http://www.benhanson.net/)
 //
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
@@ -111,7 +111,8 @@ void bison_lookup(iterator &iter_, parsertl::match_results &results_)
 
         results_.token_id = yyr1[results_.entry.param];
         results_.entry.action = parsertl::go_to;
-        results_.entry.param = yypgoto[results_.token_id - YYNTOKENS] + results_.stack.back();
+        results_.entry.param = yypgoto[results_.token_id - YYNTOKENS] +
+            results_.stack.back();
         // Drop through to go_to:
     }
     case parsertl::go_to:
@@ -175,7 +176,8 @@ void bison_lookup(iterator &iter_, parsertl::match_results &results_,
         results_.token_id = yyr1[results_.entry.param];
         productions_.push_back(token_);
         results_.entry.action = parsertl::go_to;
-        results_.entry.param = yypgoto[results_.token_id - YYNTOKENS] + results_.stack.back();
+        results_.entry.param = yypgoto[results_.token_id - YYNTOKENS] +
+            results_.stack.back();
         // Drop through to go_to:
     }
     case parsertl::go_to:

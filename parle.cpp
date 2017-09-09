@@ -1097,7 +1097,7 @@ PHP_METHOD(ParleParser, trace)
 				parsertl::rules::string_vector symbols;
 				zppo->rules->terminals(symbols);
 				zppo->rules->non_terminals(symbols);
-				parsertl::state_machine::size_t_size_t_pair &pair_ = zppo->sm->_rules[zppo->results->entry.param];
+				parsertl::state_machine::id_type_pair &pair_ = zppo->sm->_rules[zppo->results->entry.param];
 
 				s = "reduce by " + symbols[pair_.first] + " ->";
 

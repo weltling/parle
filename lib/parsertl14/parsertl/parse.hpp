@@ -13,8 +13,9 @@
 namespace parsertl
 {
 // Parse entire sequence and return boolean
-template<typename iterator>
-bool parse(const state_machine &sm_, iterator &iter_, match_results &results_)
+template<typename id_type, typename iterator>
+bool parse(const basic_state_machine<id_type> &sm_, iterator &iter_,
+    basic_match_results<id_type> &results_)
 {
     while (results_.entry.action != error)
     {

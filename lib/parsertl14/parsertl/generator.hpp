@@ -14,11 +14,12 @@
 
 namespace parsertl
 {
-template<typename rules>
+template<typename rules, typename id_type>
 class basic_generator
 {
 public:
     using production = typename rules::production;
+    using sm = basic_state_machine<id_type>;
     using symbol_vector = typename rules::symbol_vector;
 
     struct prod
@@ -49,8 +50,7 @@ public:
     using prod_vector = std::vector<prod>;
     using string = typename rules::string;
 
-    static void build(rules &rules_, state_machine &sm_,
-        std::string *warnings_ = 0)
+    static void build(rules &rules_, sm &sm_, std::string *warnings_ = 0)
     {
         dfa dfa_;
         prod_vector new_grammar_;
@@ -67,6 +67,10 @@ public:
         build_follow_sets(new_grammar_, new_nt_info_);
         sm_.clear();
         build_table(rules_, dfa_, new_grammar_, new_nt_info_, sm_, warnings_);
+        // If you get an assert here then your id_type
+        // is too small for the table.
+        assert(static_cast<id_type>(sm_._columns - 1) == sm_._columns - 1);
+        assert(static_cast<id_type>(sm_._rows - 1) == sm_._rows - 1);
         copy_rules(rules_, sm_);
     }
 
@@ -462,6 +466,7 @@ public:
     }
 
 private:
+    using entry = typename sm::entry;
     using grammar = typename rules::production_vector;
     using size_t_vector = std::vector<std::size_t>;
     using hash_map = std::map<std::size_t, size_t_vector>;
@@ -472,7 +477,7 @@ private:
 
     static void build_table(const rules &rules_, const dfa &dfa_,
         const prod_vector &new_grammar_, const nt_info_vector &new_nt_info_,
-        state_machine &sm_, std::string *warnings_)
+        sm &sm_, std::string *warnings_)
     {
         const grammar &grammar_ = rules_.grammar();
         const std::size_t start_ = rules_.start();
@@ -493,9 +498,8 @@ private:
             for (const auto &tran_ : d_._transitions)
             {
                 const std::size_t id_ = tran_.first;
-                typename state_machine::entry &lhs_ =
-                    sm_._table[index_ * columns_ + id_];
-                typename state_machine::entry rhs_;
+                entry &lhs_ = sm_._table[index_ * columns_ + id_];
+                entry rhs_;
 
                 if (id_ < terminals_)
                 {
@@ -508,7 +512,7 @@ private:
                     rhs_.action = go_to;
                 }
 
-                rhs_.param = tran_.second;
+                rhs_.param = static_cast<id_type>(tran_.second);
                 fill_entry(rules_, d_._closure, symbols_,
                     lhs_, id_, rhs_, warnings_);
             }
@@ -541,10 +545,9 @@ private:
                     {
                         if (!follow_set_[i_]) continue;
 
-                        typename state_machine::entry &lhs_ =
-                            sm_._table[index_ * columns_ + i_];
-                        typename state_machine::entry rhs_
-                            (reduce, production_._index);
+                        entry &lhs_ = sm_._table[index_ * columns_ + i_];
+                        entry rhs_(reduce, static_cast<id_type>
+                            (production_._index));
 
                         if (production_._lhs == start_)
                         {
@@ -561,29 +564,29 @@ private:
         }
     }
 
-    static void copy_rules(const rules &rules_, state_machine &sm_)
+    static void copy_rules(const rules &rules_, sm &sm_)
     {
         const grammar &grammar_ = rules_.grammar();
         const std::size_t terminals_ = rules_.tokens_info().size();
 
         for (const production &production_ : grammar_)
         {
-            sm_._rules.push_back(typename state_machine::size_t_size_t_pair());
+            sm_._rules.push_back(typename sm::id_type_pair());
 
-            typename state_machine::size_t_size_t_pair &pair_ =
-                sm_._rules.back();
+            typename sm::id_type_pair &pair_ = sm_._rules.back();
 
-            pair_.first = terminals_ + production_._lhs;
+            pair_.first = static_cast<id_type>(terminals_ + production_._lhs);
 
             for (const auto &symbol_ : production_._rhs.first)
             {
                 if (symbol_._type == symbol::TERMINAL)
                 {
-                    pair_.second.push_back(symbol_._id);
+                    pair_.second.push_back(static_cast<id_type>(symbol_._id));
                 }
                 else
                 {
-                    pair_.second.push_back(terminals_ + symbol_._id);
+                    pair_.second.push_back(static_cast<id_type>
+                        (terminals_ + symbol_._id));
                 }
             }
         }
@@ -708,8 +711,8 @@ private:
 
     static void fill_entry(const rules &rules_,
         const size_t_pair_vector &config_, const string_vector &symbols_,
-        typename state_machine::entry &lhs_, const std::size_t id_,
-        const typename state_machine::entry &rhs_, std::string *warnings_)
+        entry &lhs_, const std::size_t id_, const entry &rhs_,
+        std::string *warnings_)
     {
         const grammar &grammar_ = rules_.grammar();
         const token_info_vector &tokens_info_ = rules_.tokens_info();
@@ -846,7 +849,7 @@ private:
     static void dump_action(const grammar &grammar_,
         const std::size_t terminals_, const size_t_pair_vector &config_,
         const string_vector &symbols_, const std::size_t id_,
-        const typename state_machine::entry &entry_, std::ostringstream &ss_)
+        const entry &entry_, std::ostringstream &ss_)
     {
         if (entry_.action == shift)
         {
@@ -918,8 +921,8 @@ private:
     }
 };
 
-using generator = basic_generator<rules>;
-using wgenerator = basic_generator<wrules>;
+using generator = basic_generator<rules, std::size_t>;
+using wgenerator = basic_generator<wrules, std::size_t>;
 }
 
 #endif
