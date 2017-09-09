@@ -1658,6 +1658,7 @@ PHP_MINIT_FUNCTION(parle)
 	INIT_CLASS_ENTRY(ce, "Parle\\Token", ParleToken_methods);
 	ParleToken_ce = zend_register_internal_class(&ce);
 #define DECL_CONST(name, val) zend_declare_class_constant_long(ParleToken_ce, name, sizeof(name) - 1, val);
+	DECL_CONST("EOI", Z_L(0))
 	DECL_CONST("UNKNOWN", static_cast<zend_long>(lexertl::smatch::npos()));
 	DECL_CONST("SKIP", static_cast<zend_long>(lexertl::smatch::skip()));
 #undef DECL_CONST
@@ -1679,7 +1680,6 @@ PHP_MINIT_FUNCTION(parle)
 	DECL_CONST("FLAG_REGEX_DOT_NOT_CR_LF", lexertl::dot_not_cr_lf)
 	DECL_CONST("FLAG_REGEX_SKIP_WS", lexertl::skip_ws)
 	DECL_CONST("FLAG_REGEX_MATCH_ZERO_LEN", lexertl::match_zero_len)
-	DECL_CONST("EOI", Z_L(0))
 #undef DECL_CONST
 
 	memcpy(&parle_rlexer_handlers, zend_get_std_object_handlers(), sizeof(zend_object_handlers));
