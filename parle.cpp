@@ -1745,13 +1745,13 @@ PHP_MINIT_FUNCTION(parle)
 	INIT_CLASS_ENTRY(ce, "Parle\\Lexer", ParleLexer_methods);
 	ce.create_object = php_parle_lexer_object_init;
 	ParleLexer_ce = zend_register_internal_class(&ce);
-#define DECL_FROM_ENUM(name, val) zend_declare_class_constant_long(ParleLexer_ce, name, sizeof(name) - 1, val);
-	DECL_FROM_ENUM("FLAG_REGEX_ICASE", lexertl::icase)
-	DECL_FROM_ENUM("FLAG_REGEX_DOT_NOT_LF", lexertl::dot_not_newline)
-	DECL_FROM_ENUM("FLAG_REGEX_DOT_NOT_CR_LF", lexertl::dot_not_cr_lf)
-	DECL_FROM_ENUM("FLAG_REGEX_SKIP_WS", lexertl::skip_ws)
-	DECL_FROM_ENUM("FLAG_REGEX_MATCH_ZERO_LEN", lexertl::match_zero_len)
-#undef DECL_FROM_ENUM
+#define DECL_CONST(name, val) zend_declare_class_constant_long(ParleLexer_ce, name, sizeof(name) - 1, val);
+	DECL_CONST("FLAG_REGEX_ICASE", lexertl::icase)
+	DECL_CONST("FLAG_REGEX_DOT_NOT_LF", lexertl::dot_not_newline)
+	DECL_CONST("FLAG_REGEX_DOT_NOT_CR_LF", lexertl::dot_not_cr_lf)
+	DECL_CONST("FLAG_REGEX_SKIP_WS", lexertl::skip_ws)
+	DECL_CONST("FLAG_REGEX_MATCH_ZERO_LEN", lexertl::match_zero_len)
+#undef DECL_CONST
 
 	memcpy(&parle_rlexer_handlers, zend_get_std_object_handlers(), sizeof(zend_object_handlers));
 	parle_rlexer_handlers.clone_obj = NULL;
@@ -1770,16 +1770,16 @@ PHP_MINIT_FUNCTION(parle)
 	INIT_CLASS_ENTRY(ce, "Parle\\Parser", ParleParser_methods);
 	ce.create_object = php_parle_parser_object_init;
 	ParleParser_ce = zend_register_internal_class(&ce);
-#define DECL_FROM_ENUM(name, val) zend_declare_class_constant_long(ParleParser_ce, name, sizeof(name) - 1, val);
-	DECL_FROM_ENUM("ACTION_ERROR", parsertl::error)
-	DECL_FROM_ENUM("ACTION_SHIFT", parsertl::shift)
-	DECL_FROM_ENUM("ACTION_REDUCE", parsertl::reduce)
-	DECL_FROM_ENUM("ACTION_GOTO", parsertl::go_to)
-	DECL_FROM_ENUM("ACTION_ACCEPT", parsertl::accept)
-	DECL_FROM_ENUM("ERROR_SYNTAX", parsertl::syntax_error)
-	DECL_FROM_ENUM("ERROR_NON_ASSOCIATIVE", parsertl::non_associative)
-	DECL_FROM_ENUM("ERROR_UNKOWN_TOKEN", parsertl::unknown_token)
-#undef DECL_FROM_ENUM
+#define DECL_CONST(name, val) zend_declare_class_constant_long(ParleParser_ce, name, sizeof(name) - 1, val);
+	DECL_CONST("ACTION_ERROR", parsertl::error)
+	DECL_CONST("ACTION_SHIFT", parsertl::shift)
+	DECL_CONST("ACTION_REDUCE", parsertl::reduce)
+	DECL_CONST("ACTION_GOTO", parsertl::go_to)
+	DECL_CONST("ACTION_ACCEPT", parsertl::accept)
+	DECL_CONST("ERROR_SYNTAX", parsertl::syntax_error)
+	DECL_CONST("ERROR_NON_ASSOCIATIVE", parsertl::non_associative)
+	DECL_CONST("ERROR_UNKOWN_TOKEN", parsertl::unknown_token)
+#undef DECL_CONST
 
 	memcpy(&parle_stack_handlers, zend_get_std_object_handlers(), sizeof(zend_object_handlers));
 	parle_stack_handlers.clone_obj = NULL;
