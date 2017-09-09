@@ -59,7 +59,7 @@ do {
 ```
 
 
-Example tokenizing comma separated number list
+Example parsing comma separated number list
 ===========================
 ```php
 
