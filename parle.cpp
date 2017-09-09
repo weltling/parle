@@ -379,14 +379,14 @@ _lexer_token(INTERNAL_FUNCTION_PARAMETERS, zend_class_entry *ce) noexcept
 	}
 }/*}}}*/
 
-/* {{{ public array Lexer::getToken(void) */
+/* {{{ public Lexer\Token Lexer::getToken(void) */
 PHP_METHOD(ParleLexer, getToken)
 {
 	_lexer_token<struct ze_parle_lexer_obj>(INTERNAL_FUNCTION_PARAM_PASSTHRU, ParleLexer_ce);
 }
 /* }}} */
 
-/* {{{ public array RLexer::getToken(void) */
+/* {{{ public Lexer\Token RLexer::getToken(void) */
 PHP_METHOD(ParleRLexer, getToken)
 {
 	_lexer_token<struct ze_parle_rlexer_obj>(INTERNAL_FUNCTION_PARAM_PASSTHRU, ParleRLexer_ce);
