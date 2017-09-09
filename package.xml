@@ -12,8 +12,8 @@
 	</lead>
 	<date>2017-09-09</date>
 	<version>
-		<release>0.5.1</release>
-		<api>0.5.1</api>
+		<release>0.5.2</release>
+		<api>0.5.2</api>
 	</version>
 	<stability>
 		<release>alpha</release>
@@ -21,7 +21,7 @@
 	</stability>
 	<license uri="http://opensource.org/licenses/BSD-2-Clause">BSD 2-clause</license>
 	<notes>
-		- initial release
+		- Package fixes by Remi Collet
 	</notes>
 	<contents>
 		<dir name="/">
@@ -130,6 +130,23 @@
 	</dependencies>
 	<providesextension>parle</providesextension>
 	<extsrcrelease />
+	<changelog>
+		<release>
+			<date>2017-09-08</date>
+			<version>
+				<release>0.5.1</release>
+				<api>0.5.1</api>
+			</version>
+			<stability>
+				<release>alpha</release>
+				<api>alpha</api>
+			</stability>
+			<license uri="http://opensource.org/licenses/BSD-2-Clause">BSD 2-clause</license>
+			<notes>
+				- initial release
+			</notes>
+		</release>
+	</changelog>
 </package>
 <!--
 /*
