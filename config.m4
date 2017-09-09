@@ -18,5 +18,5 @@ if test "$PHP_PARLE" != "no"; then
   PHP_ADD_INCLUDE($ext_srcdir/lib/parsertl14)
   PHP_ADD_INCLUDE($ext_builddir/lib/parsertl14)
 
-  PHP_INSTALL_HEADERS([ext/parle/php_parle.h])
+  dnl PHP_INSTALL_HEADERS([ext/parle/php_parle.h])
 fi
