@@ -4,7 +4,7 @@ INSTALLATION
 # Pre-requisites
 
 * PHP version 7.0 and above.
-* A [C++14](http://en.cppreference.com/w/cpp/compiler_support) capable compiler is required.
+* A [C++14](http://en.cppreference.com/w/cpp/compiler_support) capable compiler is required. At least clang-5.0, GCC 5.0 and VS2015 are known to successfully build the extension.
 
 
 # Binary packages
