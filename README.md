@@ -69,8 +69,6 @@ use Parle\Lexer;
 use Parle\Parser;
 use Parle\ParserException;
 
-$token = array();
-
 $p = new Parser;
 $p->token("CRLF");
 $p->token("COMMA");
