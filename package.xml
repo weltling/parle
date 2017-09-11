@@ -21,6 +21,7 @@
 	</stability>
 	<license uri="http://opensource.org/licenses/BSD-2-Clause">BSD 2-clause</license>
 	<notes>
+		- Fix consistency of return type in 7.0/7.1/7.2 (Remi Collet)
 	</notes>
 	<contents>
 		<dir name="/">
