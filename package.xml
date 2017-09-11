@@ -113,6 +113,7 @@
 				<file role="test" name="lexer_003.phpt"/>
 				<file role="test" name="lexer_003.json"/>
 				<file role="test" name="lexer_004.phpt"/>
+				<file role="test" name="reflection_001.phpt"/>
 				<file role="test" name="words_001.phpt"/>
 				<file role="test" name="words_002.phpt"/>
 			</dir>
