@@ -13,6 +13,7 @@ The lexer is based on regex matching similar to flex. The parser is LALR(1).
 
 Supported is PHP 7.0 and above. A [C++14](http://en.cppreference.com/w/cpp/compiler_support) capable compiler is required.
 
+The full extension documentation is available in the [PHP Manual](http://php.net/parle).
 
 Installation
 ============
