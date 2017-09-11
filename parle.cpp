@@ -1283,20 +1283,22 @@ PHP_METHOD(ParleStack, top)
 /* {{{ Arginfo
  */
 
-#if PHP_MAJOR_VERSION >= 7 && PHP_MINOR_VERSION < 2
+#if PHP_VERSION_ID >= 70200
+
+#define PARLE_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX ZEND_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX
+#define PARLE_BEGIN_ARG_WITH_RETURN_OBJ_INFO_EX  ZEND_BEGIN_ARG_WITH_RETURN_OBJ_INFO_EX
+
+#else
+
 #define PARLE_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(name, return_reference, required_num_args, type, allow_null) \
 	ZEND_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(name, return_reference, required_num_args, type, NULL, allow_null)
-#elif PHP_MAJOR_VERSION >= 7
-#define PARLE_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX ZEND_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX
+#define PARLE_BEGIN_ARG_WITH_RETURN_OBJ_INFO_EX(name, return_reference, required_num_args, classname, allow_null) \
+	ZEND_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(name, return_reference, required_num_args, IS_OBJECT, #classname, allow_null)
+
 #endif
 
-#if PHP_MAJOR_VERSION >= 7 && PHP_MINOR_VERSION < 2
-PARLE_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(arginfo_parle_lexer_gettoken, 0, 0, IS_OBJECT, 0)
+PARLE_BEGIN_ARG_WITH_RETURN_OBJ_INFO_EX(arginfo_parle_lexer_gettoken, 0, 0, Parle\\Token, 0)
 ZEND_END_ARG_INFO();
-#elif PHP_MAJOR_VERSION >= 7
-ZEND_BEGIN_ARG_WITH_RETURN_OBJ_INFO(arginfo_parle_lexer_gettoken, "Parle\\Token", 0)
-ZEND_END_ARG_INFO();
-#endif
 
 ZEND_BEGIN_ARG_INFO_EX(arginfo_parle_lexer_build, 0, 0, 0)
 ZEND_END_ARG_INFO();
@@ -1389,13 +1391,8 @@ ZEND_END_ARG_INFO();
 PARLE_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(arginfo_parle_parser_trace, 0, 0, IS_STRING, 0)
 ZEND_END_ARG_INFO();
 
-#if PHP_MAJOR_VERSION >= 7 && PHP_MINOR_VERSION < 2
-PARLE_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(arginfo_parle_parser_errorinfo, 0, 0, IS_OBJECT, 0)
+PARLE_BEGIN_ARG_WITH_RETURN_OBJ_INFO_EX(arginfo_parle_parser_errorinfo, 0, 0, Parle\\ErrorInfo, 0)
 ZEND_END_ARG_INFO();
-#elif PHP_MAJOR_VERSION >= 7
-ZEND_BEGIN_ARG_WITH_RETURN_OBJ_INFO(arginfo_parle_parser_errorinfo, "Parle\\ErrorInfo", 0)
-ZEND_END_ARG_INFO();
-#endif
 
 PARLE_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(arginfo_parle_stack_empty, 0, 0, _IS_BOOL, 0)
 ZEND_END_ARG_INFO();
