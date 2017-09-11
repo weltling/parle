@@ -1595,6 +1595,7 @@ php_parle_parser_stack_obj_destroy(zend_object *obj) noexcept
 			zval *z = zpso->stack->top();
 			zpso->stack->pop();
 			zval_ptr_dtor(z);
+			efree(z);
 		}
 	}
 
