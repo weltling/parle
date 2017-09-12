@@ -23,7 +23,7 @@ $lex = new RLexer;
 /* UTF-32 */
 //$lex->insertMacro("STRING", "[\"]([ -\\x10ffff]{-}[\"\\\\]|\\\\([\"\\\\/bfnrt]|u[0-9a-fA-F]{4}))*[\"]");
 /* UTF-8 */
-$lex->insertMacro("STRING", "[\"]([ -\\x7f]{+}[\\x80-\\xbf]{+}[\\xc2-\\xdf]{+}[\\xe0-\\xef]{+}[\\xf0-\\xff]{-}[\"\\\\]|\\\\([\"\\\\/bfnrt]|u[0-9a-fA-F]{4}))*[\"]");
+$lex->insertMacro("STRING", "[\"]([ -\x7f]{+}[\x80-\xbf]{+}[\xc2-\xdf]{+}[\xe0-\xef]{+}[\xf0-\xff]{-}[\"\\\]|\\\([\"\\\/bfnrt]|u[0-9a-fA-F]{4}))*[\"]");
 $lex->insertMacro("NUMBER", "-?(0|[1-9]\\d*)([.]\\d+)?([eE][-+]?\\d+)?");
 $lex->insertMacro("BOOL", "true|false");
 $lex->insertMacro("NULL", "null");
