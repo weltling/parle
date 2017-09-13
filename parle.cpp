@@ -1329,7 +1329,7 @@ PARLE_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(arginfo_parle_lexer_state, 0, 0, IS_LON
 ZEND_END_ARG_INFO();
 
 PARLE_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(arginfo_parle_lexer_flags, 0, 0, IS_LONG, 0)
-	ZEND_ARG_TYPE_INFO(0, state, IS_LONG, 0)
+	ZEND_ARG_TYPE_INFO(0, flags, IS_LONG, 0)
 ZEND_END_ARG_INFO();
 
 ZEND_BEGIN_ARG_INFO_EX(arginfo_parle_parser_token, 0, 0, 1)
