@@ -52,6 +52,7 @@
 #include "php_ini.h"
 #include "ext/standard/info.h"
 #include "zend_exceptions.h"
+#include "zend_interfaces.h"
 #include "php_parle.h"
 
 #undef lookup
@@ -1680,6 +1681,9 @@ PHP_MINIT_FUNCTION(parle)
 	DECL_CONST("FLAG_REGEX_MATCH_ZERO_LEN", lexertl::match_zero_len)
 #undef DECL_CONST
 
+	ParleLexer_ce->serialize = zend_class_serialize_deny;
+	ParleLexer_ce->unserialize = zend_class_unserialize_deny;
+
 	memcpy(&parle_rlexer_handlers, zend_get_std_object_handlers(), sizeof(zend_object_handlers));
 	parle_rlexer_handlers.clone_obj = NULL;
 	parle_rlexer_handlers.offset = XtOffsetOf(struct ze_parle_rlexer_obj, zo);
@@ -1708,6 +1712,9 @@ PHP_MINIT_FUNCTION(parle)
 	DECL_CONST("ERROR_UNKOWN_TOKEN", parsertl::unknown_token)
 #undef DECL_CONST
 
+	ParleParser_ce->serialize = zend_class_serialize_deny;
+	ParleParser_ce->unserialize = zend_class_unserialize_deny;
+
 	memcpy(&parle_stack_handlers, zend_get_std_object_handlers(), sizeof(zend_object_handlers));
 	parle_stack_handlers.clone_obj = NULL;
 	parle_stack_handlers.offset = XtOffsetOf(struct ze_parle_stack_obj, zo);
@@ -1716,6 +1723,9 @@ PHP_MINIT_FUNCTION(parle)
 	INIT_CLASS_ENTRY(ce, "Parle\\Stack", ParleStack_methods);
 	ce.create_object = php_parle_parser_stack_object_init;
 	ParleStack_ce = zend_register_internal_class(&ce);
+
+	ParleStack_ce->serialize = zend_class_serialize_deny;
+	ParleStack_ce->unserialize = zend_class_unserialize_deny;
 
 	INIT_CLASS_ENTRY(ce, "Parle\\LexerException", NULL);
 	ParleLexerException_ce = zend_register_internal_class_ex(&ce, zend_exception_get_default());
