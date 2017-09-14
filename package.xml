@@ -23,6 +23,8 @@
 	<notes>
 		- Fix consistency of return type in 7.0/7.1/7.2 (Remi Collet)
 		- Fix memory leak in Parle\Stack
+		- Max parser id is set to UINT16_MAX to save memory. This might be changed in the future
+		- Push signatures accepting string range for regex was removed as ZPP would deliver copies anyway
 	</notes>
 	<contents>
 		<dir name="/">
