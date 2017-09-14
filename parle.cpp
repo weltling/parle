@@ -57,6 +57,18 @@
 
 #undef lookup
 
+namespace parle {/*{{{*/
+	using id_type = std::uint16_t;
+	using char_type = char;
+
+	namespace parser {
+		using state_machine = parsertl::basic_state_machine<id_type>;
+		using match_results = parsertl::basic_match_results<id_type>;
+		using rules = parsertl::basic_rules<char_type>;
+		using generator = parsertl::basic_generator<rules, id_type>;
+	}
+}/*}}}*/
+
 /* If you declare any globals in php_parle.h uncomment this:
 ZEND_DECLARE_MODULE_GLOBALS(parle)
 */
@@ -83,9 +95,9 @@ struct ze_parle_rlexer_obj {/*{{{*/
 };/*}}}*/
 
 struct ze_parle_parser_obj {/*{{{*/
-	parsertl::rules *rules;
-	parsertl::state_machine *sm;
-	parsertl::match_results *results;
+	parle::parser::rules *rules;
+	parle::parser::state_machine *sm;
+	parle::parser::match_results *results;
 	std::string *in;
 	parsertl::token<lexertl::siterator>::token_vector *productions;
 	lexertl::siterator *iter;
@@ -770,7 +782,7 @@ PHP_METHOD(ParleParser, build)
 	}
 
 	try {
-		parsertl::generator::build(*zppo->rules, *zppo->sm);
+		parle::parser::generator::build(*zppo->rules, *zppo->sm);
 	} catch (const std::exception &e) {
 		zend_throw_exception(ParleParserException_ce, e.what(), 0);
 	}
@@ -833,7 +845,7 @@ PHP_METHOD(ParleParser, validate)
 		lexertl::citerator iter(ZSTR_VAL(in), ZSTR_VAL(in) + ZSTR_LEN(in), *zplo->sm);
 		
 		/* Since it's not more than parse, nothing is saved into the object. */
-		parsertl::match_results results(iter->id, *zppo->sm);
+		parle::parser::match_results results(iter->id, *zppo->sm);
 
 		RETURN_BOOL(parsertl::parse(*zppo->sm, iter, results));
 	} catch (const std::exception &e) {
@@ -1026,7 +1038,7 @@ PHP_METHOD(ParleParser, consume)
 		if (zppo->results) {
 			delete zppo->results;
 		}
-		zppo->results = new parsertl::match_results((*zppo->iter)->id, *zppo->sm);
+		zppo->results = new parle::parser::match_results((*zppo->iter)->id, *zppo->sm);
 	} catch (const std::exception &e) {
 		zend_throw_exception(ParleLexerException_ce, e.what(), 0);
 	}
@@ -1098,7 +1110,7 @@ PHP_METHOD(ParleParser, trace)
 				parsertl::rules::string_vector symbols;
 				zppo->rules->terminals(symbols);
 				zppo->rules->non_terminals(symbols);
-				parsertl::state_machine::id_type_pair &pair_ = zppo->sm->_rules[zppo->results->entry.param];
+				parle::parser::state_machine::id_type_pair &pair_ = zppo->sm->_rules[zppo->results->entry.param];
 
 				s = "reduce by " + symbols[pair_.first] + " ->";
 
@@ -1573,8 +1585,8 @@ php_parle_parser_object_init(zend_class_entry *ce) noexcept
 	zppo->zo.handlers = &parle_parser_handlers;
 
 	zppo->complete = false;
-	zppo->rules = new parsertl::rules{};
-	zppo->sm = new parsertl::state_machine{};
+	zppo->rules = new parle::parser::rules{};
+	zppo->sm = new parle::parser::state_machine{};
 	zppo->results = nullptr;
 	zppo->in = nullptr;
 	zppo->iter = nullptr;
