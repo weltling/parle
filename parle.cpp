@@ -333,22 +333,6 @@ PHP_METHOD(ParleRLexer, pushState)
 }
 /* }}} */
 
-/* {{{ public int RLexer::state(void) */
-PHP_METHOD(ParleRLexer, state)
-{
-	struct ze_parle_rlexer_obj *zplo;
-	zval *me;
-
-	if(zend_parse_method_parameters(ZEND_NUM_ARGS(), getThis(), "O", &me, ParleRLexer_ce) == FAILURE) {
-		return;
-	}
-
-	zplo = php_parle_rlexer_fetch_obj(Z_OBJ_P(me));
-
-	RETURN_LONG(static_cast<zend_long>(zplo->results->state));
-}
-/* }}} */
-
 template<typename lexer_obj_type> void
 _lexer_token(INTERNAL_FUNCTION_PARAMETERS, zend_class_entry *ce) noexcept
 {/*{{{*/
@@ -1250,9 +1234,6 @@ PARLE_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(arginfo_parle_lexer_pushstate, 0, 1, IS
 	ZEND_ARG_TYPE_INFO(0, state, IS_STRING, 0)
 ZEND_END_ARG_INFO();
 
-PARLE_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(arginfo_parle_lexer_state, 0, 0, IS_LONG, 0)
-ZEND_END_ARG_INFO();
-
 ZEND_BEGIN_ARG_INFO_EX(arginfo_parle_parser_token, 0, 0, 1)
 	ZEND_ARG_TYPE_INFO(0, tok, IS_STRING, 0)
 ZEND_END_ARG_INFO();
@@ -1369,7 +1350,6 @@ const zend_function_entry ParleRLexer_methods[] = {
 	PHP_ME(ParleRLexer, advance, arginfo_parle_lexer_advance, ZEND_ACC_PUBLIC)
 	PHP_ME(ParleRLexer, restart, arginfo_parle_lexer_restart, ZEND_ACC_PUBLIC)
 	PHP_ME(ParleRLexer, pushState, arginfo_parle_lexer_pushstate, ZEND_ACC_PUBLIC)
-	PHP_ME(ParleRLexer, state, arginfo_parle_lexer_state, ZEND_ACC_PUBLIC)
 	PHP_ME(ParleRLexer, insertMacro, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(ParleRLexer, dump, arginfo_parle_lexer_dump, ZEND_ACC_PUBLIC)
 	PHP_FE_END
@@ -1563,6 +1543,12 @@ php_parle_lex_read_property(zval *object, zval *member, int type, void **cache_s
 		} else {
 			ZVAL_LONG(retval, 0);
 		}
+	} else if (strcmp(Z_STRVAL_P(member), "state") == 0) {
+		if (EXPECTED(zplo->results)) {
+			ZVAL_LONG(retval, zplo->results->state);
+		} else {
+			ZVAL_LONG(retval, false);
+		}
 	} else {
 		retval = (zend_get_std_object_handlers())->read_property(object, member, type, cache_slot, rv);
 	}
@@ -1609,6 +1595,8 @@ php_parle_lex_write_property(zval *object, zval *member, zval *value, void **cac
 		if (EXPECTED(zplo->complete)) {
 			zplo->rules->flags(zval_get_long(value));
 		}
+	} else if (strcmp(Z_STRVAL_P(member), "state") == 0) {
+		zend_throw_exception(ParleLexerException_ce, "State property is readonly.", 0);
 	} else {
 		(zend_get_std_object_handlers())->write_property(object, member, value, cache_slot);
 	}
