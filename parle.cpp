@@ -1417,6 +1417,86 @@ php_parle_lexer_obj_ctor(zend_class_entry *ce) noexcept
 	return &zplo->zo;
 }/*}}}*/
 
+template <typename lexer_obj_type> zval * 
+php_parle_lex_read_property(zval *object, zval *member, int type, void **cache_slot, zval *rv) noexcept
+{/*{{{*/
+	lexer_obj_type *zplo;
+	zval tmp_member;
+	zval *retval = NULL;
+
+	if (Z_TYPE_P(member) != IS_STRING) {
+		ZVAL_COPY(&tmp_member, member);
+		convert_to_string(&tmp_member);
+		member = &tmp_member;
+		cache_slot = NULL;
+	}
+
+	zplo = _php_parle_lexer_fetch_zobj<lexer_obj_type>(Z_OBJ_P(object));
+
+	retval = rv;
+	if (strcmp(Z_STRVAL_P(member), "bol") == 0) {
+		if (EXPECTED(zplo->results)) {
+			ZVAL_BOOL(retval, zplo->results->bol);
+		} else {
+			ZVAL_BOOL(retval, false);
+		}
+	} else if (strcmp(Z_STRVAL_P(member), "flags") == 0) {
+		if (EXPECTED(zplo->complete)) {
+			ZVAL_LONG(retval, zplo->rules->flags());
+		} else {
+			ZVAL_LONG(retval, 0);
+		}
+	} else if (strcmp(Z_STRVAL_P(member), "state") == 0) {
+		if (EXPECTED(zplo->results)) {
+			ZVAL_LONG(retval, zplo->results->state);
+		} else {
+			ZVAL_LONG(retval, false);
+		}
+	} else {
+		retval = (zend_get_std_object_handlers())->read_property(object, member, type, cache_slot, rv);
+	}
+
+	if (member == &tmp_member) {
+		zval_dtor(member);
+	}
+
+	return retval;
+}/*}}}*/
+
+template <typename lexer_obj_type> void
+php_parle_lex_write_property(zval *object, zval *member, zval *value, void **cache_slot) noexcept
+{/*{{{*/
+	lexer_obj_type *zplo;
+	zval tmp_member;
+
+	if (Z_TYPE_P(member) != IS_STRING) {
+		ZVAL_COPY(&tmp_member, member);
+		convert_to_string(&tmp_member);
+		member = &tmp_member;
+		cache_slot = NULL;
+	}
+
+	zplo = _php_parle_lexer_fetch_zobj<lexer_obj_type>(Z_OBJ_P(object));
+
+	if (strcmp(Z_STRVAL_P(member), "bol") == 0) {
+		if (EXPECTED(zplo->results)) {
+			zplo->results->bol = static_cast<bool>(zval_is_true(value) == 1);
+		}
+	} else if (strcmp(Z_STRVAL_P(member), "flags") == 0) {
+		if (EXPECTED(zplo->complete)) {
+			zplo->rules->flags(zval_get_long(value));
+		}
+	} else if (strcmp(Z_STRVAL_P(member), "state") == 0) {
+		zend_throw_exception(ParleLexerException_ce, "State property is readonly.", 0);
+	} else {
+		(zend_get_std_object_handlers())->write_property(object, member, value, cache_slot);
+	}
+
+	if (member == &tmp_member) {
+		zval_dtor(member);
+	}
+}/*}}}*/
+
 void
 php_parle_lexer_obj_destroy(zend_object *obj) noexcept
 {/*{{{*/
@@ -1430,6 +1510,18 @@ php_parle_lexer_object_init(zend_class_entry *ce) noexcept
 	return php_parle_lexer_obj_ctor<struct ze_parle_lexer_obj>(ce);
 }/*}}}*/
 
+zval * 
+php_parle_lexer_read_property(zval *object, zval *member, int type, void **cache_slot, zval *rv) noexcept
+{/*{{{*/
+	return php_parle_lex_read_property<struct ze_parle_lexer_obj>(object, member, type, cache_slot, rv);
+}/*}}}*/
+
+void
+php_parle_lexer_write_property(zval *object, zval *member, zval *value, void **cache_slot) noexcept
+{/*{{{*/
+	php_parle_lex_write_property<struct ze_parle_lexer_obj>(object, member, value, cache_slot);
+}/*}}}*/
+
 void
 php_parle_rlexer_obj_destroy(zend_object *obj) noexcept
 {/*{{{*/
@@ -1441,6 +1533,18 @@ zend_object *
 php_parle_rlexer_object_init(zend_class_entry *ce) noexcept
 {/*{{{*/
 	return php_parle_lexer_obj_ctor<struct ze_parle_rlexer_obj>(ce);
+}/*}}}*/
+
+zval * 
+php_parle_rlexer_read_property(zval *object, zval *member, int type, void **cache_slot, zval *rv) noexcept
+{/*{{{*/
+	return php_parle_lex_read_property<struct ze_parle_rlexer_obj>(object, member, type, cache_slot, rv);
+}/*}}}*/
+
+void
+php_parle_rlexer_write_property(zval *object, zval *member, zval *value, void **cache_slot) noexcept
+{/*{{{*/
+	php_parle_lex_write_property<struct ze_parle_rlexer_obj>(object, member, value, cache_slot);
 }/*}}}*/
 
 void
@@ -1512,110 +1616,6 @@ php_parle_parser_stack_object_init(zend_class_entry *ce) noexcept
 	zpso->stack = new std::stack<zval *>();
 
 	return &zpso->zo;
-}/*}}}*/
-
-template <typename lexer_obj_type> zval * 
-php_parle_lex_read_property(zval *object, zval *member, int type, void **cache_slot, zval *rv) noexcept
-{/*{{{*/
-	lexer_obj_type *zplo;
-	zval tmp_member;
-	zval *retval = NULL;
-
-	if (Z_TYPE_P(member) != IS_STRING) {
-		ZVAL_COPY(&tmp_member, member);
-		convert_to_string(&tmp_member);
-		member = &tmp_member;
-		cache_slot = NULL;
-	}
-
-	zplo = _php_parle_lexer_fetch_zobj<lexer_obj_type>(Z_OBJ_P(object));
-
-	retval = rv;
-	if (strcmp(Z_STRVAL_P(member), "bol") == 0) {
-		if (EXPECTED(zplo->results)) {
-			ZVAL_BOOL(retval, zplo->results->bol);
-		} else {
-			ZVAL_BOOL(retval, false);
-		}
-	} else if (strcmp(Z_STRVAL_P(member), "flags") == 0) {
-		if (EXPECTED(zplo->complete)) {
-			ZVAL_LONG(retval, zplo->rules->flags());
-		} else {
-			ZVAL_LONG(retval, 0);
-		}
-	} else if (strcmp(Z_STRVAL_P(member), "state") == 0) {
-		if (EXPECTED(zplo->results)) {
-			ZVAL_LONG(retval, zplo->results->state);
-		} else {
-			ZVAL_LONG(retval, false);
-		}
-	} else {
-		retval = (zend_get_std_object_handlers())->read_property(object, member, type, cache_slot, rv);
-	}
-
-	if (member == &tmp_member) {
-		zval_dtor(member);
-	}
-
-	return retval;
-}/*}}}*/
-
-zval * 
-php_parle_lexer_read_property(zval *object, zval *member, int type, void **cache_slot, zval *rv) noexcept
-{/*{{{*/
-	return php_parle_lex_read_property<struct ze_parle_lexer_obj>(object, member, type, cache_slot, rv);
-}/*}}}*/
-
-zval * 
-php_parle_rlexer_read_property(zval *object, zval *member, int type, void **cache_slot, zval *rv) noexcept
-{/*{{{*/
-	return php_parle_lex_read_property<struct ze_parle_rlexer_obj>(object, member, type, cache_slot, rv);
-}/*}}}*/
-
-template <typename lexer_obj_type> void
-php_parle_lex_write_property(zval *object, zval *member, zval *value, void **cache_slot) noexcept
-{/*{{{*/
-	lexer_obj_type *zplo;
-	zval tmp_member;
-
-	if (Z_TYPE_P(member) != IS_STRING) {
-		ZVAL_COPY(&tmp_member, member);
-		convert_to_string(&tmp_member);
-		member = &tmp_member;
-		cache_slot = NULL;
-	}
-
-	zplo = _php_parle_lexer_fetch_zobj<lexer_obj_type>(Z_OBJ_P(object));
-
-	if (strcmp(Z_STRVAL_P(member), "bol") == 0) {
-		if (EXPECTED(zplo->results)) {
-			zplo->results->bol = static_cast<bool>(zval_is_true(value) == 1);
-		}
-	} else if (strcmp(Z_STRVAL_P(member), "flags") == 0) {
-		if (EXPECTED(zplo->complete)) {
-			zplo->rules->flags(zval_get_long(value));
-		}
-	} else if (strcmp(Z_STRVAL_P(member), "state") == 0) {
-		zend_throw_exception(ParleLexerException_ce, "State property is readonly.", 0);
-	} else {
-		(zend_get_std_object_handlers())->write_property(object, member, value, cache_slot);
-	}
-
-	if (member == &tmp_member) {
-		zval_dtor(member);
-	}
-}/*}}}*/
-
-void
-php_parle_lexer_write_property(zval *object, zval *member, zval *value, void **cache_slot) noexcept
-{/*{{{*/
-	php_parle_lex_write_property<struct ze_parle_lexer_obj>(object, member, value, cache_slot);
-}/*}}}*/
-
-void
-php_parle_rlexer_write_property(zval *object, zval *member, zval *value, void **cache_slot) noexcept
-{/*{{{*/
-	php_parle_lex_write_property<struct ze_parle_rlexer_obj>(object, member, value, cache_slot);
 }/*}}}*/
 
 /* {{{ PHP_INI
