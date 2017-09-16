@@ -1462,7 +1462,7 @@ static void
 php_parle_lexer_obj_destroy(zend_object *obj) noexcept
 {/*{{{*/
 	ze_parle_lexer_obj *zplo = php_parle_lexer_fetch_obj(obj);
-	php_parle_lexer_obj_dtor(zplo);
+	php_parle_lexer_obj_dtor<ze_parle_lexer_obj>(zplo);
 }/*}}}*/
 
 static zend_object *
@@ -1493,7 +1493,7 @@ static void
 php_parle_rlexer_obj_destroy(zend_object *obj) noexcept
 {/*{{{*/
 	ze_parle_rlexer_obj *zplo = php_parle_rlexer_fetch_obj(obj);
-	php_parle_lexer_obj_dtor(zplo);
+	php_parle_lexer_obj_dtor<ze_parle_rlexer_obj>(zplo);
 }/*}}}*/
 
 static zend_object *
