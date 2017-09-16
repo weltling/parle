@@ -1759,7 +1759,7 @@ php_parle_stack_get_properties(zval *object) noexcept
 	props = zend_std_get_properties(object);
 	zpso = php_parle_parser_stack_fetch_obj(Z_OBJ_P(object));
 
-	ZVAL_LONG(&zv, zpso->stack->empty());
+	ZVAL_BOOL(&zv, zpso->stack->empty());
 	zend_hash_str_update(props, "empty", sizeof("empty")-1, &zv);
 	ZVAL_LONG(&zv, zpso->stack->size());
 	zend_hash_str_update(props, "size", sizeof("size")-1, &zv);
