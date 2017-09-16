@@ -10,10 +10,10 @@
 		<email>ab@php.net</email>
 		<active>yes</active>
 	</lead>
-	<date>2017-09-09</date>
+	<date>2017-09-16</date>
 	<version>
-		<release>0.6.0</release>
-		<api>0.6.0</api>
+		<release>0.6.1</release>
+		<api>0.6.1</api>
 	</version>
 	<stability>
 		<release>alpha</release>
@@ -21,13 +21,6 @@
 	</stability>
 	<license uri="http://opensource.org/licenses/BSD-2-Clause">BSD 2-clause</license>
 	<notes>
-		- Fix consistency of return type in 7.0/7.1/7.2 (Remi Collet)
-		- Fix memory leak in Parle\Stack
-		- Max parser id is set to UINT16_MAX to save memory. This might be changed in the future
-		- Push signatures accepting string range for regex was removed as ZPP would deliver copies anyway
-		- Turned Lexer methods bol, flags and state into properties
-		- Turned Parser methods action and reduceId into properties
-		- Turned Stack methods empty and size into properties
 	</notes>
 	<contents>
 		<dir name="/">
@@ -139,6 +132,27 @@
 	<providesextension>parle</providesextension>
 	<extsrcrelease />
 	<changelog>
+		<release>
+			<date>2017-09-16</date>
+			<version>
+				<release>0.6.0</release>
+				<api>0.6.0</api>
+			</version>
+			<stability>
+				<release>alpha</release>
+				<api>alpha</api>
+			</stability>
+			<license uri="http://opensource.org/licenses/BSD-2-Clause">BSD 2-clause</license>
+			<notes>
+				- Fix consistency of return type in 7.0/7.1/7.2 (Remi Collet)
+				- Fix memory leak in Parle\Stack
+				- Max parser id is set to UINT16_MAX to save memory. This might be changed in the future
+				- Push signatures accepting string range for regex was removed as ZPP would deliver copies anyway
+				- Turned Lexer methods bol, flags and state into properties
+				- Turned Parser methods action and reduceId into properties
+				- Turned Stack methods empty and size into properties
+			</notes>
+		</release>
 		<release>
 			<date>2017-09-08</date>
 			<version>
