@@ -1433,6 +1433,30 @@ php_parle_lex_write_property(zval *object, zval *member, zval *value, void **cac
 	}
 }/*}}}*/
 
+template <typename lexer_obj_type> HashTable * 
+php_parle_lex_get_properties(zval *object) noexcept
+{/*{{{*/
+	lexer_obj_type *zplo;
+	HashTable *props;
+	zval zv;
+
+	props = zend_std_get_properties(object);
+	zplo = _php_parle_lexer_fetch_zobj<lexer_obj_type>(Z_OBJ_P(object));
+
+	if (UNEXPECTED(!zplo->results || !zplo->complete)) {
+		return props;
+	}
+
+	ZVAL_BOOL(&zv, zplo->results->bol);
+	zend_hash_str_update(props, "bol", sizeof("bol")-1, &zv);
+	ZVAL_LONG(&zv, zplo->rules->flags());
+	zend_hash_str_update(props, "flags", sizeof("flags")-1, &zv);
+	ZVAL_LONG(&zv, zplo->results->state);
+	zend_hash_str_update(props, "state", sizeof("state")-1, &zv);
+
+	return props;
+}/*}}}*/
+
 static void
 php_parle_lexer_obj_destroy(zend_object *obj) noexcept
 {/*{{{*/
@@ -1458,6 +1482,12 @@ php_parle_lexer_write_property(zval *object, zval *member, zval *value, void **c
 	php_parle_lex_write_property<struct ze_parle_lexer_obj>(object, member, value, cache_slot);
 }/*}}}*/
 
+static HashTable * 
+php_parle_lexer_get_properties(zval *object) noexcept
+{/*{{{*/
+	return php_parle_lex_get_properties<struct ze_parle_lexer_obj>(object);
+}/*}}}*/
+
 static void
 php_parle_rlexer_obj_destroy(zend_object *obj) noexcept
 {/*{{{*/
@@ -1481,6 +1511,12 @@ static void
 php_parle_rlexer_write_property(zval *object, zval *member, zval *value, void **cache_slot) noexcept
 {/*{{{*/
 	php_parle_lex_write_property<struct ze_parle_rlexer_obj>(object, member, value, cache_slot);
+}/*}}}*/
+
+static HashTable * 
+php_parle_rlexer_get_properties(zval *object) noexcept
+{/*{{{*/
+	return php_parle_lex_get_properties<struct ze_parle_rlexer_obj>(object);
 }/*}}}*/
 
 static void
@@ -1595,6 +1631,28 @@ php_parle_parser_write_property(zval *object, zval *member, zval *value, void **
 	}
 }/*}}}*/
 
+static HashTable * 
+php_parle_parser_get_properties(zval *object) noexcept
+{/*{{{*/
+	struct ze_parle_parser_obj *zppo;
+	HashTable *props;
+	zval zv;
+
+	props = zend_std_get_properties(object);
+	zppo = php_parle_parser_fetch_obj(Z_OBJ_P(object));
+
+	if (UNEXPECTED(!zppo->results || !zppo->complete)) {
+		return props;
+	}
+
+	ZVAL_LONG(&zv, zppo->results->entry.action);
+	zend_hash_str_update(props, "action", sizeof("action")-1, &zv);
+	ZVAL_LONG(&zv, zppo->results->reduce_id());
+	zend_hash_str_update(props, "reduceId", sizeof("reduceId")-1, &zv);
+
+	return props;
+}/*}}}*/
+
 static void
 php_parle_parser_stack_obj_destroy(zend_object *obj) noexcept
 {/*{{{*/
@@ -1683,6 +1741,7 @@ PHP_MINIT_FUNCTION(parle)
 	parle_lexer_handlers.free_obj = php_parle_lexer_obj_destroy;
 	parle_lexer_handlers.read_property = php_parle_lexer_read_property;
 	parle_lexer_handlers.write_property = php_parle_lexer_write_property;
+	parle_lexer_handlers.get_properties = php_parle_lexer_get_properties;
 	INIT_CLASS_ENTRY(ce, "Parle\\Lexer", ParleLexer_methods);
 	ce.create_object = php_parle_lexer_object_init;
 	ParleLexer_ce = zend_register_internal_class(&ce);
@@ -1705,6 +1764,7 @@ PHP_MINIT_FUNCTION(parle)
 	parle_rlexer_handlers.free_obj = php_parle_rlexer_obj_destroy;
 	parle_rlexer_handlers.read_property = php_parle_rlexer_read_property;
 	parle_rlexer_handlers.write_property = php_parle_rlexer_write_property;
+	parle_rlexer_handlers.get_properties = php_parle_rlexer_get_properties;
 	INIT_CLASS_ENTRY(ce, "Parle\\RLexer", ParleRLexer_methods);
 	ce.create_object = php_parle_rlexer_object_init;
 	ParleRLexer_ce = zend_register_internal_class_ex(&ce, ParleLexer_ce);
@@ -1715,6 +1775,7 @@ PHP_MINIT_FUNCTION(parle)
 	parle_parser_handlers.free_obj = php_parle_parser_obj_destroy;
 	parle_parser_handlers.read_property = php_parle_parser_read_property;
 	parle_parser_handlers.write_property = php_parle_parser_write_property;
+	parle_parser_handlers.get_properties = php_parle_parser_get_properties;
 	INIT_CLASS_ENTRY(ce, "Parle\\Parser", ParleParser_methods);
 	ce.create_object = php_parle_parser_object_init;
 	ParleParser_ce = zend_register_internal_class(&ce);
