@@ -132,34 +132,34 @@ _php_parle_lexer_fetch_zobj(zend_object *obj) noexcept
 	return (lexer_obj_type *)((char *)obj - XtOffsetOf(lexer_obj_type, zo));
 }/*}}}*/
 
-static zend_always_inline struct ze_parle_lexer_obj *
+static zend_always_inline ze_parle_lexer_obj *
 php_parle_lexer_fetch_obj(zend_object *obj) noexcept
 {/*{{{*/
-	return _php_parle_lexer_fetch_zobj<struct ze_parle_lexer_obj>(obj);
+	return _php_parle_lexer_fetch_zobj<ze_parle_lexer_obj>(obj);
 }/*}}}*/
 
-static zend_always_inline struct ze_parle_rlexer_obj *
+static zend_always_inline ze_parle_rlexer_obj *
 php_parle_rlexer_fetch_obj(zend_object *obj) noexcept
 {/*{{{*/
-	return _php_parle_lexer_fetch_zobj<struct ze_parle_rlexer_obj>(obj);
+	return _php_parle_lexer_fetch_zobj<ze_parle_rlexer_obj>(obj);
 }/*}}}*/
 
-static zend_always_inline struct ze_parle_parser_obj *
+static zend_always_inline ze_parle_parser_obj *
 php_parle_parser_fetch_obj(zend_object *obj) noexcept
 {/*{{{*/
-	return (struct ze_parle_parser_obj *)((char *)obj - XtOffsetOf(struct ze_parle_parser_obj, zo));
+	return (ze_parle_parser_obj *)((char *)obj - XtOffsetOf(ze_parle_parser_obj, zo));
 }/*}}}*/
 
-static zend_always_inline struct ze_parle_stack_obj *
+static zend_always_inline ze_parle_stack_obj *
 php_parle_parser_stack_fetch_obj(zend_object *obj) noexcept
 {/*{{{*/
-	return (struct ze_parle_stack_obj *)((char *)obj - XtOffsetOf(struct ze_parle_stack_obj, zo));
+	return (ze_parle_stack_obj *)((char *)obj - XtOffsetOf(ze_parle_stack_obj, zo));
 }/*}}}*/
 
 /* {{{ public void Lexer::push(...) */
 PHP_METHOD(ParleLexer, push)
 {
-	struct ze_parle_lexer_obj *zplo;
+	ze_parle_lexer_obj *zplo;
 	zend_string *regex;
 	zend_long id, user_id = 0;
 	zval *me;
@@ -187,7 +187,7 @@ PHP_METHOD(ParleLexer, push)
 /* {{{ public void RLexer::push(...) */
 PHP_METHOD(ParleRLexer, push)
 {
-	struct ze_parle_rlexer_obj *zplo;
+	ze_parle_rlexer_obj *zplo;
 	zend_string *regex, *dfa, *new_dfa;
 	zend_long id, user_id = 0;
 	zval *me;
@@ -248,14 +248,14 @@ _lexer_build(INTERNAL_FUNCTION_PARAMETERS, zend_class_entry *ce) noexcept
 /* {{{ public void Lexer::build(void) */
 PHP_METHOD(ParleLexer, build)
 {
-	_lexer_build<struct ze_parle_lexer_obj>(INTERNAL_FUNCTION_PARAM_PASSTHRU, ParleLexer_ce);
+	_lexer_build<ze_parle_lexer_obj>(INTERNAL_FUNCTION_PARAM_PASSTHRU, ParleLexer_ce);
 }
 /* }}} */
 
 /* {{{ public void RLexer::build(void) */
 PHP_METHOD(ParleRLexer, build)
 {
-	_lexer_build<struct ze_parle_rlexer_obj>(INTERNAL_FUNCTION_PARAM_PASSTHRU, ParleRLexer_ce);
+	_lexer_build<ze_parle_rlexer_obj>(INTERNAL_FUNCTION_PARAM_PASSTHRU, ParleRLexer_ce);
 }
 /* }}} */
 
@@ -295,21 +295,21 @@ _lexer_consume(INTERNAL_FUNCTION_PARAMETERS, zend_class_entry *ce) noexcept
 /* {{{ public void Lexer::consume(string $s) */
 PHP_METHOD(ParleLexer, consume)
 {
-	_lexer_consume<struct ze_parle_lexer_obj, lexertl::smatch>(INTERNAL_FUNCTION_PARAM_PASSTHRU, ParleLexer_ce);
+	_lexer_consume<ze_parle_lexer_obj, lexertl::smatch>(INTERNAL_FUNCTION_PARAM_PASSTHRU, ParleLexer_ce);
 }
 /* }}} */
 
 /* {{{ public void RLexer::consume(string $s) */
 PHP_METHOD(ParleRLexer, consume)
 {
-	_lexer_consume<struct ze_parle_rlexer_obj, lexertl::srmatch>(INTERNAL_FUNCTION_PARAM_PASSTHRU, ParleRLexer_ce);
+	_lexer_consume<ze_parle_rlexer_obj, lexertl::srmatch>(INTERNAL_FUNCTION_PARAM_PASSTHRU, ParleRLexer_ce);
 }
 /* }}} */
 
 /* {{{ public int RLexer::pushState(string $s) */
 PHP_METHOD(ParleRLexer, pushState)
 {
-	struct ze_parle_rlexer_obj *zplo;
+	ze_parle_rlexer_obj *zplo;
 	char *state;
 	size_t state_len;
 	zval *me;
@@ -369,14 +369,14 @@ _lexer_token(INTERNAL_FUNCTION_PARAMETERS, zend_class_entry *ce) noexcept
 /* {{{ public Lexer\Token Lexer::getToken(void) */
 PHP_METHOD(ParleLexer, getToken)
 {
-	_lexer_token<struct ze_parle_lexer_obj>(INTERNAL_FUNCTION_PARAM_PASSTHRU, ParleLexer_ce);
+	_lexer_token<ze_parle_lexer_obj>(INTERNAL_FUNCTION_PARAM_PASSTHRU, ParleLexer_ce);
 }
 /* }}} */
 
 /* {{{ public Lexer\Token RLexer::getToken(void) */
 PHP_METHOD(ParleRLexer, getToken)
 {
-	_lexer_token<struct ze_parle_rlexer_obj>(INTERNAL_FUNCTION_PARAM_PASSTHRU, ParleRLexer_ce);
+	_lexer_token<ze_parle_rlexer_obj>(INTERNAL_FUNCTION_PARAM_PASSTHRU, ParleRLexer_ce);
 }
 /* }}} */
 
@@ -407,14 +407,14 @@ _lexer_advance(INTERNAL_FUNCTION_PARAMETERS, zend_class_entry *ce) noexcept
 /* {{{ public void Lexer::advance(void) */
 PHP_METHOD(ParleLexer, advance)
 {
-	_lexer_advance<struct ze_parle_lexer_obj>(INTERNAL_FUNCTION_PARAM_PASSTHRU, ParleLexer_ce);
+	_lexer_advance<ze_parle_lexer_obj>(INTERNAL_FUNCTION_PARAM_PASSTHRU, ParleLexer_ce);
 }
 /* }}} */
 
 /* {{{ public void RLexer::advance(void) */
 PHP_METHOD(ParleRLexer, advance)
 {
-	_lexer_advance<struct ze_parle_rlexer_obj>(INTERNAL_FUNCTION_PARAM_PASSTHRU, ParleRLexer_ce);
+	_lexer_advance<ze_parle_rlexer_obj>(INTERNAL_FUNCTION_PARAM_PASSTHRU, ParleRLexer_ce);
 }
 /* }}} */
 
@@ -445,14 +445,14 @@ _lexer_restart(INTERNAL_FUNCTION_PARAMETERS, zend_class_entry *ce) noexcept
 /* {{{ public void Lexer::restart(int $position) */
 PHP_METHOD(ParleLexer, restart)
 {
-	_lexer_restart<struct ze_parle_lexer_obj>(INTERNAL_FUNCTION_PARAM_PASSTHRU, ParleLexer_ce);
+	_lexer_restart<ze_parle_lexer_obj>(INTERNAL_FUNCTION_PARAM_PASSTHRU, ParleLexer_ce);
 }
 /* }}} */
 
 /* {{{ public void RLexer::restart(int $position) */
 PHP_METHOD(ParleRLexer, restart)
 {
-	_lexer_restart<struct ze_parle_rlexer_obj>(INTERNAL_FUNCTION_PARAM_PASSTHRU, ParleRLexer_ce);
+	_lexer_restart<ze_parle_rlexer_obj>(INTERNAL_FUNCTION_PARAM_PASSTHRU, ParleRLexer_ce);
 }
 /* }}} */
 
@@ -481,14 +481,14 @@ _lexer_macro(INTERNAL_FUNCTION_PARAMETERS, zend_class_entry *ce) noexcept
 /* {{{ public void Lexer::insertMacro(string $name, string $reg) */
 PHP_METHOD(ParleLexer, insertMacro)
 {
-	_lexer_macro<struct ze_parle_lexer_obj>(INTERNAL_FUNCTION_PARAM_PASSTHRU, ParleLexer_ce);
+	_lexer_macro<ze_parle_lexer_obj>(INTERNAL_FUNCTION_PARAM_PASSTHRU, ParleLexer_ce);
 }
 /* }}} */
 
 /* {{{ public void RLexer::insertMacro(string $name, string $reg) */
 PHP_METHOD(ParleRLexer, insertMacro)
 {
-	_lexer_macro<struct ze_parle_rlexer_obj>(INTERNAL_FUNCTION_PARAM_PASSTHRU, ParleRLexer_ce);
+	_lexer_macro<ze_parle_rlexer_obj>(INTERNAL_FUNCTION_PARAM_PASSTHRU, ParleRLexer_ce);
 }
 /* }}} */
 
@@ -522,21 +522,21 @@ _lexer_dump(INTERNAL_FUNCTION_PARAMETERS, zend_class_entry *ce) noexcept
 /* {{{ public void Lexer::dump(void) */
 PHP_METHOD(ParleLexer, dump)
 {
-	_lexer_dump<struct ze_parle_lexer_obj>(INTERNAL_FUNCTION_PARAM_PASSTHRU, ParleLexer_ce);
+	_lexer_dump<ze_parle_lexer_obj>(INTERNAL_FUNCTION_PARAM_PASSTHRU, ParleLexer_ce);
 }
 /* }}} */
 
 /* {{{ public void RLexer::dump(void) */
 PHP_METHOD(ParleRLexer, dump)
 {
-	_lexer_dump<struct ze_parle_rlexer_obj>(INTERNAL_FUNCTION_PARAM_PASSTHRU, ParleRLexer_ce);
+	_lexer_dump<ze_parle_rlexer_obj>(INTERNAL_FUNCTION_PARAM_PASSTHRU, ParleRLexer_ce);
 }
 /* }}} */
 
 /* {{{ public void Parser::token(string $token) */
 PHP_METHOD(ParleParser, token)
 {
-	struct ze_parle_parser_obj *zppo;
+	ze_parle_parser_obj *zppo;
 	zval *me;
 	zend_string *tok;
 
@@ -563,7 +563,7 @@ PHP_METHOD(ParleParser, token)
 /* {{{ public void Parser::left(string $token) */
 PHP_METHOD(ParleParser, left)
 {
-	struct ze_parle_parser_obj *zppo;
+	ze_parle_parser_obj *zppo;
 	zval *me;
 	zend_string *tok;
 
@@ -589,7 +589,7 @@ PHP_METHOD(ParleParser, left)
 /* {{{ public void Parser::right(string $token) */
 PHP_METHOD(ParleParser, right)
 {
-	struct ze_parle_parser_obj *zppo;
+	ze_parle_parser_obj *zppo;
 	zval *me;
 	zend_string *tok;
 
@@ -615,7 +615,7 @@ PHP_METHOD(ParleParser, right)
 /* {{{ public void Parser::precedence(string $token) */
 PHP_METHOD(ParleParser, precedence)
 {
-	struct ze_parle_parser_obj *zppo;
+	ze_parle_parser_obj *zppo;
 	zval *me;
 	zend_string *tok;
 
@@ -641,7 +641,7 @@ PHP_METHOD(ParleParser, precedence)
 /* {{{ public void Parser::nonassoc(string $token) */
 PHP_METHOD(ParleParser, nonassoc)
 {
-	struct ze_parle_parser_obj *zppo;
+	ze_parle_parser_obj *zppo;
 	zval *me;
 	zend_string *tok;
 
@@ -667,7 +667,7 @@ PHP_METHOD(ParleParser, nonassoc)
 /* {{{ public void Parser::build(void) */
 PHP_METHOD(ParleParser, build)
 {
-	struct ze_parle_parser_obj *zppo;
+	ze_parle_parser_obj *zppo;
 	zval *me;
 
 	if(zend_parse_method_parameters(ZEND_NUM_ARGS(), getThis(), "O", &me, ParleParser_ce) == FAILURE) {
@@ -694,7 +694,7 @@ PHP_METHOD(ParleParser, build)
 /* {{{ public int Parser::push(string $name, string $rule) */
 PHP_METHOD(ParleParser, push)
 {
-	struct ze_parle_parser_obj *zppo;
+	ze_parle_parser_obj *zppo;
 	zval *me;
 	zend_string *lhs, *rhs;
 
@@ -720,8 +720,8 @@ PHP_METHOD(ParleParser, push)
 /* {{{ public boolean Parser::validate(void) */
 PHP_METHOD(ParleParser, validate)
 {
-	struct ze_parle_parser_obj *zppo;
-	struct ze_parle_lexer_obj *zplo;
+	ze_parle_parser_obj *zppo;
+	ze_parle_lexer_obj *zplo;
 	zval *me, *lex;
 	zend_string *in;
 
@@ -759,7 +759,7 @@ PHP_METHOD(ParleParser, validate)
 /* {{{ public int Parser::tokenId(string $tok) */
 PHP_METHOD(ParleParser, tokenId)
 {
-	struct ze_parle_parser_obj *zppo;
+	ze_parle_parser_obj *zppo;
 	zval *me;
 	zend_string *nom;
 
@@ -780,7 +780,7 @@ PHP_METHOD(ParleParser, tokenId)
 /* {{{ public string Parser::sigil(int $idx) */
 PHP_METHOD(ParleParser, sigil)
 {
-	struct ze_parle_parser_obj *zppo;
+	ze_parle_parser_obj *zppo;
 	zval *me;
 	zend_long idx = 0;
 
@@ -817,7 +817,7 @@ PHP_METHOD(ParleParser, sigil)
 /* {{{ public void Parser::advance(void) */
 PHP_METHOD(ParleParser, advance)
 {
-	struct ze_parle_parser_obj *zppo;
+	ze_parle_parser_obj *zppo;
 	zval *me;
 
 	if(zend_parse_method_parameters(ZEND_NUM_ARGS(), getThis(), "O", &me, ParleParser_ce) == FAILURE) {
@@ -845,8 +845,8 @@ PHP_METHOD(ParleParser, advance)
 /* {{{ public void Parser::consume(string $s, Lexer $lex) */
 PHP_METHOD(ParleParser, consume)
 {
-	struct ze_parle_parser_obj *zppo;
-	struct ze_parle_lexer_obj *zplo;
+	ze_parle_parser_obj *zppo;
+	ze_parle_lexer_obj *zplo;
 	zval *me, *lex;
 	zend_string *in;
 
@@ -892,7 +892,7 @@ PHP_METHOD(ParleParser, consume)
 /* {{{ public void Parser::dump(void) */
 PHP_METHOD(ParleParser, dump)
 {
-	struct ze_parle_parser_obj *zppo;
+	ze_parle_parser_obj *zppo;
 	zval *me;
 
 	if(zend_parse_method_parameters(ZEND_NUM_ARGS(), getThis(), "O", &me, ParleParser_ce) == FAILURE) {
@@ -918,7 +918,7 @@ PHP_METHOD(ParleParser, dump)
 /* {{{ public string Parser::trace(void) */
 PHP_METHOD(ParleParser, trace)
 {
-	struct ze_parle_parser_obj *zppo;
+	ze_parle_parser_obj *zppo;
 	zval *me;
 
 	if(zend_parse_method_parameters(ZEND_NUM_ARGS(), getThis(), "O", &me, ParleParser_ce) == FAILURE) {
@@ -979,7 +979,7 @@ PHP_METHOD(ParleParser, trace)
 /* {{{ public Parle\ErrorInfo Parser::errorInfo(void) */
 PHP_METHOD(ParleParser, errorInfo)
 {
-	struct ze_parle_parser_obj *zppo;
+	ze_parle_parser_obj *zppo;
 	zval *me;
 
 	if(zend_parse_method_parameters(ZEND_NUM_ARGS(), getThis(), "O", &me, ParleParser_ce) == FAILURE) {
@@ -1022,7 +1022,7 @@ PHP_METHOD(ParleParser, errorInfo)
 /* {{{ public bool Stack::empty(void) */
 PHP_METHOD(ParleStack, empty)
 {
-	struct ze_parle_stack_obj *zpso;
+	ze_parle_stack_obj *zpso;
 	zval *me;
 
 	if(zend_parse_method_parameters(ZEND_NUM_ARGS(), getThis(), "O", &me, ParleStack_ce) == FAILURE) {
@@ -1038,7 +1038,7 @@ PHP_METHOD(ParleStack, empty)
 /* {{{ public void Stack::pop(void) */
 PHP_METHOD(ParleStack, pop)
 {
-	struct ze_parle_stack_obj *zpso;
+	ze_parle_stack_obj *zpso;
 	zval *me;
 
 	if(zend_parse_method_parameters(ZEND_NUM_ARGS(), getThis(), "O", &me, ParleStack_ce) == FAILURE) {
@@ -1063,7 +1063,7 @@ PHP_METHOD(ParleStack, pop)
 /* {{{ public void Stack::push(mixed $val) */
 PHP_METHOD(ParleStack, push)
 {
-	struct ze_parle_stack_obj *zpso;
+	ze_parle_stack_obj *zpso;
 	zval *me;
 	zval *in, *save;
 
@@ -1083,7 +1083,7 @@ PHP_METHOD(ParleStack, push)
 /* {{{ public int Stack::size(void) */
 PHP_METHOD(ParleStack, size)
 {
-	struct ze_parle_stack_obj *zpso;
+	ze_parle_stack_obj *zpso;
 	zval *me;
 
 	if(zend_parse_method_parameters(ZEND_NUM_ARGS(), getThis(), "O", &me, ParleStack_ce) == FAILURE) {
@@ -1099,7 +1099,7 @@ PHP_METHOD(ParleStack, size)
 /* {{{ public mixed Stack::top([mixed $val]) */
 PHP_METHOD(ParleStack, top)
 {
-	struct ze_parle_stack_obj *zpso;
+	ze_parle_stack_obj *zpso;
 	zval *me;
 	zval *in = NULL, *old, *z;
 
@@ -1460,69 +1460,69 @@ php_parle_lex_get_properties(zval *object) noexcept
 static void
 php_parle_lexer_obj_destroy(zend_object *obj) noexcept
 {/*{{{*/
-	struct ze_parle_lexer_obj *zplo = php_parle_lexer_fetch_obj(obj);
+	ze_parle_lexer_obj *zplo = php_parle_lexer_fetch_obj(obj);
 	php_parle_lexer_obj_dtor(zplo);
 }/*}}}*/
 
 static zend_object *
 php_parle_lexer_object_init(zend_class_entry *ce) noexcept
 {/*{{{*/
-	return php_parle_lexer_obj_ctor<struct ze_parle_lexer_obj>(ce);
+	return php_parle_lexer_obj_ctor<ze_parle_lexer_obj>(ce);
 }/*}}}*/
 
 static zval * 
 php_parle_lexer_read_property(zval *object, zval *member, int type, void **cache_slot, zval *rv) noexcept
 {/*{{{*/
-	return php_parle_lex_read_property<struct ze_parle_lexer_obj>(object, member, type, cache_slot, rv);
+	return php_parle_lex_read_property<ze_parle_lexer_obj>(object, member, type, cache_slot, rv);
 }/*}}}*/
 
 static void
 php_parle_lexer_write_property(zval *object, zval *member, zval *value, void **cache_slot) noexcept
 {/*{{{*/
-	php_parle_lex_write_property<struct ze_parle_lexer_obj>(object, member, value, cache_slot);
+	php_parle_lex_write_property<ze_parle_lexer_obj>(object, member, value, cache_slot);
 }/*}}}*/
 
 static HashTable * 
 php_parle_lexer_get_properties(zval *object) noexcept
 {/*{{{*/
-	return php_parle_lex_get_properties<struct ze_parle_lexer_obj>(object);
+	return php_parle_lex_get_properties<ze_parle_lexer_obj>(object);
 }/*}}}*/
 
 static void
 php_parle_rlexer_obj_destroy(zend_object *obj) noexcept
 {/*{{{*/
-	struct ze_parle_rlexer_obj *zplo = php_parle_rlexer_fetch_obj(obj);
+	ze_parle_rlexer_obj *zplo = php_parle_rlexer_fetch_obj(obj);
 	php_parle_lexer_obj_dtor(zplo);
 }/*}}}*/
 
 static zend_object *
 php_parle_rlexer_object_init(zend_class_entry *ce) noexcept
 {/*{{{*/
-	return php_parle_lexer_obj_ctor<struct ze_parle_rlexer_obj>(ce);
+	return php_parle_lexer_obj_ctor<ze_parle_rlexer_obj>(ce);
 }/*}}}*/
 
 static zval * 
 php_parle_rlexer_read_property(zval *object, zval *member, int type, void **cache_slot, zval *rv) noexcept
 {/*{{{*/
-	return php_parle_lex_read_property<struct ze_parle_rlexer_obj>(object, member, type, cache_slot, rv);
+	return php_parle_lex_read_property<ze_parle_rlexer_obj>(object, member, type, cache_slot, rv);
 }/*}}}*/
 
 static void
 php_parle_rlexer_write_property(zval *object, zval *member, zval *value, void **cache_slot) noexcept
 {/*{{{*/
-	php_parle_lex_write_property<struct ze_parle_rlexer_obj>(object, member, value, cache_slot);
+	php_parle_lex_write_property<ze_parle_rlexer_obj>(object, member, value, cache_slot);
 }/*}}}*/
 
 static HashTable * 
 php_parle_rlexer_get_properties(zval *object) noexcept
 {/*{{{*/
-	return php_parle_lex_get_properties<struct ze_parle_rlexer_obj>(object);
+	return php_parle_lex_get_properties<ze_parle_rlexer_obj>(object);
 }/*}}}*/
 
 static void
 php_parle_parser_obj_destroy(zend_object *obj) noexcept
 {/*{{{*/
-	struct ze_parle_parser_obj *zppo = php_parle_parser_fetch_obj(obj);
+	ze_parle_parser_obj *zppo = php_parle_parser_fetch_obj(obj);
 
 	zend_object_std_dtor(&zppo->zo);
 
@@ -1537,9 +1537,9 @@ php_parle_parser_obj_destroy(zend_object *obj) noexcept
 static zend_object *
 php_parle_parser_object_init(zend_class_entry *ce) noexcept
 {/*{{{*/
-	struct ze_parle_parser_obj *zppo;
+	ze_parle_parser_obj *zppo;
 
-	zppo = (struct ze_parle_parser_obj *)ecalloc(1, sizeof(struct ze_parle_parser_obj));
+	zppo = (ze_parle_parser_obj *)ecalloc(1, sizeof(ze_parle_parser_obj));
 
 	zend_object_std_init(&zppo->zo, ce);
 	zppo->zo.handlers = &parle_parser_handlers;
@@ -1558,7 +1558,7 @@ php_parle_parser_object_init(zend_class_entry *ce) noexcept
 static zval * 
 php_parle_parser_read_property(zval *object, zval *member, int type, void **cache_slot, zval *rv) noexcept
 {/*{{{*/
-	struct ze_parle_parser_obj *zppo;
+	ze_parle_parser_obj *zppo;
 	zval tmp_member;
 	zval *retval = NULL;
 
@@ -1606,7 +1606,7 @@ php_parle_parser_read_property(zval *object, zval *member, int type, void **cach
 static void
 php_parle_parser_write_property(zval *object, zval *member, zval *value, void **cache_slot) noexcept
 {/*{{{*/
-	struct ze_parle_parser_obj *zppo;
+	ze_parle_parser_obj *zppo;
 	zval tmp_member;
 
 	if (Z_TYPE_P(member) != IS_STRING) {
@@ -1634,7 +1634,7 @@ php_parle_parser_write_property(zval *object, zval *member, zval *value, void **
 static HashTable * 
 php_parle_parser_get_properties(zval *object) noexcept
 {/*{{{*/
-	struct ze_parle_parser_obj *zppo;
+	ze_parle_parser_obj *zppo;
 	HashTable *props;
 	zval zv;
 
@@ -1656,7 +1656,7 @@ php_parle_parser_get_properties(zval *object) noexcept
 static void
 php_parle_parser_stack_obj_destroy(zend_object *obj) noexcept
 {/*{{{*/
-	struct ze_parle_stack_obj *zpso = php_parle_parser_stack_fetch_obj(obj);
+	ze_parle_stack_obj *zpso = php_parle_parser_stack_fetch_obj(obj);
 
 	zend_object_std_dtor(&zpso->zo);
 
@@ -1676,9 +1676,9 @@ php_parle_parser_stack_obj_destroy(zend_object *obj) noexcept
 static zend_object *
 php_parle_parser_stack_object_init(zend_class_entry *ce) noexcept
 {/*{{{*/
-	struct ze_parle_stack_obj *zpso;
+	ze_parle_stack_obj *zpso;
 
-	zpso = (struct ze_parle_stack_obj *)ecalloc(1, sizeof(struct ze_parle_stack_obj));
+	zpso = (ze_parle_stack_obj *)ecalloc(1, sizeof(ze_parle_stack_obj));
 
 	zend_object_std_init(&zpso->zo, ce);
 	zpso->zo.handlers = &parle_stack_handlers;
@@ -1737,7 +1737,7 @@ PHP_MINIT_FUNCTION(parle)
 
 	memcpy(&parle_lexer_handlers, zend_get_std_object_handlers(), sizeof(zend_object_handlers));
 	parle_lexer_handlers.clone_obj = NULL;
-	parle_lexer_handlers.offset = XtOffsetOf(struct ze_parle_lexer_obj, zo);
+	parle_lexer_handlers.offset = XtOffsetOf(ze_parle_lexer_obj, zo);
 	parle_lexer_handlers.free_obj = php_parle_lexer_obj_destroy;
 	parle_lexer_handlers.read_property = php_parle_lexer_read_property;
 	parle_lexer_handlers.write_property = php_parle_lexer_write_property;
@@ -1760,7 +1760,7 @@ PHP_MINIT_FUNCTION(parle)
 
 	memcpy(&parle_rlexer_handlers, zend_get_std_object_handlers(), sizeof(zend_object_handlers));
 	parle_rlexer_handlers.clone_obj = NULL;
-	parle_rlexer_handlers.offset = XtOffsetOf(struct ze_parle_rlexer_obj, zo);
+	parle_rlexer_handlers.offset = XtOffsetOf(ze_parle_rlexer_obj, zo);
 	parle_rlexer_handlers.free_obj = php_parle_rlexer_obj_destroy;
 	parle_rlexer_handlers.read_property = php_parle_rlexer_read_property;
 	parle_rlexer_handlers.write_property = php_parle_rlexer_write_property;
@@ -1771,7 +1771,7 @@ PHP_MINIT_FUNCTION(parle)
 
 	memcpy(&parle_parser_handlers, zend_get_std_object_handlers(), sizeof(zend_object_handlers));
 	parle_parser_handlers.clone_obj = NULL;
-	parle_parser_handlers.offset = XtOffsetOf(struct ze_parle_parser_obj, zo);
+	parle_parser_handlers.offset = XtOffsetOf(ze_parle_parser_obj, zo);
 	parle_parser_handlers.free_obj = php_parle_parser_obj_destroy;
 	parle_parser_handlers.read_property = php_parle_parser_read_property;
 	parle_parser_handlers.write_property = php_parle_parser_write_property;
@@ -1796,7 +1796,7 @@ PHP_MINIT_FUNCTION(parle)
 
 	memcpy(&parle_stack_handlers, zend_get_std_object_handlers(), sizeof(zend_object_handlers));
 	parle_stack_handlers.clone_obj = NULL;
-	parle_stack_handlers.offset = XtOffsetOf(struct ze_parle_stack_obj, zo);
+	parle_stack_handlers.offset = XtOffsetOf(ze_parle_stack_obj, zo);
 	parle_stack_handlers.free_obj = php_parle_parser_stack_obj_destroy;
 	INIT_CLASS_ENTRY(ce, "Parle\\Stack", ParleStack_methods);
 	ce.create_object = php_parle_parser_stack_object_init;
