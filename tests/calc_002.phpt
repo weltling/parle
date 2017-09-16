@@ -58,11 +58,10 @@ foreach ($exp as $in) {
 
 	$p->consume($in, $lex);
 
-	$act = $p->action();
 	$stack = new Stack;
 
-	while (Parser::ACTION_ERROR != $act && Parser::ACTION_ACCEPT != $act) {
-		switch ($act) {
+	while (Parser::ACTION_ERROR != $p->action && Parser::ACTION_ACCEPT != $p->action) {
+		switch ($p->action) {
 			case Parser::ACTION_ERROR:
 				throw new ParserException("Parser error");
 				break;
@@ -111,7 +110,6 @@ foreach ($exp as $in) {
 			break;
 		}
 		$p->advance();
-		$act = $p->action();
 	}
 	echo "$in = " . $stack->top() . "\n";
 }
