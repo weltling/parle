@@ -25,6 +25,8 @@
 		- Fix memory leak in Parle\Stack
 		- Max parser id is set to UINT16_MAX to save memory. This might be changed in the future
 		- Push signatures accepting string range for regex was removed as ZPP would deliver copies anyway
+		- Turned Lexer methods bol, flags and state into properties
+		- Turned Parser methods action and reduceId into properties
 	</notes>
 	<contents>
 		<dir name="/">
