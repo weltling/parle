@@ -22,7 +22,7 @@ $s = "can\ncmd\na cmd\ncmd again\nanother cmd";
 $lex->consume($s);
 
 $lex->restart(4);
-$lex->bol(true);
+$lex->bol = true;
 
 $lex->advance();
 $tok = $lex->getToken();

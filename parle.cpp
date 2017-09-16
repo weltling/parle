@@ -435,45 +435,6 @@ PHP_METHOD(ParleRLexer, advance)
 /* }}} */
 
 template<typename lexer_obj_type> void
-_lexer_bol(INTERNAL_FUNCTION_PARAMETERS, zend_class_entry *ce) noexcept
-{/*{{{*/
-	lexer_obj_type *zplo;
-	zval *me;
-	bool bol;
-
-	if(zend_parse_method_parameters(ZEND_NUM_ARGS(), getThis(), "O|b", &me, ce, &bol) == FAILURE) {
-		return;
-	}
-
-	zplo = _php_parle_lexer_fetch_zobj<lexer_obj_type>(Z_OBJ_P(me));
-
-	if (!zplo->results) {
-		zend_throw_exception(ParleLexerException_ce, "No results available", 0);
-		return;
-	}
-
-	if (1 == ZEND_NUM_ARGS()) {
-		RETURN_BOOL(zplo->results->bol);
-	} else {
-		zplo->results->bol = bol;
-	}
-}/*}}}*/
-
-/* {{{ public mixed Lexer::bol([bool $bol]) */
-PHP_METHOD(ParleLexer, bol)
-{
-	_lexer_bol<struct ze_parle_lexer_obj>(INTERNAL_FUNCTION_PARAM_PASSTHRU, ParleLexer_ce);
-}
-/* }}} */
-
-/* {{{ public mixed RLexer::bol([bool $bol]) */
-PHP_METHOD(ParleRLexer, bol)
-{
-	_lexer_bol<struct ze_parle_rlexer_obj>(INTERNAL_FUNCTION_PARAM_PASSTHRU, ParleRLexer_ce);
-}
-/* }}} */
-
-template<typename lexer_obj_type> void
 _lexer_restart(INTERNAL_FUNCTION_PARAMETERS, zend_class_entry *ce) noexcept
 {/*{{{*/
 	lexer_obj_type *zplo;
@@ -508,40 +469,6 @@ PHP_METHOD(ParleLexer, restart)
 PHP_METHOD(ParleRLexer, restart)
 {
 	_lexer_restart<struct ze_parle_rlexer_obj>(INTERNAL_FUNCTION_PARAM_PASSTHRU, ParleRLexer_ce);
-}
-/* }}} */
-
-template<typename lexer_obj_type> void
-_lexer_flags(INTERNAL_FUNCTION_PARAMETERS, zend_class_entry *ce) noexcept
-{/*{{{*/
-	lexer_obj_type *zplo;
-	zval *me;
-	zend_long flags = -1;
-
-	if(zend_parse_method_parameters(ZEND_NUM_ARGS(), getThis(), "O|l", &me, ce, &flags) == FAILURE) {
-		return;
-	}
-
-	zplo = _php_parle_lexer_fetch_zobj<lexer_obj_type>(Z_OBJ_P(me));
-
-	if (flags > 0) {
-		zplo->rules->flags(static_cast<size_t>(flags));
-	}
-
-	RETURN_LONG(zplo->rules->flags());
-}/*}}}*/
-
-/* {{{ public int Lexer::flags([int flags]) */
-PHP_METHOD(ParleLexer, flags)
-{
-	_lexer_flags<struct ze_parle_lexer_obj>(INTERNAL_FUNCTION_PARAM_PASSTHRU, ParleLexer_ce);
-}
-/* }}} */
-
-/* {{{ public int RLexer::flags([int flags]) */
-PHP_METHOD(ParleRLexer, flags)
-{
-	_lexer_flags<struct ze_parle_rlexer_obj>(INTERNAL_FUNCTION_PARAM_PASSTHRU, ParleRLexer_ce);
 }
 /* }}} */
 
@@ -1312,10 +1239,6 @@ ZEND_END_ARG_INFO();
 ZEND_BEGIN_ARG_INFO_EX(arginfo_parle_lexer_advance, 0, 0, 0)
 ZEND_END_ARG_INFO();
 
-PARLE_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(arginfo_parle_lexer_bol, 0, 0, _IS_BOOL, 1)
-	ZEND_ARG_TYPE_INFO(0, bol, _IS_BOOL, 0)
-ZEND_END_ARG_INFO();
-
 ZEND_BEGIN_ARG_INFO_EX(arginfo_parle_lexer_restart, 0, 0, 1)
 	ZEND_ARG_TYPE_INFO(0, pos, IS_LONG, 0)
 ZEND_END_ARG_INFO();
@@ -1328,10 +1251,6 @@ PARLE_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(arginfo_parle_lexer_pushstate, 0, 1, IS
 ZEND_END_ARG_INFO();
 
 PARLE_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(arginfo_parle_lexer_state, 0, 0, IS_LONG, 0)
-ZEND_END_ARG_INFO();
-
-PARLE_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(arginfo_parle_lexer_flags, 0, 0, IS_LONG, 0)
-	ZEND_ARG_TYPE_INFO(0, flags, IS_LONG, 0)
 ZEND_END_ARG_INFO();
 
 ZEND_BEGIN_ARG_INFO_EX(arginfo_parle_parser_token, 0, 0, 1)
@@ -1436,11 +1355,9 @@ const zend_function_entry ParleLexer_methods[] = {
 	PHP_ME(ParleLexer, build, arginfo_parle_lexer_build, ZEND_ACC_PUBLIC)
 	PHP_ME(ParleLexer, consume, arginfo_parle_lexer_consume, ZEND_ACC_PUBLIC)
 	PHP_ME(ParleLexer, advance, arginfo_parle_lexer_advance, ZEND_ACC_PUBLIC)
-	PHP_ME(ParleLexer, bol, arginfo_parle_lexer_bol, ZEND_ACC_PUBLIC)
 	PHP_ME(ParleLexer, restart, arginfo_parle_lexer_restart, ZEND_ACC_PUBLIC)
 	PHP_ME(ParleLexer, insertMacro, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(ParleLexer, dump, arginfo_parle_lexer_dump, ZEND_ACC_PUBLIC)
-	PHP_ME(ParleLexer, flags, arginfo_parle_lexer_flags, ZEND_ACC_PUBLIC)
 	PHP_FE_END
 };
 
@@ -1450,13 +1367,11 @@ const zend_function_entry ParleRLexer_methods[] = {
 	PHP_ME(ParleRLexer, build, arginfo_parle_lexer_build, ZEND_ACC_PUBLIC)
 	PHP_ME(ParleRLexer, consume, arginfo_parle_lexer_consume, ZEND_ACC_PUBLIC)
 	PHP_ME(ParleRLexer, advance, arginfo_parle_lexer_advance, ZEND_ACC_PUBLIC)
-	PHP_ME(ParleRLexer, bol, arginfo_parle_lexer_bol, ZEND_ACC_PUBLIC)
 	PHP_ME(ParleRLexer, restart, arginfo_parle_lexer_restart, ZEND_ACC_PUBLIC)
 	PHP_ME(ParleRLexer, pushState, arginfo_parle_lexer_pushstate, ZEND_ACC_PUBLIC)
 	PHP_ME(ParleRLexer, state, arginfo_parle_lexer_state, ZEND_ACC_PUBLIC)
 	PHP_ME(ParleRLexer, insertMacro, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(ParleRLexer, dump, arginfo_parle_lexer_dump, ZEND_ACC_PUBLIC)
-	PHP_ME(ParleRLexer, flags, arginfo_parle_lexer_flags, ZEND_ACC_PUBLIC)
 	PHP_FE_END
 };
 
@@ -1619,6 +1534,102 @@ php_parle_parser_stack_object_init(zend_class_entry *ce) noexcept
 	return &zpso->zo;
 }/*}}}*/
 
+template <typename lexer_obj_type> zval * 
+php_parle_lex_read_property(zval *object, zval *member, int type, void **cache_slot, zval *rv) noexcept
+{/*{{{*/
+	lexer_obj_type *zplo;
+	zval tmp_member;
+	zval *retval = NULL;
+
+	if (Z_TYPE_P(member) != IS_STRING) {
+		ZVAL_COPY(&tmp_member, member);
+		convert_to_string(&tmp_member);
+		member = &tmp_member;
+		cache_slot = NULL;
+	}
+
+	zplo = _php_parle_lexer_fetch_zobj<lexer_obj_type>(Z_OBJ_P(object));
+
+	retval = rv;
+	if (strcmp(Z_STRVAL_P(member), "bol") == 0) {
+		if (EXPECTED(zplo->results)) {
+			ZVAL_BOOL(retval, zplo->results->bol);
+		} else {
+			ZVAL_BOOL(retval, false);
+		}
+	} else if (strcmp(Z_STRVAL_P(member), "flags") == 0) {
+		if (EXPECTED(zplo->complete)) {
+			ZVAL_LONG(retval, zplo->rules->flags());
+		} else {
+			ZVAL_LONG(retval, 0);
+		}
+	} else {
+		retval = (zend_get_std_object_handlers())->read_property(object, member, type, cache_slot, rv);
+	}
+
+	if (member == &tmp_member) {
+		zval_dtor(member);
+	}
+
+	return retval;
+}/*}}}*/
+
+zval * 
+php_parle_lexer_read_property(zval *object, zval *member, int type, void **cache_slot, zval *rv) noexcept
+{/*{{{*/
+	return php_parle_lex_read_property<struct ze_parle_lexer_obj>(object, member, type, cache_slot, rv);
+}/*}}}*/
+
+zval * 
+php_parle_rlexer_read_property(zval *object, zval *member, int type, void **cache_slot, zval *rv) noexcept
+{/*{{{*/
+	return php_parle_lex_read_property<struct ze_parle_rlexer_obj>(object, member, type, cache_slot, rv);
+}/*}}}*/
+
+template <typename lexer_obj_type> void
+php_parle_lex_write_property(zval *object, zval *member, zval *value, void **cache_slot) noexcept
+{/*{{{*/
+	lexer_obj_type *zplo;
+	zval tmp_member;
+
+	if (Z_TYPE_P(member) != IS_STRING) {
+		ZVAL_COPY(&tmp_member, member);
+		convert_to_string(&tmp_member);
+		member = &tmp_member;
+		cache_slot = NULL;
+	}
+
+	zplo = _php_parle_lexer_fetch_zobj<lexer_obj_type>(Z_OBJ_P(object));
+
+	if (strcmp(Z_STRVAL_P(member), "bol") == 0) {
+		if (EXPECTED(zplo->results)) {
+			zplo->results->bol = static_cast<bool>(zval_is_true(value) == 1);
+		}
+	} else if (strcmp(Z_STRVAL_P(member), "flags") == 0) {
+		if (EXPECTED(zplo->complete)) {
+			zplo->rules->flags(zval_get_long(value));
+		}
+	} else {
+		(zend_get_std_object_handlers())->write_property(object, member, value, cache_slot);
+	}
+
+	if (member == &tmp_member) {
+		zval_dtor(member);
+	}
+}/*}}}*/
+
+void
+php_parle_lexer_write_property(zval *object, zval *member, zval *value, void **cache_slot) noexcept
+{/*{{{*/
+	php_parle_lex_write_property<struct ze_parle_lexer_obj>(object, member, value, cache_slot);
+}/*}}}*/
+
+void
+php_parle_rlexer_write_property(zval *object, zval *member, zval *value, void **cache_slot) noexcept
+{/*{{{*/
+	php_parle_lex_write_property<struct ze_parle_rlexer_obj>(object, member, value, cache_slot);
+}/*}}}*/
+
 /* {{{ PHP_INI
  */
 /* Remove comments and fill if you need to have entries in php.ini
@@ -1670,6 +1681,8 @@ PHP_MINIT_FUNCTION(parle)
 	parle_lexer_handlers.clone_obj = NULL;
 	parle_lexer_handlers.offset = XtOffsetOf(struct ze_parle_lexer_obj, zo);
 	parle_lexer_handlers.free_obj = php_parle_lexer_obj_destroy;
+	parle_lexer_handlers.read_property = php_parle_lexer_read_property;
+	parle_lexer_handlers.write_property = php_parle_lexer_write_property;
 
 	INIT_CLASS_ENTRY(ce, "Parle\\Lexer", ParleLexer_methods);
 	ce.create_object = php_parle_lexer_object_init;
@@ -1689,6 +1702,8 @@ PHP_MINIT_FUNCTION(parle)
 	parle_rlexer_handlers.clone_obj = NULL;
 	parle_rlexer_handlers.offset = XtOffsetOf(struct ze_parle_rlexer_obj, zo);
 	parle_rlexer_handlers.free_obj = php_parle_rlexer_obj_destroy;
+	parle_rlexer_handlers.read_property = php_parle_rlexer_read_property;
+	parle_rlexer_handlers.write_property = php_parle_rlexer_write_property;
 
 	INIT_CLASS_ENTRY(ce, "Parle\\RLexer", ParleRLexer_methods);
 	ce.create_object = php_parle_rlexer_object_init;
