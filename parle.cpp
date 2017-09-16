@@ -1683,7 +1683,6 @@ PHP_MINIT_FUNCTION(parle)
 	parle_lexer_handlers.free_obj = php_parle_lexer_obj_destroy;
 	parle_lexer_handlers.read_property = php_parle_lexer_read_property;
 	parle_lexer_handlers.write_property = php_parle_lexer_write_property;
-
 	INIT_CLASS_ENTRY(ce, "Parle\\Lexer", ParleLexer_methods);
 	ce.create_object = php_parle_lexer_object_init;
 	ParleLexer_ce = zend_register_internal_class(&ce);
@@ -1694,7 +1693,9 @@ PHP_MINIT_FUNCTION(parle)
 	DECL_CONST("FLAG_REGEX_SKIP_WS", lexertl::skip_ws)
 	DECL_CONST("FLAG_REGEX_MATCH_ZERO_LEN", lexertl::match_zero_len)
 #undef DECL_CONST
-
+	zend_declare_property_bool(ParleLexer_ce, "bol", sizeof("bol")-1, 0, ZEND_ACC_PUBLIC);
+	zend_declare_property_long(ParleLexer_ce, "flags", sizeof("flags")-1, 0, ZEND_ACC_PUBLIC);
+	zend_declare_property_long(ParleLexer_ce, "state", sizeof("state")-1, 0, ZEND_ACC_PUBLIC);
 	ParleLexer_ce->serialize = zend_class_serialize_deny;
 	ParleLexer_ce->unserialize = zend_class_unserialize_deny;
 
@@ -1704,7 +1705,6 @@ PHP_MINIT_FUNCTION(parle)
 	parle_rlexer_handlers.free_obj = php_parle_rlexer_obj_destroy;
 	parle_rlexer_handlers.read_property = php_parle_rlexer_read_property;
 	parle_rlexer_handlers.write_property = php_parle_rlexer_write_property;
-
 	INIT_CLASS_ENTRY(ce, "Parle\\RLexer", ParleRLexer_methods);
 	ce.create_object = php_parle_rlexer_object_init;
 	ParleRLexer_ce = zend_register_internal_class_ex(&ce, ParleLexer_ce);
@@ -1715,7 +1715,6 @@ PHP_MINIT_FUNCTION(parle)
 	parle_parser_handlers.free_obj = php_parle_parser_obj_destroy;
 	parle_parser_handlers.read_property = php_parle_parser_read_property;
 	parle_parser_handlers.write_property = php_parle_parser_write_property;
-
 	INIT_CLASS_ENTRY(ce, "Parle\\Parser", ParleParser_methods);
 	ce.create_object = php_parle_parser_object_init;
 	ParleParser_ce = zend_register_internal_class(&ce);
@@ -1729,7 +1728,8 @@ PHP_MINIT_FUNCTION(parle)
 	DECL_CONST("ERROR_NON_ASSOCIATIVE", parsertl::non_associative)
 	DECL_CONST("ERROR_UNKOWN_TOKEN", parsertl::unknown_token)
 #undef DECL_CONST
-
+	zend_declare_property_long(ParleParser_ce, "action", sizeof("action")-1, 0, ZEND_ACC_PUBLIC);
+	zend_declare_property_long(ParleParser_ce, "reduceId", sizeof("reduceId")-1, 0, ZEND_ACC_PUBLIC);
 	ParleParser_ce->serialize = zend_class_serialize_deny;
 	ParleParser_ce->unserialize = zend_class_unserialize_deny;
 
@@ -1737,11 +1737,9 @@ PHP_MINIT_FUNCTION(parle)
 	parle_stack_handlers.clone_obj = NULL;
 	parle_stack_handlers.offset = XtOffsetOf(struct ze_parle_stack_obj, zo);
 	parle_stack_handlers.free_obj = php_parle_parser_stack_obj_destroy;
-
 	INIT_CLASS_ENTRY(ce, "Parle\\Stack", ParleStack_methods);
 	ce.create_object = php_parle_parser_stack_object_init;
 	ParleStack_ce = zend_register_internal_class(&ce);
-
 	ParleStack_ce->serialize = zend_class_serialize_deny;
 	ParleStack_ce->unserialize = zend_class_unserialize_deny;
 
