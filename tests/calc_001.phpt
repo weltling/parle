@@ -57,12 +57,7 @@ foreach ($exp as $in) {
 			case Parser::ACTION_ACCEPT:
 				break;
 			case Parser::ACTION_REDUCE:
-				$rid = $p->reduceId();
-
-				/*$l = $p->sigil(0);
-				$r = $p->sigil(2);*/
-
-				switch ($rid) {
+				switch ($p->reduceId) {
 					case $add_idx:
 						$l = $p->sigil(0);
 						$r = $p->sigil(2);

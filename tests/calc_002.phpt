@@ -70,8 +70,7 @@ foreach ($exp as $in) {
 			case Parser::ACTION_ACCEPT:
 				break;
 			case Parser::ACTION_REDUCE:
-				$rid = $p->reduceId();
-				switch ($rid) {
+				switch ($p->reduceId) {
 					case $add_idx:
 						$op0 = $stack->top();
 						$stack->pop();

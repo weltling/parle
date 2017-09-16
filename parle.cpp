@@ -777,34 +777,6 @@ PHP_METHOD(ParleParser, tokenId)
 }
 /* }}} */
 
-/* {{{ public int Parser::reduceId(void) */
-PHP_METHOD(ParleParser, reduceId)
-{
-	struct ze_parle_parser_obj *zppo;
-	zval *me;
-
-	if(zend_parse_method_parameters(ZEND_NUM_ARGS(), getThis(), "O", &me, ParleParser_ce) == FAILURE) {
-		return;
-	}
-
-	zppo = php_parle_parser_fetch_obj(Z_OBJ_P(me));
-
-	if (!zppo->complete) {
-		zend_throw_exception(ParleParserException_ce, "Parser state machine is not ready", 0);
-		return;
-	} else if (!zppo->results) {
-		zend_throw_exception(ParleParserException_ce, "No results available", 0);
-		return;
-	}
-
-	try {
-		RETURN_LONG(zppo->results->reduce_id());
-	} catch (const std::exception &e) {
-		zend_throw_exception(ParleParserException_ce, e.what(), 0);
-	}
-}
-/* }}} */
-
 /* {{{ public string Parser::sigil(int $idx) */
 PHP_METHOD(ParleParser, sigil)
 {
@@ -1241,9 +1213,6 @@ PARLE_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(arginfo_parle_parser_tokenid, 0, 1, IS_
 	ZEND_ARG_TYPE_INFO(0, tok, IS_STRING, 0)
 ZEND_END_ARG_INFO();
 
-PARLE_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(arginfo_parle_parser_reduceid, 0, 0, IS_LONG, 0)
-ZEND_END_ARG_INFO();
-
 PARLE_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(arginfo_parle_parser_sigil, 0, 0, IS_STRING, 0)
 	ZEND_ARG_TYPE_INFO(0, idx, IS_LONG, 0)
 ZEND_END_ARG_INFO();
@@ -1334,7 +1303,6 @@ const zend_function_entry ParleParser_methods[] = {
 	PHP_ME(ParleParser, push, arginfo_parle_parser_push, ZEND_ACC_PUBLIC)
 	PHP_ME(ParleParser, validate, arginfo_parle_parser_validate, ZEND_ACC_PUBLIC)
 	PHP_ME(ParleParser, tokenId, arginfo_parle_parser_tokenid, ZEND_ACC_PUBLIC)
-	PHP_ME(ParleParser, reduceId, arginfo_parle_parser_reduceid, ZEND_ACC_PUBLIC)
 	PHP_ME(ParleParser, sigil, arginfo_parle_parser_sigil, ZEND_ACC_PUBLIC)
 	PHP_ME(ParleParser, advance, arginfo_parle_parser_advance, ZEND_ACC_PUBLIC)
 	PHP_ME(ParleParser, consume, arginfo_parle_parser_consume, ZEND_ACC_PUBLIC)
@@ -1578,6 +1546,16 @@ php_parle_parser_read_property(zval *object, zval *member, int type, void **cach
 		} else {
 			ZVAL_LONG(retval, zppo->results->entry.action);
 		}
+	} else if (strcmp(Z_STRVAL_P(member), "reduceId") == 0) {
+		if (!zppo->complete) {
+			zend_throw_exception(ParleParserException_ce, "Parser state machine is not ready", 0);
+			ZVAL_NULL(retval);
+		} else if (!zppo->results) {
+			zend_throw_exception(ParleParserException_ce, "No results available", 0);
+			ZVAL_NULL(retval);
+		} else {
+			ZVAL_LONG(retval, zppo->results->reduce_id());
+		}
 	} else {
 		retval = (zend_get_std_object_handlers())->read_property(object, member, type, cache_slot, rv);
 	}
@@ -1606,6 +1584,8 @@ php_parle_parser_write_property(zval *object, zval *member, zval *value, void **
 
 	if (strcmp(Z_STRVAL_P(member), "action") == 0) {
 		zend_throw_exception_ex(ParleParserException_ce, 0, "Cannot set readonly property $action of class %s", ZSTR_VAL(Z_OBJ_P(object)->ce->name));
+	} else if (strcmp(Z_STRVAL_P(member), "reduceId") == 0) {
+		zend_throw_exception_ex(ParleParserException_ce, 0, "Cannot set readonly property $reduceId of class %s", ZSTR_VAL(Z_OBJ_P(object)->ce->name));
 	} else {
 		(zend_get_std_object_handlers())->write_property(object, member, value, cache_slot);
 	}
