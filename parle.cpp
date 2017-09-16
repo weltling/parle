@@ -122,6 +122,7 @@ static zend_class_entry *ParleParser_ce;
 static zend_class_entry *ParleStack_ce;
 static zend_class_entry *ParleLexerException_ce;
 static zend_class_entry *ParleParserException_ce;
+static zend_class_entry *ParleStackException_ce;
 static zend_class_entry *ParleToken_ce;
 static zend_class_entry *ParleErrorInfo_ce;
 /* }}} */
@@ -1688,6 +1689,84 @@ php_parle_parser_stack_object_init(zend_class_entry *ce) noexcept
 	return &zpso->zo;
 }/*}}}*/
 
+static zval * 
+php_parle_stack_read_property(zval *object, zval *member, int type, void **cache_slot, zval *rv) noexcept
+{/*{{{*/
+	ze_parle_stack_obj *zpso;
+	zval tmp_member;
+	zval *retval = NULL;
+
+	if (Z_TYPE_P(member) != IS_STRING) {
+		ZVAL_COPY(&tmp_member, member);
+		convert_to_string(&tmp_member);
+		member = &tmp_member;
+		cache_slot = NULL;
+	}
+
+	zpso = php_parle_parser_stack_fetch_obj(Z_OBJ_P(object));
+
+	retval = rv;
+	if (strcmp(Z_STRVAL_P(member), "empty") == 0) {
+		ZVAL_BOOL(retval, zpso->stack->empty());
+	} else if (strcmp(Z_STRVAL_P(member), "size") == 0) {
+		ZVAL_LONG(retval, zpso->stack->size());
+	} else {
+		retval = (zend_get_std_object_handlers())->read_property(object, member, type, cache_slot, rv);
+	}
+
+	if (member == &tmp_member) {
+		zval_dtor(member);
+	}
+
+	return retval;
+}/*}}}*/
+
+static void
+php_parle_stack_write_property(zval *object, zval *member, zval *value, void **cache_slot) noexcept
+{/*{{{*/
+	ze_parle_stack_obj *zpso;
+	zval tmp_member;
+
+	if (Z_TYPE_P(member) != IS_STRING) {
+		ZVAL_COPY(&tmp_member, member);
+		convert_to_string(&tmp_member);
+		member = &tmp_member;
+		cache_slot = NULL;
+	}
+
+	zpso = php_parle_parser_stack_fetch_obj(Z_OBJ_P(object));
+
+	if (strcmp(Z_STRVAL_P(member), "empty") == 0) {
+		zend_throw_exception_ex(ParleParserException_ce, 0, "Cannot set readonly property $empty of class %s", ZSTR_VAL(Z_OBJ_P(object)->ce->name));
+	} else if (strcmp(Z_STRVAL_P(member), "size") == 0) {
+		zend_throw_exception_ex(ParleParserException_ce, 0, "Cannot set readonly property $size reduceId of class %s", ZSTR_VAL(Z_OBJ_P(object)->ce->name));
+	} else {
+		(zend_get_std_object_handlers())->write_property(object, member, value, cache_slot);
+	}
+
+	if (member == &tmp_member) {
+		zval_dtor(member);
+	}
+}/*}}}*/
+
+static HashTable * 
+php_parle_stack_get_properties(zval *object) noexcept
+{/*{{{*/
+	ze_parle_stack_obj *zpso;
+	HashTable *props;
+	zval zv;
+
+	props = zend_std_get_properties(object);
+	zpso = php_parle_parser_stack_fetch_obj(Z_OBJ_P(object));
+
+	ZVAL_LONG(&zv, zpso->stack->empty());
+	zend_hash_str_update(props, "empty", sizeof("empty")-1, &zv);
+	ZVAL_LONG(&zv, zpso->stack->size());
+	zend_hash_str_update(props, "size", sizeof("size")-1, &zv);
+
+	return props;
+}/*}}}*/
+
 /* {{{ PHP_INI
  */
 /* Remove comments and fill if you need to have entries in php.ini
@@ -1798,9 +1877,14 @@ PHP_MINIT_FUNCTION(parle)
 	parle_stack_handlers.clone_obj = NULL;
 	parle_stack_handlers.offset = XtOffsetOf(ze_parle_stack_obj, zo);
 	parle_stack_handlers.free_obj = php_parle_parser_stack_obj_destroy;
+	parle_stack_handlers.read_property = php_parle_stack_read_property;
+	parle_stack_handlers.write_property = php_parle_stack_write_property;
+	parle_stack_handlers.get_properties = php_parle_stack_get_properties;
 	INIT_CLASS_ENTRY(ce, "Parle\\Stack", ParleStack_methods);
 	ce.create_object = php_parle_parser_stack_object_init;
 	ParleStack_ce = zend_register_internal_class(&ce);
+	zend_declare_property_bool(ParleStack_ce, "empty", sizeof("empty")-1, 0, ZEND_ACC_PUBLIC);
+	zend_declare_property_long(ParleStack_ce, "size", sizeof("size")-1, 0, ZEND_ACC_PUBLIC);
 	ParleStack_ce->serialize = zend_class_serialize_deny;
 	ParleStack_ce->unserialize = zend_class_unserialize_deny;
 
@@ -1808,6 +1892,8 @@ PHP_MINIT_FUNCTION(parle)
 	ParleLexerException_ce = zend_register_internal_class_ex(&ce, zend_exception_get_default());
 	INIT_CLASS_ENTRY(ce, "Parle\\ParserException", NULL);
 	ParleParserException_ce = zend_register_internal_class_ex(&ce, zend_exception_get_default());
+	INIT_CLASS_ENTRY(ce, "Parle\\StackException", NULL);
+	ParleStackException_ce = zend_register_internal_class_ex(&ce, zend_exception_get_default());
 
 	return SUCCESS;
 }
