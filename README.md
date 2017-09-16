@@ -98,9 +98,7 @@ $in = "000,111,222\r\n\"333,3\",444,555\r\n666,777,\"888,8\"\r\n";
 $p->consume($in, $lex);
 
 do {
-	$act = $p->action();
-
-	switch ($act) {
+	switch ($p->action) {
 		case Parser::ACTION_ERROR:
 			$err = $p->errorInfo();
 			if (Parser::ERROR_UNKOWN_TOKEN == $err->id) {
@@ -120,8 +118,7 @@ do {
 			continue;
 			break;
 		case Parser::ACTION_REDUCE:
-			$rid = $p->reduceId();
-			switch ($rid) {
+			switch ($p->reduceId) {
 				case $int_idx_0:
 					/* INTEGER */
 					echo $p->sigil(), PHP_EOL;
@@ -147,7 +144,7 @@ do {
 			break;
 	}
 	$p->advance();
-} while (Parser::ACTION_ACCEPT != $act);
+} while (Parser::ACTION_ACCEPT != $p->action);
 
 ```
 
