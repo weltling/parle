@@ -27,6 +27,7 @@
 		- Push signatures accepting string range for regex was removed as ZPP would deliver copies anyway
 		- Turned Lexer methods bol, flags and state into properties
 		- Turned Parser methods action and reduceId into properties
+		- Turned Stack methods empty and size into properties
 	</notes>
 	<contents>
 		<dir name="/">
