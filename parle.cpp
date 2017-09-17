@@ -1825,11 +1825,11 @@ PHP_MINIT_FUNCTION(parle)
 	ce.create_object = php_parle_lexer_object_init;
 	ParleLexer_ce = zend_register_internal_class(&ce);
 #define DECL_CONST(name, val) zend_declare_class_constant_long(ParleLexer_ce, name, sizeof(name) - 1, val);
-	DECL_CONST("FLAG_REGEX_ICASE", lexertl::icase)
-	DECL_CONST("FLAG_REGEX_DOT_NOT_LF", lexertl::dot_not_newline)
-	DECL_CONST("FLAG_REGEX_DOT_NOT_CR_LF", lexertl::dot_not_cr_lf)
-	DECL_CONST("FLAG_REGEX_SKIP_WS", lexertl::skip_ws)
-	DECL_CONST("FLAG_REGEX_MATCH_ZERO_LEN", lexertl::match_zero_len)
+	DECL_CONST("ICASE", lexertl::icase)
+	DECL_CONST("DOT_NOT_LF", lexertl::dot_not_newline)
+	DECL_CONST("DOT_NOT_CRLF", lexertl::dot_not_cr_lf)
+	DECL_CONST("SKIP_WS", lexertl::skip_ws)
+	DECL_CONST("MATCH_ZERO_LEN", lexertl::match_zero_len)
 #undef DECL_CONST
 	/*zend_declare_property_bool(ParleLexer_ce, "bol", sizeof("bol")-1, 0, ZEND_ACC_PUBLIC);
 	zend_declare_property_long(ParleLexer_ce, "flags", sizeof("flags")-1, 0, ZEND_ACC_PUBLIC);
