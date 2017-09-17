@@ -10,7 +10,7 @@
 		<email>ab@php.net</email>
 		<active>yes</active>
 	</lead>
-	<date>2017-09-16</date>
+	<date>2017-09-17</date>
 	<version>
 		<release>0.6.1</release>
 		<api>0.6.1</api>
@@ -21,6 +21,7 @@
 	</stability>
 	<license uri="http://opensource.org/licenses/BSD-2-Clause">BSD 2-clause</license>
 	<notes>
+		- Removed FLAG_REGEX_* prefix from the lexer flag constants
 	</notes>
 	<contents>
 		<dir name="/">
