@@ -22,6 +22,7 @@
 	<license uri="http://opensource.org/licenses/BSD-2-Clause">BSD 2-clause</license>
 	<notes>
 		- Removed FLAG_REGEX_* prefix from the lexer flag constants
+		- Removed non worky rexeg from range signature for pushMacro method
 	</notes>
 	<contents>
 		<dir name="/">
