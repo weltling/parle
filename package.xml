@@ -12,8 +12,8 @@
 	</lead>
 	<date>2017-09-17</date>
 	<version>
-		<release>0.6.1</release>
-		<api>0.6.1</api>
+		<release>0.6.2</release>
+		<api>0.6.2</api>
 	</version>
 	<stability>
 		<release>alpha</release>
@@ -21,8 +21,6 @@
 	</stability>
 	<license uri="http://opensource.org/licenses/BSD-2-Clause">BSD 2-clause</license>
 	<notes>
-		- Removed FLAG_REGEX_* prefix from the lexer flag constants
-		- Removed non worky rexeg from range signature for pushMacro method
 	</notes>
 	<contents>
 		<dir name="/">
@@ -134,6 +132,22 @@
 	<providesextension>parle</providesextension>
 	<extsrcrelease />
 	<changelog>
+		<release>
+			<date>2017-09-17</date>
+			<version>
+				<release>0.6.1</release>
+				<api>0.6.1</api>
+			</version>
+			<stability>
+				<release>alpha</release>
+				<api>alpha</api>
+			</stability>
+			<license uri="http://opensource.org/licenses/BSD-2-Clause">BSD 2-clause</license>
+			<notes>
+				- Removed FLAG_REGEX_* prefix from the lexer flag constants
+				- Removed non worky rexeg from range signature for pushMacro method
+			</notes>
+		</release>
 		<release>
 			<date>2017-09-16</date>
 			<version>
