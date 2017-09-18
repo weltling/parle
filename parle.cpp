@@ -1337,9 +1337,10 @@ php_parle_lexer_obj_ctor(zend_class_entry *ce) noexcept
 {/*{{{*/
 	lexer_type *zplo;
 
-	zplo = (lexer_type *)ecalloc(1, sizeof(lexer_type));
+	zplo = (lexer_type *)ecalloc(1, sizeof(lexer_type) + zend_object_properties_size(ce));
 
 	zend_object_std_init(&zplo->zo, ce);
+	object_properties_init(&zplo->zo, ce);
 	zplo->zo.handlers = &parle_lexer_handlers;
 
 	zplo->complete = false;
@@ -1537,9 +1538,10 @@ php_parle_parser_object_init(zend_class_entry *ce) noexcept
 {/*{{{*/
 	ze_parle_parser_obj *zppo;
 
-	zppo = (ze_parle_parser_obj *)ecalloc(1, sizeof(ze_parle_parser_obj));
+	zppo = (ze_parle_parser_obj *)ecalloc(1, sizeof(ze_parle_parser_obj) + zend_object_properties_size(ce));
 
 	zend_object_std_init(&zppo->zo, ce);
+	object_properties_init(&zppo->zo, ce);
 	zppo->zo.handlers = &parle_parser_handlers;
 
 	zppo->complete = false;
@@ -1676,9 +1678,10 @@ php_parle_parser_stack_object_init(zend_class_entry *ce) noexcept
 {/*{{{*/
 	ze_parle_stack_obj *zpso;
 
-	zpso = (ze_parle_stack_obj *)ecalloc(1, sizeof(ze_parle_stack_obj));
+	zpso = (ze_parle_stack_obj *)ecalloc(1, sizeof(ze_parle_stack_obj) + zend_object_properties_size(ce));
 
 	zend_object_std_init(&zpso->zo, ce);
+	object_properties_init(&zpso->zo, ce);
 	zpso->zo.handlers = &parle_stack_handlers;
 
 	zpso->stack = new std::stack<zval *>();
@@ -1828,9 +1831,9 @@ PHP_MINIT_FUNCTION(parle)
 	DECL_CONST("SKIP_WS", lexertl::skip_ws)
 	DECL_CONST("MATCH_ZERO_LEN", lexertl::match_zero_len)
 #undef DECL_CONST
-	/*zend_declare_property_bool(ParleLexer_ce, "bol", sizeof("bol")-1, 0, ZEND_ACC_PUBLIC);
+	zend_declare_property_bool(ParleLexer_ce, "bol", sizeof("bol")-1, 0, ZEND_ACC_PUBLIC);
 	zend_declare_property_long(ParleLexer_ce, "flags", sizeof("flags")-1, 0, ZEND_ACC_PUBLIC);
-	zend_declare_property_long(ParleLexer_ce, "state", sizeof("state")-1, 0, ZEND_ACC_PUBLIC);*/
+	zend_declare_property_long(ParleLexer_ce, "state", sizeof("state")-1, 0, ZEND_ACC_PUBLIC);
 	ParleLexer_ce->serialize = zend_class_serialize_deny;
 	ParleLexer_ce->unserialize = zend_class_unserialize_deny;
 
@@ -1865,8 +1868,8 @@ PHP_MINIT_FUNCTION(parle)
 	DECL_CONST("ERROR_NON_ASSOCIATIVE", parsertl::non_associative)
 	DECL_CONST("ERROR_UNKOWN_TOKEN", parsertl::unknown_token)
 #undef DECL_CONST
-	/*zend_declare_property_long(ParleParser_ce, "action", sizeof("action")-1, 0, ZEND_ACC_PUBLIC);
-	zend_declare_property_long(ParleParser_ce, "reduceId", sizeof("reduceId")-1, 0, ZEND_ACC_PUBLIC);*/
+	zend_declare_property_long(ParleParser_ce, "action", sizeof("action")-1, 0, ZEND_ACC_PUBLIC);
+	zend_declare_property_long(ParleParser_ce, "reduceId", sizeof("reduceId")-1, 0, ZEND_ACC_PUBLIC);
 	ParleParser_ce->serialize = zend_class_serialize_deny;
 	ParleParser_ce->unserialize = zend_class_unserialize_deny;
 
@@ -1880,8 +1883,8 @@ PHP_MINIT_FUNCTION(parle)
 	INIT_CLASS_ENTRY(ce, "Parle\\Stack", ParleStack_methods);
 	ce.create_object = php_parle_parser_stack_object_init;
 	ParleStack_ce = zend_register_internal_class(&ce);
-	/*zend_declare_property_bool(ParleStack_ce, "empty", sizeof("empty")-1, 0, ZEND_ACC_PUBLIC);
-	zend_declare_property_long(ParleStack_ce, "size", sizeof("size")-1, 0, ZEND_ACC_PUBLIC);*/
+	zend_declare_property_bool(ParleStack_ce, "empty", sizeof("empty")-1, 0, ZEND_ACC_PUBLIC);
+	zend_declare_property_long(ParleStack_ce, "size", sizeof("size")-1, 0, ZEND_ACC_PUBLIC);
 	ParleStack_ce->serialize = zend_class_serialize_deny;
 	ParleStack_ce->unserialize = zend_class_unserialize_deny;
 
