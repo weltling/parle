@@ -24,6 +24,7 @@ $tok = $lex->getToken();
 
 while (Token::EOI != $tok->id) {
 	var_dump($tok);
+	echo "marker: ", $lex->markerPos, " cursor: ", $lex->cursorPos, "\n";
 	$lex->advance();
 	$tok = $lex->getToken();
 }

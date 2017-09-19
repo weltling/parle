@@ -25,6 +25,7 @@ foreach ($nums as $in) {
 
 	$lex->consume($in);
 
+	echo "marker: ", $lex->markerPos, " cursor: ", $lex->cursorPos, "\n";
 	$lex->advance();
 	$tok = $lex->getToken();
 
@@ -32,6 +33,7 @@ foreach ($nums as $in) {
 		if ($tok->id > 0) {
 			var_dump($tok);
 		}
+		echo "marker: ", $lex->markerPos, " cursor: ", $lex->cursorPos, "\n";
 		$lex->advance();
 		$tok = $lex->getToken();
 	}
