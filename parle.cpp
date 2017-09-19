@@ -1394,11 +1394,7 @@ php_parle_lex_read_property(zval *object, zval *member, int type, void **cache_s
 			ZVAL_BOOL(retval, false);
 		}
 	} else if (strcmp(Z_STRVAL_P(member), "flags") == 0) {
-		if (EXPECTED(zplo->complete)) {
-			ZVAL_LONG(retval, zplo->rules->flags());
-		} else {
-			ZVAL_LONG(retval, 0);
-		}
+		ZVAL_LONG(retval, zplo->rules->flags());
 	} else if (strcmp(Z_STRVAL_P(member), "state") == 0) {
 		if (EXPECTED(zplo->results)) {
 			ZVAL_LONG(retval, zplo->results->state);
