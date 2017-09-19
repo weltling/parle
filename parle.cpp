@@ -360,7 +360,6 @@ _lexer_token(INTERNAL_FUNCTION_PARAMETERS, zend_class_entry *ce) noexcept
 #else
 		add_property_stringl_ex(return_value, "value", sizeof("value")-1, (char *)ret.c_str(), ret.size());
 #endif
-		add_property_long(return_value, "offset", zplo->results->first - zplo->in->begin());
 
 	} catch (const std::exception &e) {
 		zend_throw_exception(ParleLexerException_ce, e.what(), 0);
@@ -1385,7 +1384,19 @@ php_parle_lex_read_property(zval *object, zval *member, int type, void **cache_s
 		if (EXPECTED(zplo->results)) {
 			ZVAL_LONG(retval, zplo->results->state);
 		} else {
-			ZVAL_LONG(retval, false);
+			ZVAL_LONG(retval, 0);
+		}
+	} else if (strcmp(Z_STRVAL_P(member), "markerPos") == 0) {
+		if (EXPECTED(zplo->results)) {
+			ZVAL_LONG(retval, zplo->results->first - zplo->in->begin());
+		} else {
+			ZVAL_LONG(retval, Z_L(-1));
+		}
+	} else if (strcmp(Z_STRVAL_P(member), "cursorPos") == 0) {
+		if (EXPECTED(zplo->results)) {
+			ZVAL_LONG(retval, zplo->results->second - zplo->in->begin());
+		} else {
+			ZVAL_LONG(retval, Z_L(-1));
 		}
 	} else {
 		retval = (zend_get_std_object_handlers())->read_property(object, member, type, cache_slot, rv);
@@ -1423,6 +1434,10 @@ php_parle_lex_write_property(zval *object, zval *member, zval *value, void **cac
 		}
 	} else if (strcmp(Z_STRVAL_P(member), "state") == 0) {
 		zend_throw_exception_ex(ParleLexerException_ce, 0, "Cannot set readonly property $state of class %s", ZSTR_VAL(Z_OBJ_P(object)->ce->name));
+	} else if (strcmp(Z_STRVAL_P(member), "cursorPos") == 0) {
+		zend_throw_exception_ex(ParleLexerException_ce, 0, "Cannot set readonly property $cursorPos of class %s", ZSTR_VAL(Z_OBJ_P(object)->ce->name));
+	} else if (strcmp(Z_STRVAL_P(member), "markerPos") == 0) {
+		zend_throw_exception_ex(ParleLexerException_ce, 0, "Cannot set readonly property $markerPos of class %s", ZSTR_VAL(Z_OBJ_P(object)->ce->name));
 	} else {
 		(zend_get_std_object_handlers())->write_property(object, member, value, cache_slot);
 	}
@@ -1452,6 +1467,10 @@ php_parle_lex_get_properties(zval *object) noexcept
 	zend_hash_str_update(props, "flags", sizeof("flags")-1, &zv);
 	ZVAL_LONG(&zv, zplo->results->state);
 	zend_hash_str_update(props, "state", sizeof("state")-1, &zv);
+	ZVAL_LONG(&zv, zplo->results->first - zplo->in->begin());
+	zend_hash_str_update(props, "markerPos", sizeof("markerPos")-1, &zv);
+	ZVAL_LONG(&zv, zplo->results->second - zplo->in->begin());
+	zend_hash_str_update(props, "cursorPos", sizeof("cursorPos")-1, &zv);
 
 	return props;
 }/*}}}*/
@@ -1812,7 +1831,6 @@ PHP_MINIT_FUNCTION(parle)
 #undef DECL_CONST
 	zend_declare_property_long(ParleToken_ce, "id", sizeof("id")-1, static_cast<zend_long>(lexertl::smatch::npos()), ZEND_ACC_PUBLIC);
 	zend_declare_property_null(ParleToken_ce, "value", sizeof("value")-1, ZEND_ACC_PUBLIC);
-	zend_declare_property_long(ParleToken_ce, "offset", sizeof("offset")-1, Z_L(-1), ZEND_ACC_PUBLIC);
 
 	memcpy(&parle_lexer_handlers, zend_get_std_object_handlers(), sizeof(zend_object_handlers));
 	parle_lexer_handlers.clone_obj = NULL;
@@ -1834,6 +1852,8 @@ PHP_MINIT_FUNCTION(parle)
 	zend_declare_property_bool(ParleLexer_ce, "bol", sizeof("bol")-1, 0, ZEND_ACC_PUBLIC);
 	zend_declare_property_long(ParleLexer_ce, "flags", sizeof("flags")-1, 0, ZEND_ACC_PUBLIC);
 	zend_declare_property_long(ParleLexer_ce, "state", sizeof("state")-1, 0, ZEND_ACC_PUBLIC);
+	zend_declare_property_long(ParleLexer_ce, "markerPos", sizeof("markerPos")-1, Z_L(-1), ZEND_ACC_PUBLIC);
+	zend_declare_property_long(ParleLexer_ce, "cursorPos", sizeof("cursorPos")-1, Z_L(-1), ZEND_ACC_PUBLIC);
 	ParleLexer_ce->serialize = zend_class_serialize_deny;
 	ParleLexer_ce->unserialize = zend_class_unserialize_deny;
 
