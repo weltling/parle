@@ -38,7 +38,7 @@ foreach ($words as $in) {
 
 	$out = array();
 	while (Token::EOI != $tok->id) {
-		if ($tok->id > 0) {
+		if ($tok->id != Token::UNKNOWN) {
 			$out[] = $tok->value;
 		}
 		$lex->advance();

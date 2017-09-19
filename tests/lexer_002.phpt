@@ -29,7 +29,7 @@ foreach ($nums as $in) {
 	$tok = $lex->getToken();
 
 	while (Token::EOI != $tok->id) {
-		if ($tok->id > 0) {
+		if ($tok->id != Token::UNKNOWN) {
 			var_dump($tok);
 		}
 		$lex->advance();
