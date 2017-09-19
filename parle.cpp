@@ -1448,9 +1448,7 @@ php_parle_lex_write_property(zval *object, zval *member, zval *value, void **cac
 			zplo->results->bol = static_cast<bool>(zval_is_true(value) == 1);
 		}
 	} else if (strcmp(Z_STRVAL_P(member), "flags") == 0) {
-		if (EXPECTED(zplo->complete)) {
-			zplo->rules->flags(zval_get_long(value));
-		}
+		zplo->rules->flags(zval_get_long(value));
 	} else if (strcmp(Z_STRVAL_P(member), "state") == 0) {
 		zend_throw_exception_ex(ParleLexerException_ce, 0, "Cannot set readonly property $state of class %s", ZSTR_VAL(Z_OBJ_P(object)->ce->name));
 	} else if (strcmp(Z_STRVAL_P(member), "cursor") == 0) {
@@ -1476,14 +1474,15 @@ php_parle_lex_get_properties(zval *object) noexcept
 	props = zend_std_get_properties(object);
 	zplo = _php_parle_lexer_fetch_zobj<lexer_obj_type>(Z_OBJ_P(object));
 
+	ZVAL_LONG(&zv, zplo->rules->flags());
+	zend_hash_str_update(props, "flags", sizeof("flags")-1, &zv);
+
 	if (UNEXPECTED(!zplo->results || !zplo->complete)) {
 		return props;
 	}
 
 	ZVAL_BOOL(&zv, zplo->results->bol);
 	zend_hash_str_update(props, "bol", sizeof("bol")-1, &zv);
-	ZVAL_LONG(&zv, zplo->rules->flags());
-	zend_hash_str_update(props, "flags", sizeof("flags")-1, &zv);
 	ZVAL_LONG(&zv, zplo->results->state);
 	zend_hash_str_update(props, "state", sizeof("state")-1, &zv);
 	ZVAL_LONG(&zv, zplo->results->first - zplo->in->begin());
