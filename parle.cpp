@@ -62,7 +62,7 @@
 #undef lookup
 
 namespace parle {/*{{{*/
-	using id_type = std::uint16_t;
+	using id_type = uint16_t;
 	using char_type = char;
 
 	namespace lexer {
@@ -78,6 +78,9 @@ namespace parle {/*{{{*/
 		using srmatch = lexertl::recursive_match_results<std::string::const_iterator, id_type>;
 		using siterator = lexertl::iterator<std::string::const_iterator, state_machine, smatch>;
 		using sriterator = lexertl::iterator<std::string::const_iterator, state_machine, srmatch>;
+
+		using generator = lexertl::basic_generator<rules, state_machine>;
+		using debug = lexertl::basic_debug<state_machine, char_type, id_type>;
 	}
 
 	namespace parser {
@@ -257,7 +260,7 @@ _lexer_build(INTERNAL_FUNCTION_PARAMETERS, zend_class_entry *ce) noexcept
 	}
 
 	try {
-		lexertl::generator::build(*zplo->rules, *zplo->sm);
+		parle::lexer::generator::build(*zplo->rules, *zplo->sm);
 	} catch (const std::exception &e) {
 		zend_throw_exception(ParleLexerException_ce, e.what(), 0);
 	}
@@ -528,7 +531,7 @@ _lexer_dump(INTERNAL_FUNCTION_PARAMETERS, zend_class_entry *ce) noexcept
 	try {
 		/* XXX std::cout might be not thread safe, need to gather the right
 			descriptor from the SAPI and convert to a usable stream. */
-		lexertl::debug::dump(*zplo->sm, *zplo->rules, std::cout);
+		parle::lexer::debug::dump(*zplo->sm, *zplo->rules, std::cout);
 	} catch (const std::exception &e) {
 		zend_throw_exception(ParleLexerException_ce, e.what(), 0);
 	}
