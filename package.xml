@@ -24,6 +24,7 @@
 		- Fixed reflection properties allocation (Remi Collet)
 		- Removed offset from the Token class
 		- Introduced Lexer properties for marker and cursor positions
+		- Max token id is set to UINT16_MAX to save memory. This might be changed in the future
 	</notes>
 	<contents>
 		<dir name="/">
