@@ -49,7 +49,7 @@ public:
 
     static id_type null_token()
     {
-        return ~static_cast<id_type>(0);
+        return static_cast<id_type>(~0);
     }
 
     bool nullable() const

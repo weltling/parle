@@ -63,8 +63,8 @@ public:
     using string_token = basic_string_token<char_type>;
     using selection_node = basic_selection_node<id_type>;
     using sequence_node = basic_sequence_node<id_type>;
-    using charset_map = std::map<string_token, std::size_t>;
-    using charset_pair = std::pair<string_token, std::size_t>;
+    using charset_map = std::map<string_token, id_type>;
+    using charset_pair = std::pair<string_token, id_type>;
     using compressed = std::integral_constant<bool, sm_traits::compressed>;
     using token = basic_re_token<rules_char_type, input_char_type>;
     static_assert(std::is_move_assignable<token>::value &&
@@ -186,12 +186,12 @@ public:
 
     static id_type bol_token()
     {
-        return ~static_cast<id_type>(1);
+        return static_cast<id_type>(~1);
     }
 
     static id_type eol_token()
     {
-        return ~static_cast<id_type>(2);
+        return static_cast<id_type>(~2);
     }
 
 private:
@@ -695,23 +695,25 @@ private:
     {
         // Converted to id_type below.
         std::size_t id_ = sm_traits::npos();
+
+        if (static_cast<id_type>(id_) < id_)
+        {
+            throw runtime_error("id_type is not large enough "
+                "to hold all ids.");
+        }
+
         typename charset_map::const_iterator iter_ =
             _charset_map.find(charset_);
 
         if (iter_ == _charset_map.end())
         {
             id_ = _charset_map.size();
-            _charset_map.insert(charset_pair(charset_, id_));
+            _charset_map.insert(charset_pair(charset_,
+                static_cast<id_type>(id_)));
         }
         else
         {
             id_ = iter_->second;
-        }
-
-        if (static_cast<id_type>(id_) < id_)
-        {
-            throw runtime_error("id_type is not large enough "
-                "to hold all ids.");
         }
 
         return static_cast<id_type>(id_);

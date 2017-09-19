@@ -203,11 +203,12 @@ protected:
                 "the dfa alphabet.");
         }
 
-        internals_._dfa_alphabet[dfa_index_] = dfa_alphabet_;
+        internals_._dfa_alphabet[dfa_index_] =
+            static_cast<id_type>(dfa_alphabet_);
         // 'jam' state
         dfa_.resize(dfa_alphabet_, 0);
         closure(followpos_, seen_sets_, seen_vectors_, hash_vector_,
-            dfa_alphabet_, dfa_);
+            static_cast<id_type>(dfa_alphabet_), dfa_);
 
         for (id_type index_ = 0; index_ < static_cast<id_type>
             (seen_vectors_.size()); ++index_)
@@ -221,7 +222,7 @@ protected:
             {
                 const id_type transition_ = closure
                     (equivset_->_followpos, seen_sets_, seen_vectors_,
-                    hash_vector_, dfa_alphabet_, dfa_);
+                    hash_vector_, static_cast<id_type>(dfa_alphabet_), dfa_);
 
                 if (transition_ != sm_traits::npos())
                 {
@@ -309,15 +310,15 @@ protected:
 
                 if (ptr_[transitions_index + zero_id_] != 0) continue;
 
-                ptr_[transitions_index + zero_id_] = dfa_.size() /
-                    dfa_alphabet_;
+                ptr_[transitions_index + zero_id_] =
+                    static_cast<id_type>(dfa_.size() / dfa_alphabet_);
                 dfa_.resize(dfa_.size() + dfa_alphabet_, 0);
 
                 for (i_ = 0; i_ < (sm_traits::char_24_bit ? 1 : 0); ++i_)
                 {
                     ptr_ = &dfa_.front() + dfa_.size() - dfa_alphabet_;
-                    ptr_[transitions_index + zero_id_] = dfa_.size() /
-                        dfa_alphabet_;
+                    ptr_[transitions_index + zero_id_] =
+                        static_cast<id_type>(dfa_.size() / dfa_alphabet_);
                     dfa_.resize(dfa_.size() + dfa_alphabet_, 0);
                 }
 

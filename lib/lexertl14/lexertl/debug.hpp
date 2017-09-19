@@ -16,7 +16,7 @@
 
 namespace lexertl
 {
-template<typename sm, typename char_type, typename id_type = std::size_t,
+template<typename sm, typename char_type, typename id_type = uint16_t,
     bool is_dfa = true>
 class basic_debug
 {

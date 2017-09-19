@@ -16,7 +16,7 @@
 
 namespace lexertl
 {
-template<typename char_type, typename id_type = std::size_t>
+template<typename char_type, typename id_type = uint16_t>
 class basic_state_machine
 {
 public:
@@ -83,12 +83,12 @@ public:
 
     static id_type npos()
     {
-        return ~static_cast<id_type>(0);
+        return static_cast<id_type>(~0);
     }
 
     static id_type skip()
     {
-        return ~static_cast<id_type>(1);
+        return static_cast<id_type>(~1);
     }
 
     void swap(basic_state_machine &rhs_)
@@ -196,7 +196,7 @@ using state_machine = basic_state_machine<char>;
 using wstate_machine = basic_state_machine<wchar_t>;
 using u32state_machine = basic_state_machine<char32_t>;
 
-template<typename char_type, typename id_type = std::size_t,
+template<typename char_type, typename id_type = uint16_t,
     bool is_dfa = true>
 struct basic_char_state_machine
 {
@@ -347,8 +347,8 @@ struct basic_char_state_machine
                     if (trans_iter_ == state_._transitions.end())
                     {
                         trans_iter_ = state_._transitions.insert
-                            (id_type_string_token_pair(next_ - 1,
-                            token_vector_[col_index_])).first;
+                            (id_type_string_token_pair(static_cast<id_type>
+                                (next_ - 1), token_vector_[col_index_])).first;
                     }
                     else
                     {

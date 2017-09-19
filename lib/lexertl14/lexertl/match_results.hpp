@@ -14,7 +14,7 @@
 
 namespace lexertl
 {
-template<typename iter, typename id_type = std::size_t,
+template<typename iter, typename id_type = uint16_t,
     std::size_t flags = bol_bit | eol_bit | skip_bit | again_bit |
         multi_state_bit | advance_bit>
 struct match_results
@@ -91,12 +91,12 @@ struct match_results
 
     static id_type npos()
     {
-        return ~static_cast<id_type>(0);
+        return static_cast<id_type>(~0);
     }
 
     static id_type skip()
     {
-        return ~static_cast<id_type>(1);
+        return static_cast<id_type>(~1);
     }
 
     bool operator ==(const match_results &rhs_) const
@@ -111,7 +111,7 @@ struct match_results
     }
 };
 
-template<typename iter, typename id_type = std::size_t,
+template<typename iter, typename id_type = uint16_t,
     std::size_t flags = bol_bit | eol_bit | skip_bit | again_bit |
         multi_state_bit | recursive_bit | advance_bit>
 struct recursive_match_results : public match_results<iter, id_type, flags>

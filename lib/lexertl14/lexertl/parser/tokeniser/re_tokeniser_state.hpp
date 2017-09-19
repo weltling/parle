@@ -47,7 +47,7 @@ struct basic_re_tokeniser_state
         _macro_name(macro_name_),
         _paren_count(0),
         _in_string(false),
-        _nl_id(~static_cast<id_type>(0))
+        _nl_id(static_cast<id_type>(~0))
     {
     }
 

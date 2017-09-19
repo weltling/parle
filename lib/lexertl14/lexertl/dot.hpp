@@ -19,7 +19,7 @@ namespace lexertl
 //! DOT language (http://www.graphviz.org/doc/info/lang.html). The
 //! resulting directed graph can previewed by opening the ".dot" file
 //! into the GraphViz application (http://www.graphviz.org).
-template<typename sm, typename char_type, typename id_type = std::size_t,
+template<typename sm, typename char_type, typename id_type = uint16_t,
     bool is_dfa = true>
 class basic_dot
 {

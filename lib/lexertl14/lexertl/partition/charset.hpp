@@ -31,7 +31,7 @@ struct basic_charset
     {
     }
 
-    basic_charset(const token &token_, const std::size_t index_) :
+    basic_charset(const token &token_, const id_type index_) :
         _token(token_),
         _index_set()
     {

@@ -21,7 +21,7 @@ struct basic_sm_traits
 
     static id_type npos()
     {
-        return ~static_cast<id_type>(0);
+        return static_cast<id_type>(~0);
     }
 };
 
@@ -36,7 +36,7 @@ struct basic_sm_traits<ch_type, sm_type, true, look, dfa_nfa>
 
     static id_type npos()
     {
-        return ~static_cast<id_type>(0);
+        return static_cast<id_type>(~0);
     }
 };
 }
