@@ -14,7 +14,7 @@
 
 namespace parsertl
 {
-template<typename rules, typename id_type>
+template<typename rules, typename id_type = uint16_t>
 class basic_generator
 {
 public:
@@ -921,8 +921,8 @@ private:
     }
 };
 
-using generator = basic_generator<rules, std::size_t>;
-using wgenerator = basic_generator<wrules, std::size_t>;
+using generator = basic_generator<rules>;
+using wgenerator = basic_generator<wrules>;
 }
 
 #endif

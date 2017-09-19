@@ -15,19 +15,19 @@ namespace parsertl
 template<typename id_type>
 struct basic_match_results
 {
-    std::vector<std::size_t> stack;
-    std::size_t token_id;
+    std::vector<id_type> stack;
+    id_type token_id;
     typename basic_state_machine<id_type>::entry entry;
 
     basic_match_results() :
-        token_id(~static_cast<std::size_t>(0))
+        token_id(static_cast<id_type>(~0))
     {
         stack.push_back(0);
         entry.action = error;
         entry.param = unknown_token;
     }
 
-    basic_match_results(const std::size_t token_id_,
+    basic_match_results(const id_type token_id_,
         const basic_state_machine<id_type> &sm_)
     {
         reset(token_id_, sm_);
@@ -37,18 +37,18 @@ struct basic_match_results
     {
         stack.clear();
         stack.push_back(0);
-        token_id = ~static_cast<std::size_t>(0);
+        token_id = static_cast<id_type>(~0);
         entry.clear();
     }
 
-    void reset(const std::size_t token_id_,
+    void reset(const id_type token_id_,
         const basic_state_machine<id_type> &sm_)
     {
         stack.clear();
         stack.push_back(0);
         token_id = token_id_;
 
-        if (token_id == ~static_cast<std::size_t>(0))
+        if (token_id == static_cast<id_type>(~0))
         {
             entry.action = error;
             entry.param = unknown_token;
@@ -59,7 +59,7 @@ struct basic_match_results
         }
     }
 
-    std::size_t reduce_id() const
+    id_type reduce_id() const
     {
         if (entry.action != reduce)
         {
@@ -104,7 +104,7 @@ struct basic_match_results
     }
 };
 
-using match_results = basic_match_results<std::size_t>;
+using match_results = basic_match_results<uint16_t>;
 }
 
 #endif

@@ -72,7 +72,7 @@ struct basic_state_machine
     }
 };
 
-using state_machine = basic_state_machine<std::size_t>;
+using state_machine = basic_state_machine<uint16_t>;
 }
 
 #endif
