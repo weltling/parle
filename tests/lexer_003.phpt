@@ -85,124 +85,94 @@ while (Token::EOI != $tok->id) {
 ?>
 ==DONE==
 --EXPECTF--
-object(Parle\Token)#%d (3) {
+object(Parle\Token)#%d (2) {
   ["id"]=>
   int(42)
   ["value"]=>
   string(1) "{"
-  ["offset"]=>
-  int(0)
 }
-object(Parle\Token)#%d (3) {
+object(Parle\Token)#%d (2) {
   ["id"]=>
   int(46)
   ["value"]=>
   string(5) ""key""
-  ["offset"]=>
-  int(5)
 }
-object(Parle\Token)#%d (3) {
+object(Parle\Token)#%d (2) {
   ["id"]=>
   int(44)
   ["value"]=>
   string(1) "["
-  ["offset"]=>
-  int(12)
 }
-object(Parle\Token)#%d (3) {
+object(Parle\Token)#%d (2) {
   ["id"]=>
   int(47)
   ["value"]=>
   string(15) ""qelque choose""
-  ["offset"]=>
-  int(18)
 }
-object(Parle\Token)#%d (3) {
+object(Parle\Token)#%d (2) {
   ["id"]=>
   int(48)
   ["value"]=>
   string(2) "42"
-  ["offset"]=>
-  int(39)
 }
-object(Parle\Token)#%d (3) {
+object(Parle\Token)#%d (2) {
   ["id"]=>
   int(47)
   ["value"]=>
   string(8) ""füße""
-  ["offset"]=>
-  int(54)
 }
-object(Parle\Token)#%d (3) {
+object(Parle\Token)#%d (2) {
   ["id"]=>
   int(45)
   ["value"]=>
   string(1) "]"
-  ["offset"]=>
-  int(66)
 }
-object(Parle\Token)#%d (3) {
+object(Parle\Token)#%d (2) {
   ["id"]=>
   int(46)
   ["value"]=>
   string(5) ""obj""
-  ["offset"]=>
-  int(72)
 }
-object(Parle\Token)#%d (3) {
+object(Parle\Token)#%d (2) {
   ["id"]=>
   int(42)
   ["value"]=>
   string(1) "{"
-  ["offset"]=>
-  int(79)
 }
-object(Parle\Token)#%d (3) {
+object(Parle\Token)#%d (2) {
   ["id"]=>
   int(46)
   ["value"]=>
   string(6) ""prop""
-  ["offset"]=>
-  int(87)
 }
-object(Parle\Token)#%d (3) {
+object(Parle\Token)#%d (2) {
   ["id"]=>
   int(48)
   ["value"]=>
   string(2) "12"
-  ["offset"]=>
-  int(95)
 }
-object(Parle\Token)#%d (3) {
+object(Parle\Token)#%d (2) {
   ["id"]=>
   int(43)
   ["value"]=>
   string(1) "}"
-  ["offset"]=>
-  int(101)
 }
-object(Parle\Token)#%d (3) {
+object(Parle\Token)#%d (2) {
   ["id"]=>
   int(46)
   ["value"]=>
   string(6) ""some""
-  ["offset"]=>
-  int(107)
 }
-object(Parle\Token)#%d (3) {
+object(Parle\Token)#%d (2) {
   ["id"]=>
   int(50)
   ["value"]=>
   string(4) "null"
-  ["offset"]=>
-  int(115)
 }
-object(Parle\Token)#%d (3) {
+object(Parle\Token)#%d (2) {
   ["id"]=>
   int(43)
   ["value"]=>
   string(1) "}"
-  ["offset"]=>
-  int(121)
 }
 ==DONE==

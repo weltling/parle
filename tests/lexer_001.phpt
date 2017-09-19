@@ -24,7 +24,6 @@ $tok = $lex->getToken();
 
 while (Token::EOI != $tok->id) {
 	var_dump($tok);
-	echo "marker: ", $lex->markerPos, " cursor: ", $lex->cursorPos, "\n";
 	$lex->advance();
 	$tok = $lex->getToken();
 }
@@ -32,36 +31,28 @@ while (Token::EOI != $tok->id) {
 ?>
 ==DONE==
 --EXPECTF--
-object(Parle\Token)#%d (3) {
+object(Parle\Token)#%d (2) {
   ["id"]=>
   int(1)
   ["value"]=>
   string(6) "$hello"
-  ["offset"]=>
-  int(0)
 }
-object(Parle\Token)#3 (3) {
+object(Parle\Token)#%d (2) {
   ["id"]=>
   int(2)
   ["value"]=>
   string(1) "="
-  ["offset"]=>
-  int(6)
 }
-object(Parle\Token)#%d (3) {
+object(Parle\Token)#%d (2) {
   ["id"]=>
   int(3)
   ["value"]=>
   string(2) "42"
-  ["offset"]=>
-  int(7)
 }
-object(Parle\Token)#3 (3) {
+object(Parle\Token)#%d (2) {
   ["id"]=>
   int(4)
   ["value"]=>
   string(1) ";"
-  ["offset"]=>
-  int(9)
 }
 ==DONE==

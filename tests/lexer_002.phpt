@@ -25,7 +25,6 @@ foreach ($nums as $in) {
 
 	$lex->consume($in);
 
-	echo "marker: ", $lex->markerPos, " cursor: ", $lex->cursorPos, "\n";
 	$lex->advance();
 	$tok = $lex->getToken();
 
@@ -33,7 +32,6 @@ foreach ($nums as $in) {
 		if ($tok->id > 0) {
 			var_dump($tok);
 		}
-		echo "marker: ", $lex->markerPos, " cursor: ", $lex->cursorPos, "\n";
 		$lex->advance();
 		$tok = $lex->getToken();
 	}
@@ -42,36 +40,28 @@ foreach ($nums as $in) {
 ?>
 ==DONE==
 --EXPECTF--
-object(Parle\Token)#%d (3) {
+object(Parle\Token)#%d (2) {
   ["id"]=>
   int(4)
   ["value"]=>
   string(4) "0x42"
-  ["offset"]=>
-  int(0)
 }
-object(Parle\Token)#%d (3) {
+object(Parle\Token)#%d (2) {
   ["id"]=>
   int(1)
   ["value"]=>
   string(8) "0b010101"
-  ["offset"]=>
-  int(5)
 }
-object(Parle\Token)#%d (3) {
+object(Parle\Token)#%d (2) {
   ["id"]=>
   int(2)
   ["value"]=>
   string(3) "075"
-  ["offset"]=>
-  int(14)
 }
-object(Parle\Token)#%d (3) {
+object(Parle\Token)#%d (2) {
   ["id"]=>
   int(3)
   ["value"]=>
   string(2) "24"
-  ["offset"]=>
-  int(18)
 }
 ==DONE==
