@@ -103,7 +103,7 @@ do {
 			$err = $p->errorInfo();
 			if (Parser::ERROR_UNKOWN_TOKEN == $err->id) {
 				$tok = $err->token;
-				$msg = "Unknown token '{$tok->value}' at offset {$tok->offset}";
+				$msg = "Unknown token '{$tok->value}' at offset {$err->position}";
 				throw new ParserException($msg);
 			} else if (Parser::ERROR_NON_ASSOCIATIVE == $err->id) {
 				throw new ParserException("Non associative");
