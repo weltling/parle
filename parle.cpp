@@ -1016,6 +1016,7 @@ PHP_METHOD(ParleParser, errorInfo)
 
 	try {
 		add_property_long_ex(return_value, "id", sizeof("id")-1, static_cast<zend_long>(zppo->results->entry.param));
+		add_property_long_ex(return_value, "position", sizeof("position")-1, static_cast<zend_long>((*zppo->iter)->first - zppo->in->begin()));
 		if (zppo->results->entry.param == parsertl::unknown_token) {
 			zval token;
 			std::string ret = (*zppo->iter)->str();
@@ -1025,7 +1026,6 @@ PHP_METHOD(ParleParser, errorInfo)
 #else
 			add_property_stringl_ex(&token, "value", sizeof("value")-1, (char *)ret.c_str(), ret.size());
 #endif
-			add_property_long(&token, "offset", (*zppo->iter)->first - zppo->in->begin());
 			add_property_zval_ex(return_value, "token", sizeof("token")-1, &token);
 		}
 		/* TODO provide details also for other error types, if possible. */
@@ -1839,6 +1839,7 @@ PHP_MINIT_FUNCTION(parle)
 	INIT_CLASS_ENTRY(ce, "Parle\\ErrorInfo", ParleErrorInfo_methods);
 	ParleErrorInfo_ce = zend_register_internal_class(&ce);
 	zend_declare_property_long(ParleErrorInfo_ce, "id", sizeof("id")-1, Z_L(0), ZEND_ACC_PUBLIC);
+	zend_declare_property_long(ParleErrorInfo_ce, "position", sizeof("position")-1, Z_L(0), ZEND_ACC_PUBLIC);
 	zend_declare_property_null(ParleErrorInfo_ce, "token", sizeof("token")-1, ZEND_ACC_PUBLIC);
 
 	INIT_CLASS_ENTRY(ce, "Parle\\Token", ParleToken_methods);
