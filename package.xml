@@ -22,6 +22,8 @@
 	<license uri="http://opensource.org/licenses/BSD-2-Clause">BSD 2-clause</license>
 	<notes>
 		- Fixed reflection properties allocation (Remi Collet)
+		- Removed offset from the Token class
+		- Introduced Lexer properties for marker and cursor positions
 	</notes>
 	<contents>
 		<dir name="/">
