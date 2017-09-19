@@ -12,8 +12,8 @@
 	</lead>
 	<date>2017-09-17</date>
 	<version>
-		<release>0.6.2</release>
-		<api>0.6.2</api>
+		<release>0.6.3</release>
+		<api>0.6.3</api>
 	</version>
 	<stability>
 		<release>alpha</release>
@@ -21,10 +21,7 @@
 	</stability>
 	<license uri="http://opensource.org/licenses/BSD-2-Clause">BSD 2-clause</license>
 	<notes>
-		- Fixed reflection properties allocation (Remi Collet)
-		- Removed offset from the Token class
-		- Introduced Lexer properties for marker and cursor positions
-		- Max token id is set to UINT16_MAX to save memory. This might be changed in the future
+		- something
 	</notes>
 	<contents>
 		<dir name="/">
@@ -136,6 +133,24 @@
 	<providesextension>parle</providesextension>
 	<extsrcrelease />
 	<changelog>
+		<release>
+			<date>2017-09-19</date>
+			<version>
+				<release>0.6.2</release>
+				<api>0.6.2</api>
+			</version>
+			<stability>
+				<release>alpha</release>
+				<api>alpha</api>
+			</stability>
+			<license uri="http://opensource.org/licenses/BSD-2-Clause">BSD 2-clause</license>
+			<notes>
+				- Fixed reflection properties allocation (Remi Collet)
+				- Removed offset from the Token class
+				- Introduced Lexer properties for marker and cursor positions
+				- Max token id is set to UINT16_MAX to save memory. This might be changed in the future
+			</notes>
+		</release>
 		<release>
 			<date>2017-09-17</date>
 			<version>
