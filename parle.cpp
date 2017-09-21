@@ -71,7 +71,7 @@ namespace parle {/*{{{*/
 
 	namespace lexer {
 		using state_machine = lexertl::basic_state_machine<char_type, id_type>;
-		using rules = lexertl::basic_rules<char_type, char_type, id_type>;
+		using parle_rules = lexertl::basic_rules<char_type, char_type, id_type>;
 
 		using cmatch = lexertl::match_results<const char_type *, id_type>;
 		using crmatch = lexertl::recursive_match_results<const char_type *, id_type>;
@@ -83,13 +83,13 @@ namespace parle {/*{{{*/
 		using siterator = lexertl::iterator<std::string::const_iterator, state_machine, smatch>;
 		using sriterator = lexertl::iterator<std::string::const_iterator, state_machine, srmatch>;
 
-		using generator = lexertl::basic_generator<rules, state_machine>;
+		using generator = lexertl::basic_generator<parle_rules, state_machine>;
 		using debug = lexertl::basic_debug<state_machine, char_type, id_type>;
 
 		struct lexer {
 			lexer() : in(""), rules(), sm(), par(nullptr), results(), iter() {}
 			std::string in;
-			rules rules;
+			parle_rules rules;
 			state_machine sm;
 			parle::parser::parser *par;
 			smatch results;
@@ -106,17 +106,16 @@ namespace parle {/*{{{*/
 	namespace parser {
 		using state_machine = parsertl::basic_state_machine<id_type>;
 		using match_results = parsertl::basic_match_results<id_type>;
-		using rules = parsertl::basic_rules<char_type>;
-		using generator = parsertl::basic_generator<rules, id_type>;
-		using productions = parsertl::token<parle::lexer::sriterator>::token_vector;
+		using parle_rules = parsertl::basic_rules<char_type>;
+		using generator = parsertl::basic_generator<parle_rules, id_type>;
+		using parle_productions = parsertl::token<parle::lexer::sriterator>::token_vector;
 
-		/* This takes a bit more ram, but allows to use both recursive and non recursive lexer with the same parser object. */
 		struct parser {
 			parle::lexer::lexer *lex;
-			rules rules;
+			parle_rules rules;
 			state_machine sm;
 			match_results results;
-			productions productions;
+			parle_productions productions;
 		};
 	}
 }/*}}}*/
@@ -819,7 +818,7 @@ PHP_METHOD(ParleParser, consume)
 		auto &lex = *par.lex;
 		lex.in = ZSTR_VAL(in);
 		lex.iter = parle::lexer::siterator(lex.in.begin(), lex.in.end(), lex.sm);
-		par.productions = parle::parser::productions{};
+		par.productions = parle::parser::parle_productions{};
 		par.results = parle::parser::match_results{lex.iter->id, par.sm};
 	} catch (const std::exception &e) {
 		zend_throw_exception(ParleLexerException_ce, e.what(), 0);
