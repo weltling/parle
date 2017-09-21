@@ -199,7 +199,7 @@ PHP_METHOD(ParleLexer, push)
 {
 	ze_parle_lexer_obj *zplo;
 	zend_string *regex;
-	zend_long id, user_id = 0;
+	zend_long id, user_id = -1;
 	zval *me;
 
 	if(zend_parse_method_parameters(ZEND_NUM_ARGS(), getThis(), "OSl|l", &me, ParleLexer_ce, &regex, &id, &user_id) == FAILURE) {
@@ -210,8 +210,9 @@ PHP_METHOD(ParleLexer, push)
 
 	try {
 		// Rules for INITIAL
-		auto &rules = zplo->lex->rules;
-		rules.push(ZSTR_VAL(regex), static_cast<parle::id_type>(id), static_cast<parle::id_type>(user_id));
+		auto &lex = *zplo->lex;
+		if (user_id < 0) user_id = lex.results.npos();
+		lex.rules.push(ZSTR_VAL(regex), static_cast<parle::id_type>(id), static_cast<parle::id_type>(user_id));
 	} catch (const std::exception &e) {
 		zend_throw_exception(ParleLexerException_ce, e.what(), 0);
 	}
@@ -223,25 +224,28 @@ PHP_METHOD(ParleRLexer, push)
 {
 	ze_parle_rlexer_obj *zplo;
 	zend_string *regex, *dfa, *new_dfa;
-	zend_long id, user_id = 0;
+	zend_long id, user_id = -1;
 	zval *me;
 
 	try {
 		// Rules for INITIAL
 		if(zend_parse_method_parameters_ex(ZEND_PARSE_PARAMS_QUIET, ZEND_NUM_ARGS(), getThis(), "OSl|l", &me, ParleRLexer_ce, &regex, &id, &user_id) == SUCCESS) {
 			zplo = php_parle_rlexer_fetch_obj(Z_OBJ_P(me));
-			auto &rules = zplo->lex->rules;
-			rules.push(ZSTR_VAL(regex), static_cast<parle::id_type>(id), static_cast<parle::id_type>(user_id));
+			auto &lex = *zplo->lex;
+			if (user_id < 0) user_id = lex.results.npos();
+			lex.rules.push(ZSTR_VAL(regex), static_cast<parle::id_type>(id), static_cast<parle::id_type>(user_id));
 		// Rules with id
 		} else if(zend_parse_method_parameters_ex(ZEND_PARSE_PARAMS_QUIET, ZEND_NUM_ARGS(), getThis(), "OSSlS|l", &me, ParleRLexer_ce, &dfa, &regex, &id, &new_dfa, &user_id) == SUCCESS) {
 			zplo = php_parle_rlexer_fetch_obj(Z_OBJ_P(me));
-			auto &rules = zplo->lex->rules;
-			rules.push(ZSTR_VAL(dfa), ZSTR_VAL(regex), static_cast<parle::id_type>(id), ZSTR_VAL(new_dfa), static_cast<parle::id_type>(user_id));
+			auto &lex = *zplo->lex;
+			if (user_id < 0) user_id = lex.results.npos();
+			lex.rules.push(ZSTR_VAL(dfa), ZSTR_VAL(regex), static_cast<parle::id_type>(id), ZSTR_VAL(new_dfa), static_cast<parle::id_type>(user_id));
 		// Rules without id
 		} else if(zend_parse_method_parameters_ex(ZEND_PARSE_PARAMS_QUIET, ZEND_NUM_ARGS(), getThis(), "OSSS", &me, ParleRLexer_ce, &dfa, &regex, &new_dfa) == SUCCESS) {
 			zplo = php_parle_rlexer_fetch_obj(Z_OBJ_P(me));
-			auto &rules = zplo->lex->rules;
-			rules.push(ZSTR_VAL(dfa), ZSTR_VAL(regex), ZSTR_VAL(new_dfa));
+			auto &lex = *zplo->lex;
+			if (user_id < 0) user_id = lex.results.npos();
+			lex.rules.push(ZSTR_VAL(dfa), ZSTR_VAL(regex), ZSTR_VAL(new_dfa));
 		} else {
 			zend_throw_exception(ParleLexerException_ce, "Couldn't match the method signature", 0);
 		}
