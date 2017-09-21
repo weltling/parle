@@ -20,14 +20,14 @@ addons:
                         - ubuntu-toolchain-r-test
                 packages:
                         #- clang-5.0
-                        #- g++-6
-                        - g++-5
+                        - g++-6
+                        #- g++-5
 
 before_script:
         - phpize
           #- CC=clang-5.0 CXX=clang++-5.0 ./configure
-          #- CC=gcc-6 CXX=g++-6 ./configure
-        - CC=gcc-5 CXX=g++-5 ./configure
+        - CC=gcc-6 CXX=g++-6 ./configure
+          #- CC=gcc-5 CXX=g++-5 ./configure
         - make
         - make install
         - echo "extension=parle.so" >> ~/.phpenv/versions/$(phpenv version-name)/etc/php.ini
