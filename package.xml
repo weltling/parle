@@ -22,6 +22,7 @@
 	<license uri="http://opensource.org/licenses/BSD-2-Clause">BSD 2-clause</license>
 	<notes>
 		- Turned Stack method top into property
+		- Internal refactoring
 	</notes>
 	<contents>
 		<dir name="/">
