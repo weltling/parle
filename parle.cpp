@@ -87,19 +87,21 @@ namespace parle {/*{{{*/
 		using debug = lexertl::basic_debug<state_machine, char_type, id_type>;
 
 		struct lexer {
-			lexer() : in(""), rules(), sm(), par(nullptr), results(), iter() {}
+			lexer() : in(""), rules(), sm(), par(nullptr), results(), iter(), iter_prev() {}
 			std::string in;
 			parle_rules rules;
 			state_machine sm;
 			parle::parser::parser *par;
 			smatch results;
 			siterator iter;
+			siterator iter_prev;
 		};
 
 		struct rlexer : public lexer {
-			rlexer() : lexer(), results(), iter() {}
+			rlexer() : lexer(), results(), iter(), iter_prev() {}
 			srmatch results;
 			sriterator iter;
+			sriterator iter_prev;
 		};
 	}
 
@@ -794,6 +796,7 @@ PHP_METHOD(ParleParser, advance)
 	try {
 		auto &par = *zppo->par;
 		auto &lex = *par.lex;
+		lex.iter_prev = lex.iter;
 		parsertl::lookup(par.sm, lex.iter, par.results, par.productions);
 	} catch (const std::exception &e) {
 		zend_throw_exception(ParleParserException_ce, e.what(), 0);
@@ -822,6 +825,8 @@ PHP_METHOD(ParleParser, consume)
 		auto &lex = *par.lex;
 		lex.in = ZSTR_VAL(in);
 		lex.iter = parle::lexer::siterator(lex.in.begin(), lex.in.end(), lex.sm);
+		lex.iter_prev = lex.iter;
+		lex.par = zppo->par;
 		par.productions = parle::parser::parle_productions{};
 		par.results = parle::parser::match_results{lex.iter->id, par.sm};
 	} catch (const std::exception &e) {
@@ -1296,18 +1301,34 @@ php_parle_lex_read_property(zval *object, zval *member, int type, void **cache_s
 	zplo = _php_parle_lexer_fetch_zobj<lexer_obj_type>(Z_OBJ_P(object));
 
 	auto &lex = *zplo->lex;
-
+	bool in_parser = lex.par != nullptr;
 	retval = rv;
 	if (strcmp(Z_STRVAL_P(member), "bol") == 0) {
-		ZVAL_BOOL(retval, lex.results.bol);
+		if (in_parser) {
+			ZVAL_BOOL(retval, lex.iter_prev->bol);
+		} else {
+			ZVAL_BOOL(retval, lex.results.bol);
+		}
 	} else if (strcmp(Z_STRVAL_P(member), "flags") == 0) {
 		ZVAL_LONG(retval, lex.rules.flags());
 	} else if (strcmp(Z_STRVAL_P(member), "state") == 0) {
-		ZVAL_LONG(retval, lex.results.state);
+		if (in_parser) {
+			ZVAL_LONG(retval, lex.iter_prev->state);
+		} else {
+			ZVAL_LONG(retval, lex.results.state);
+		}
 	} else if (strcmp(Z_STRVAL_P(member), "marker") == 0) {
-		ZVAL_LONG(retval, lex.results.first - lex.in.begin());
+		if (in_parser) {
+			ZVAL_LONG(retval, lex.iter_prev->first - lex.in.begin());
+		} else {
+			ZVAL_LONG(retval, lex.results.first - lex.in.begin());
+		}
 	} else if (strcmp(Z_STRVAL_P(member), "cursor") == 0) {
-		ZVAL_LONG(retval, lex.results.second - lex.in.begin());
+		if (in_parser) {
+			ZVAL_LONG(retval, lex.results.second - lex.in.begin());
+		} else {
+			ZVAL_LONG(retval, lex.results.second - lex.in.begin());
+		}
 	} else {
 		retval = (zend_get_std_object_handlers())->read_property(object, member, type, cache_slot, rv);
 	}
@@ -1335,9 +1356,13 @@ php_parle_lex_write_property(zval *object, zval *member, zval *value, void **cac
 	zplo = _php_parle_lexer_fetch_zobj<lexer_obj_type>(Z_OBJ_P(object));
 
 	auto &lex = *zplo->lex;
-
 	if (strcmp(Z_STRVAL_P(member), "bol") == 0) {
-		lex.results.bol = static_cast<bool>(zval_is_true(value) == 1);
+		if (lex.par) {
+			/* Iterator has it const. */
+			zend_throw_exception_ex(ParleLexerException_ce, 0, "Cannot set readonly property $bol of class %s", ZSTR_VAL(Z_OBJ_P(object)->ce->name));
+		} else {
+			lex.results.bol = static_cast<bool>(zval_is_true(value) == 1);
+		}
 	} else if (strcmp(Z_STRVAL_P(member), "flags") == 0) {
 		lex.rules.flags(zval_get_long(value));
 	} else if (strcmp(Z_STRVAL_P(member), "state") == 0) {
@@ -1365,19 +1390,30 @@ php_parle_lex_get_properties(zval *object) noexcept
 	props = zend_std_get_properties(object);
 	zplo = _php_parle_lexer_fetch_zobj<lexer_obj_type>(Z_OBJ_P(object));
 
-	auto *lex = zplo->lex;
-	//auto *lex = zplo->lex->par ? zplo->lex->par->lex : zplo->lex;
-
-	ZVAL_LONG(&zv, lex->rules.flags());
-	zend_hash_str_update(props, "flags", sizeof("flags")-1, &zv);
-	ZVAL_BOOL(&zv, lex->results.bol);
-	zend_hash_str_update(props, "bol", sizeof("bol")-1, &zv);
-	ZVAL_LONG(&zv, lex->results.state);
-	zend_hash_str_update(props, "state", sizeof("state")-1, &zv);
-	ZVAL_LONG(&zv, lex->results.first - lex->in.begin());
-	zend_hash_str_update(props, "marker", sizeof("marker")-1, &zv);
-	ZVAL_LONG(&zv, lex->results.second - lex->in.begin());
-	zend_hash_str_update(props, "cursor", sizeof("cursor")-1, &zv);
+	auto &lex = *zplo->lex;
+	if (lex.par) {
+		ZVAL_LONG(&zv, lex.rules.flags());
+		zend_hash_str_update(props, "flags", sizeof("flags")-1, &zv);
+		ZVAL_BOOL(&zv, lex.iter_prev->bol);
+		zend_hash_str_update(props, "bol", sizeof("bol")-1, &zv);
+		ZVAL_LONG(&zv, lex.iter_prev->state);
+		zend_hash_str_update(props, "state", sizeof("state")-1, &zv);
+		ZVAL_LONG(&zv, lex.iter_prev->first - lex.in.begin());
+		zend_hash_str_update(props, "marker", sizeof("marker")-1, &zv);
+		ZVAL_LONG(&zv, lex.iter_prev->second - lex.in.begin());
+		zend_hash_str_update(props, "cursor", sizeof("cursor")-1, &zv);
+	} else {
+		ZVAL_LONG(&zv, lex.rules.flags());
+		zend_hash_str_update(props, "flags", sizeof("flags")-1, &zv);
+		ZVAL_BOOL(&zv, lex.results.bol);
+		zend_hash_str_update(props, "bol", sizeof("bol")-1, &zv);
+		ZVAL_LONG(&zv, lex.results.state);
+		zend_hash_str_update(props, "state", sizeof("state")-1, &zv);
+		ZVAL_LONG(&zv, lex.results.first - lex.in.begin());
+		zend_hash_str_update(props, "marker", sizeof("marker")-1, &zv);
+		ZVAL_LONG(&zv, lex.results.second - lex.in.begin());
+		zend_hash_str_update(props, "cursor", sizeof("cursor")-1, &zv);
+	}
 
 	return props;
 }/*}}}*/
