@@ -120,6 +120,10 @@ namespace parle {/*{{{*/
 			parle_productions productions;
 		};
 	}
+
+	namespace stack {
+		using stack = std::stack<zval *, std::vector<zval *>>;
+	}
 }/*}}}*/
 
 /* If you declare any globals in php_parle.h uncomment this:
@@ -145,7 +149,7 @@ struct ze_parle_parser_obj {/*{{{*/
 };/*}}}*/
 
 struct ze_parle_stack_obj {/*{{{*/
-	std::stack<zval *> *stack;
+	parle::stack::stack *stack;
 	zend_object zo;
 };/*}}}*/
 
@@ -956,22 +960,6 @@ PHP_METHOD(ParleParser, errorInfo)
 }
 /* }}} */
 
-/* {{{ public bool Stack::empty(void) */
-PHP_METHOD(ParleStack, empty)
-{
-	ze_parle_stack_obj *zpso;
-	zval *me;
-
-	if(zend_parse_method_parameters(ZEND_NUM_ARGS(), getThis(), "O", &me, ParleStack_ce) == FAILURE) {
-		return;
-	}
-
-	zpso = php_parle_parser_stack_fetch_obj(Z_OBJ_P(me));
-
-	RETURN_BOOL(zpso->stack->empty());
-}
-/* }}} */
-
 /* {{{ public void Stack::pop(void) */
 PHP_METHOD(ParleStack, pop)
 {
@@ -1014,63 +1002,6 @@ PHP_METHOD(ParleStack, push)
 	ZVAL_COPY(save, in);
 
 	zpso->stack->push(save);
-}
-/* }}} */
-
-/* {{{ public int Stack::size(void) */
-PHP_METHOD(ParleStack, size)
-{
-	ze_parle_stack_obj *zpso;
-	zval *me;
-
-	if(zend_parse_method_parameters(ZEND_NUM_ARGS(), getThis(), "O", &me, ParleStack_ce) == FAILURE) {
-		return;
-	}
-
-	zpso = php_parle_parser_stack_fetch_obj(Z_OBJ_P(me));
-
-	RETURN_LONG(zpso->stack->size());
-}
-/* }}} */
-
-/* {{{ public mixed Stack::top([mixed $val]) */
-PHP_METHOD(ParleStack, top)
-{
-	ze_parle_stack_obj *zpso;
-	zval *me;
-	zval *in = NULL, *old, *z;
-
-	if(zend_parse_method_parameters(ZEND_NUM_ARGS(), getThis(), "O|z", &me, ParleStack_ce, &in) == FAILURE) {
-		return;
-	}
-
-	zpso = php_parle_parser_stack_fetch_obj(Z_OBJ_P(me));
-
-	if (in) {
-		if (zpso->stack->empty()) {
-			// XXX should this be done?
-			z = (zval *) emalloc(sizeof(zval));
-			ZVAL_COPY(z, in);
-
-			zpso->stack->push(z);
-		} else {
-			old = zpso->stack->top();
-
-			z = (zval *) emalloc(sizeof(zval));
-			ZVAL_COPY(z, in);
-
-			zpso->stack->top() = z;
-
-			zval_ptr_dtor(old);
-			efree(old);
-		}
-	} else {
-		if (zpso->stack->empty()) {
-			return;
-		}
-
-		ZVAL_COPY(return_value, zpso->stack->top());
-	}
 }
 /* }}} */
 
@@ -1184,10 +1115,6 @@ ZEND_END_ARG_INFO();
 PARLE_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(arginfo_parle_stack_size, 0, 0, IS_LONG, 0)
 ZEND_END_ARG_INFO();
 
-ZEND_BEGIN_ARG_INFO_EX(arginfo_parle_stack_top, 0, 0, 0)
-	ZEND_ARG_INFO(0, new_top)
-ZEND_END_ARG_INFO();
-
 #undef PARLE_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX
 /* }}} */
 
@@ -1250,11 +1177,8 @@ const zend_function_entry ParleParser_methods[] = {
 };
 
 const zend_function_entry ParleStack_methods[] = {
-	PHP_ME(ParleStack, empty, arginfo_parle_stack_empty, ZEND_ACC_PUBLIC)
 	PHP_ME(ParleStack, pop, arginfo_parle_stack_pop, ZEND_ACC_PUBLIC)
 	PHP_ME(ParleStack, push, arginfo_parle_stack_push, ZEND_ACC_PUBLIC)
-	PHP_ME(ParleStack, size, arginfo_parle_stack_size, ZEND_ACC_PUBLIC)
-	PHP_ME(ParleStack, top, arginfo_parle_stack_top, ZEND_ACC_PUBLIC)
 	PHP_FE_END
 };
 /* }}} */
@@ -1620,7 +1544,7 @@ php_parle_parser_stack_object_init(zend_class_entry *ce) noexcept
 	object_properties_init(&zpso->zo, ce);
 	zpso->zo.handlers = &parle_stack_handlers;
 
-	zpso->stack = new std::stack<zval *>();
+	zpso->stack = new parle::stack::stack{};
 
 	return &zpso->zo;
 }/*}}}*/
@@ -1642,7 +1566,13 @@ php_parle_stack_read_property(zval *object, zval *member, int type, void **cache
 	zpso = php_parle_parser_stack_fetch_obj(Z_OBJ_P(object));
 
 	retval = rv;
-	if (strcmp(Z_STRVAL_P(member), "empty") == 0) {
+	if (strcmp(Z_STRVAL_P(member), "top") == 0) {
+		if (zpso->stack->empty()) {
+			ZVAL_NULL(retval);
+		} else {
+			ZVAL_COPY(retval, zpso->stack->top());
+		}
+	} else if (strcmp(Z_STRVAL_P(member), "empty") == 0) {
 		ZVAL_BOOL(retval, zpso->stack->empty());
 	} else if (strcmp(Z_STRVAL_P(member), "size") == 0) {
 		ZVAL_LONG(retval, zpso->stack->size());
@@ -1672,7 +1602,25 @@ php_parle_stack_write_property(zval *object, zval *member, zval *value, void **c
 
 	zpso = php_parle_parser_stack_fetch_obj(Z_OBJ_P(object));
 
-	if (strcmp(Z_STRVAL_P(member), "empty") == 0) {
+	if (strcmp(Z_STRVAL_P(member), "top") == 0) {
+		if (zpso->stack->empty()) {
+			// XXX should this be done?
+			zval *z = (zval *) emalloc(sizeof(zval));
+			ZVAL_COPY(z, value);
+
+			zpso->stack->push(z);
+		} else {
+			zval *old = zpso->stack->top();
+
+			zval *z = (zval *) emalloc(sizeof(zval));
+			ZVAL_COPY(z, value);
+
+			zpso->stack->top() = z;
+
+			zval_ptr_dtor(old);
+			efree(old);
+		}
+	} else if (strcmp(Z_STRVAL_P(member), "empty") == 0) {
 		zend_throw_exception_ex(ParleParserException_ce, 0, "Cannot set readonly property $empty of class %s", ZSTR_VAL(Z_OBJ_P(object)->ce->name));
 	} else if (strcmp(Z_STRVAL_P(member), "size") == 0) {
 		zend_throw_exception_ex(ParleParserException_ce, 0, "Cannot set readonly property $size reduceId of class %s", ZSTR_VAL(Z_OBJ_P(object)->ce->name));
@@ -1699,6 +1647,12 @@ php_parle_stack_get_properties(zval *object) noexcept
 	zend_hash_str_update(props, "empty", sizeof("empty")-1, &zv);
 	ZVAL_LONG(&zv, zpso->stack->size());
 	zend_hash_str_update(props, "size", sizeof("size")-1, &zv);
+	if (zpso->stack->empty()) {
+		ZVAL_NULL(&zv);
+	} else {
+		ZVAL_COPY(&zv, zpso->stack->top());
+	}
+	zend_hash_str_update(props, "top", sizeof("top")-1, zpso->stack->top());
 
 	return props;
 }/*}}}*/
@@ -1825,6 +1779,7 @@ PHP_MINIT_FUNCTION(parle)
 	ParleStack_ce = zend_register_internal_class(&ce);
 	zend_declare_property_bool(ParleStack_ce, "empty", sizeof("empty")-1, 0, ZEND_ACC_PUBLIC);
 	zend_declare_property_long(ParleStack_ce, "size", sizeof("size")-1, 0, ZEND_ACC_PUBLIC);
+	zend_declare_property_long(ParleStack_ce, "top", sizeof("top")-1, 0, ZEND_ACC_PUBLIC);
 	ParleStack_ce->serialize = zend_class_serialize_deny;
 	ParleStack_ce->unserialize = zend_class_unserialize_deny;
 
