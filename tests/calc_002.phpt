@@ -72,33 +72,33 @@ foreach ($exp as $in) {
 			case Parser::ACTION_REDUCE:
 				switch ($p->reduceId) {
 					case $add_idx:
-						$op0 = $stack->top();
+						$op0 = $stack->top;
 						$stack->pop();
-						$stack->top($stack->top() + $op0);
+						$stack->top = $stack->top + $op0;
 						break;
 					case $sub_idx:
-						$op0 = $stack->top();
+						$op0 = $stack->top;
 						$stack->pop();
-						$stack->top($stack->top() - $op0);
+						$stack->top = $stack->top - $op0;
 						break;
 					case $mul_idx:
-						$op0 = $stack->top();
+						$op0 = $stack->top;
 						$stack->pop();
-						$stack->top($stack->top() * $op0);
+						$stack->top = $stack->top * $op0;
 						break;
 					case $div_idx:
-						$op0 = $stack->top();
+						$op0 = $stack->top;
 						$stack->pop();
-						$stack->top($stack->top() / $op0);
+						$stack->top = $stack->top / $op0;
 						break;
 					case $exp_idx:
-						$op0 = $stack->top();
+						$op0 = $stack->top;
 						$stack->pop();
-						$stack->top($stack->top() ** $op0);
+						$stack->top = $stack->top ** $op0;
 						break;
 					case $neg_idx:
-						$top = $stack->top();
-						$stack->top(-$top);
+						$top = $stack->top;
+						$stack->top = -$top;
 						break;
 					case $int_idx:
 						$i = (int)$p->sigil();
@@ -110,7 +110,7 @@ foreach ($exp as $in) {
 		}
 		$p->advance();
 	}
-	echo "$in = " . $stack->top() . "\n";
+	echo "$in = " . $stack->top . "\n";
 }
 
 ?>
