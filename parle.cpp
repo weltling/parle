@@ -1711,6 +1711,7 @@ PHP_MINIT_FUNCTION(parle)
 	parle_lexer_handlers.read_property = php_parle_lexer_read_property;
 	parle_lexer_handlers.write_property = php_parle_lexer_write_property;
 	parle_lexer_handlers.get_properties = php_parle_lexer_get_properties;
+	parle_lexer_handlers.get_property_ptr_ptr = NULL;
 	INIT_CLASS_ENTRY(ce, "Parle\\Lexer", ParleLexer_methods);
 	ce.create_object = php_parle_lexer_object_init;
 	ce.serialize = zend_class_serialize_deny;
@@ -1736,6 +1737,7 @@ PHP_MINIT_FUNCTION(parle)
 	parle_rlexer_handlers.read_property = php_parle_rlexer_read_property;
 	parle_rlexer_handlers.write_property = php_parle_rlexer_write_property;
 	parle_rlexer_handlers.get_properties = php_parle_rlexer_get_properties;
+	parle_rlexer_handlers.get_property_ptr_ptr = NULL;
 	INIT_CLASS_ENTRY(ce, "Parle\\RLexer", ParleRLexer_methods);
 	//ce.create_object = php_parle_rlexer_object_init;
 	ParleRLexer_ce = zend_register_internal_class_ex(&ce, ParleLexer_ce);
@@ -1749,6 +1751,7 @@ PHP_MINIT_FUNCTION(parle)
 	parle_parser_handlers.read_property = php_parle_parser_read_property;
 	parle_parser_handlers.write_property = php_parle_parser_write_property;
 	parle_parser_handlers.get_properties = php_parle_parser_get_properties;
+	parle_parser_handlers.get_property_ptr_ptr = NULL;
 	INIT_CLASS_ENTRY(ce, "Parle\\Parser", ParleParser_methods);
 	ce.create_object = php_parle_parser_object_init;
 	ParleParser_ce = zend_register_internal_class(&ce);
@@ -1774,6 +1777,7 @@ PHP_MINIT_FUNCTION(parle)
 	parle_stack_handlers.read_property = php_parle_stack_read_property;
 	parle_stack_handlers.write_property = php_parle_stack_write_property;
 	parle_stack_handlers.get_properties = php_parle_stack_get_properties;
+	parle_stack_handlers.get_property_ptr_ptr = NULL;
 	INIT_CLASS_ENTRY(ce, "Parle\\Stack", ParleStack_methods);
 	ce.create_object = php_parle_parser_stack_object_init;
 	ParleStack_ce = zend_register_internal_class(&ce);
