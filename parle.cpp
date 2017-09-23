@@ -257,6 +257,7 @@ PHP_METHOD(ParleRLexer, push)
 	} catch (const std::exception &e) {
 		zend_throw_exception(ParleLexerException_ce, e.what(), 0);
 	}
+#undef PREPARE_PUSH
 }
 /* }}} */
 
