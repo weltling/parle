@@ -74,22 +74,22 @@ foreach ($exp as $in) {
 					case $add_idx:
 						$op0 = $stack->top;
 						$stack->pop();
-						$stack->top = $stack->top + $op0;
+						$stack->top += $op0;
 						break;
 					case $sub_idx:
 						$op0 = $stack->top;
 						$stack->pop();
-						$stack->top = $stack->top - $op0;
+						$stack->top -= $op0;
 						break;
 					case $mul_idx:
 						$op0 = $stack->top;
 						$stack->pop();
-						$stack->top = $stack->top * $op0;
+						$stack->top *= $op0;
 						break;
 					case $div_idx:
 						$op0 = $stack->top;
 						$stack->pop();
-						$stack->top = $stack->top / $op0;
+						$stack->top /= $op0;
 						break;
 					case $exp_idx:
 						$op0 = $stack->top;
@@ -97,8 +97,7 @@ foreach ($exp as $in) {
 						$stack->top = $stack->top ** $op0;
 						break;
 					case $neg_idx:
-						$top = $stack->top;
-						$stack->top = -$top;
+						$stack->top = -$stack->top;
 						break;
 					case $int_idx:
 						$i = (int)$p->sigil();
