@@ -21,6 +21,7 @@
 	</stability>
 	<license uri="http://opensource.org/licenses/BSD-2-Clause">BSD 2-clause</license>
 	<notes>
+		- Improve Parser::reduceId property handling
 		- Fixed index range check in Parser::sigil()
 		- Fixed Stack::top handling for empty stack
 		- Improved Parser::errorInfo()
