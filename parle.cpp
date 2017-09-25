@@ -122,7 +122,7 @@ namespace parle {/*{{{*/
 	}
 
 	namespace stack {
-		using stack = std::stack<zval *, std::vector<zval *>>;
+		using stack = std::stack<zval *>;
 	}
 }/*}}}*/
 
