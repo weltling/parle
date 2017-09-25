@@ -1454,7 +1454,11 @@ php_parle_parser_read_property(zval *object, zval *member, int type, void **cach
 	if (strcmp(Z_STRVAL_P(member), "action") == 0) {
 		ZVAL_LONG(retval, par.results.entry.action);
 	} else if (strcmp(Z_STRVAL_P(member), "reduceId") == 0) {
-		ZVAL_LONG(retval, par.results.reduce_id());
+		try {
+			ZVAL_LONG(retval, par.results.reduce_id());
+		} catch (const std::exception &e) {
+			zend_throw_exception(ParleParserException_ce, e.what(), 0);
+		}
 	} else {
 		retval = (zend_get_std_object_handlers())->read_property(object, member, type, cache_slot, rv);
 	}
@@ -1508,7 +1512,11 @@ php_parle_parser_get_properties(zval *object) noexcept
 
 	ZVAL_LONG(&zv, par.results.entry.action);
 	zend_hash_str_update(props, "action", sizeof("action")-1, &zv);
-	ZVAL_LONG(&zv, par.results.reduce_id());
+	if (par.results.entry.action == parsertl::reduce) {
+		ZVAL_LONG(&zv, par.results.reduce_id());
+	} else {
+		ZVAL_LONG(&zv, Z_L(-1));
+	}
 	zend_hash_str_update(props, "reduceId", sizeof("reduceId")-1, &zv);
 
 	return props;
