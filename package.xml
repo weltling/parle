@@ -13,19 +13,15 @@
 	<date>2017-09-25</date>
 	<version>
 		<release>0.6.4</release>
-		<api>0.6.4</api>
+		<api>0.6.5</api>
 	</version>
 	<stability>
-		<release>alpha</release>
-		<api>alpha</api>
+		<release>beta</release>
+		<api>beta</api>
 	</stability>
 	<license uri="http://opensource.org/licenses/BSD-2-Clause">BSD 2-clause</license>
 	<notes>
-		- Improve Parser::reduceId property handling
-		- Fixed index range check in Parser::sigil()
-		- Fixed Stack::top handling for empty stack
-		- Improved Parser::errorInfo()
-		- Fixed properties access in all classes exporting properties
+		- some
 	</notes>
 	<contents>
 		<dir name="/">
@@ -137,6 +133,25 @@
 	<providesextension>parle</providesextension>
 	<extsrcrelease />
 	<changelog>
+		<release>
+			<date>2017-09-25</date>
+			<version>
+				<release>0.6.4</release>
+				<api>0.6.4</api>
+			</version>
+			<stability>
+				<release>alpha</release>
+				<api>alpha</api>
+			</stability>
+			<license uri="http://opensource.org/licenses/BSD-2-Clause">BSD 2-clause</license>
+			<notes>
+				- Improve Parser::reduceId property handling
+				- Fixed index range check in Parser::sigil()
+				- Fixed Stack::top handling for empty stack
+				- Improved Parser::errorInfo()
+				- Fixed properties access in all classes exporting properties
+			</notes>
+		</release>
 		<release>
 			<date>2017-09-22</date>
 			<version>
