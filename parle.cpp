@@ -768,9 +768,12 @@ PHP_METHOD(ParleParser, sigil)
 
 	auto &par = *zppo->par;
 
-	if (idx < Z_L(0) || static_cast<parle::id_type>(par.productions.size()) <= static_cast<parle::id_type>(idx)) {
-		zend_throw_exception(ParleParserException_ce, "Invalid index", 0);
+	if (idx < Z_L(0) ||
+		par.productions.size() - par.sm._rules[par.results.entry.param].second.size() + static_cast<size_t>(idx) >= par.productions.size()) {
+		zend_throw_exception_ex(ParleParserException_ce, 0, "Invalid index " ZEND_LONG_FMT, idx);
 		return;
+	/*} else if (par.sm._rules[par.results.entry.param].second.empty()) {
+		RETURN_NULL();*/
 	}
 
 	try {
