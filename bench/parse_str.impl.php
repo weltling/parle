@@ -11,10 +11,8 @@ class ParseStrParser extends Parser
 {
 	protected $lex;
 	protected $stack;
-	protected $token = array (
-		"sym_to_id" => array(),
-		"id_to_sym" => array(),
-	);
+	protected $tokenNameToId = array();
+	protected $tokenIdToName = array();
 	protected $prodHandler = array();
 	protected $result = array();
 	protected $debug = false;
@@ -72,8 +70,8 @@ class ParseStrParser extends Parser
 		$id = $this->tokenId($sym);
 		$this->lex->push($reg, $id);
 
-		$this->token["sym_to_id"][$sym] = $id;
-		$this->token["id_to_sym"][$id] = $sym;
+		$this->tokenNameToId[$sym] = $id;
+		$this->tokenIdToName[$id] = $sym;
 	}
 
 	protected function production(string $name, string $rule, $handler = NULL)
@@ -149,7 +147,7 @@ class ParseStrParser extends Parser
 						case Parser::ERROR_SYNTAX:
 							throw new ParserException("Syntax error at " . $i->position);
 						case Parser::ERROR_NON_ASSOCIATIVE:
-							throw new ParserException("Token " . $this->token["id_to_sym"][$i->token->id] . "is not associative");
+							throw new ParserException("Token " . $this->tokenIdToName[$i->token->id] . "is not associative");
 						case Parser::ERROR_UNKOWN_TOKEN:
 							throw new ParserException("Unknown token '" . $i->token->value . "' at " . $i->position);
 					}
