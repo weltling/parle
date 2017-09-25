@@ -1653,7 +1653,7 @@ php_parle_stack_get_properties(zval *object) noexcept
 	} else {
 		ZVAL_COPY(&zv, zpso->stack->top());
 	}
-	zend_hash_str_update(props, "top", sizeof("top")-1, zpso->stack->top());
+	zend_hash_str_update(props, "top", sizeof("top")-1, &zv);
 
 	return props;
 }/*}}}*/
