@@ -21,7 +21,10 @@
 	</stability>
 	<license uri="http://opensource.org/licenses/BSD-2-Clause">BSD 2-clause</license>
 	<notes>
-		- to come
+		- Fixed index range check in Parser::sigil()
+		- Fixed Stack::top handling for empty stack
+		- Improved Parser::errorInfo()
+		- Fixed properties access in all classes exporting properties
 	</notes>
 	<contents>
 		<dir name="/">
