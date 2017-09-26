@@ -31,13 +31,12 @@ use Parle\LexerException;
 
 /* name => id */
 $token = array(
-        "EOI" => 0,
         "COMMA" => 1,
         "CRLF" => 2,
         "DECIMAL" => 3,
 );
 /* id => name */
-$token_rev = array_flip($token);
+$tokenIdToName = array_flip($token);
 
 $lex = new Lexer;
 $lex->push("[\x2c]", $token["COMMA"]);
@@ -57,8 +56,9 @@ do {
                 throw new LexerException("Unknown token '{$tok->value}' at offset {$lex->marker}.");
         }
 
-        echo "TOKEN: ", $token_rev[$tok->id], PHP_EOL;
+        echo "TOKEN: ", $tokenIdToName[$tok->id], PHP_EOL;
 } while (Token::EOI != $tok->id);
+
 ```
 
 
