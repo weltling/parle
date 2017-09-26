@@ -78,7 +78,7 @@ build_script:
                 if (-not (Test-Path c:\build-cache\$bname)) {
                         (new-object net.webclient).DownloadFile('http://windows.php.net/downloads/releases/' + $bname, 'c:\build-cache\' + $bname)
                         if (-not (Test-Path c:\build-cache\$bname)) {
-                                (new-object net.webclient).DownloadFile('http://windows.php.net/downloads/releases/' + $bname, 'c:\build-cache\' + $bname)
+                                (new-object net.webclient).DownloadFile('http://windows.php.net/downloads/releases/archives/' + $bname, 'c:\build-cache\' + $bname)
                         }
                 }
                 $dname0 = 'php-' + $env:PHP_VER + '-devel-' + $env:VC.toUpper() + '-' + $env:ARCH
@@ -120,7 +120,7 @@ test_script:
                 if (-not (Test-Path c:\build-cache\$bname)) {
                         (new-object net.webclient).DownloadFile('http://windows.php.net/downloads/releases/' + $bname, 'c:\build-cache\' + $bname)
                         if (-not (Test-Path c:\build-cache\$bname)) {
-                                (new-object net.webclient).DownloadFile('http://windows.php.net/downloads/releases/' + $bname, 'c:\build-cache\' + $bname)
+                                (new-object net.webclient).DownloadFile('http://windows.php.net/downloads/releases/archives' + $bname, 'c:\build-cache\' + $bname)
                         }
                 }
                 $dname = 'php-' + $env:PHP_VER + $ts_part + '-' + $env:VC.toUpper() + '-' + $env:ARCH
