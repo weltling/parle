@@ -76,13 +76,13 @@ $p->token("COMMA");
 $p->token("INTEGER");
 $p->token("'\"'");
 $p->push("START", "RECORDS");
-$records_idx_0 = $p->push("RECORDS", "RECORD CRLF");
-$records_idx_1 = $p->push("RECORDS", "RECORDS RECORD CRLF");
-$int_idx_0 = $p->push("RECORD", "INTEGER");
-$int_idx_1 = $p->push("RECORD", "RECORD COMMA INTEGER");
-$dec_idx_0 = $p->push("DECIMAL", "INTEGER COMMA INTEGER");
-$dec_idx_1 = $p->push("RECORD", "'\"' DECIMAL '\"'");
-$dec_idx_2 = $p->push("RECORD", "RECORD COMMA '\"' DECIMAL '\"'");
+$prod_record_0 = $p->push("RECORDS", "RECORD CRLF");
+$prod_record_1 = $p->push("RECORDS", "RECORDS RECORD CRLF");
+$prod_int_0 = $p->push("RECORD", "INTEGER");
+$prod_int_1 = $p->push("RECORD", "RECORD COMMA INTEGER");
+$p->push("DECIMAL", "INTEGER COMMA INTEGER");
+$prod_dec_0 = $p->push("RECORD", "'\"' DECIMAL '\"'");
+$prod_dec_1 = $p->push("RECORD", "RECORD COMMA '\"' DECIMAL '\"'");
 $p->build();
 
 $lex = new Lexer;
@@ -104,13 +104,16 @@ do {
 			if (Parser::ERROR_UNKOWN_TOKEN == $err->id) {
 				$tok = $err->token;
 				$msg = "Unknown token '{$tok->value}' at offset {$err->position}";
-				throw new ParserException($msg);
 			} else if (Parser::ERROR_NON_ASSOCIATIVE == $err->id) {
-				throw new ParserException("Non associative");
+				$tok = $err->token;
+				$msg = "Token '{$tok->id}' at offset {$lex->marker}";
 			} else if (Parser::ERROR_SYNTAX == $err->id) {
-				throw new ParserException("Syntax error");
+				$tok = $err->token;
+				$msg = "Syntax error at offset {$lex->marker}";
+			} else {
+				$msg = "Parse error";
 			}
-			throw new ParserException("Parse error");
+			throw new ParserException($msg);
 			break;
 		case Parser::ACTION_SHIFT:
 		case Parser::ACTION_GOTO:
@@ -119,25 +122,24 @@ do {
 			break;
 		case Parser::ACTION_REDUCE:
 			switch ($p->reduceId) {
-				case $int_idx_0:
+				case $prod_int_0:
 					/* INTEGER */
 					echo $p->sigil(), PHP_EOL;
 					break;
-				case $int_idx_1:
+				case $prod_int_1:
 					/* RECORD COMMA INTEGER */
 					echo $p->sigil(2), PHP_EOL;
 					break;
-				case $dec_idx_1:
+				case $prod_dec_0:
 					/* '\"' DECIMAL '\"' */
 					echo $p->sigil(1), PHP_EOL;
 					break;
-				case $dec_idx_2:
+				case $prod_dec_1:
 					/* RECORD COMMA '\"' DECIMAL '\"' */
 					echo $p->sigil(3), PHP_EOL;
 					break;
-				case $p->tokenId("CRLF"):
-				case $records_idx_0:
-				case $records_idx_1:
+				case $prod_record_0:
+				case $prod_record_1:
 					echo "=====", PHP_EOL;
 					break;
 			}
