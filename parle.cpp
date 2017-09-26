@@ -1663,6 +1663,12 @@ php_parle_stack_get_properties(zval *object) noexcept
 		ZVAL_COPY(&zv, zpso->stack->top());
 	}
 	zend_hash_str_update(props, "top", sizeof("top")-1, &zv);
+	// Not good to copy it, but otherwise need some hackish code to access the container
+	array_init(&zv);
+	for (parle::stack::stack tmp = *zpso->stack; !tmp.empty(); tmp.pop()) {
+		zend_hash_next_index_insert(Z_ARRVAL(zv), tmp.top());
+	}
+	zend_hash_str_update(props, "elements", sizeof("elements")-1, &zv);
 
 	return props;
 }/*}}}*/
