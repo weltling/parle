@@ -80,7 +80,7 @@ $prod_record_0 = $p->push("RECORDS", "RECORD CRLF");
 $prod_record_1 = $p->push("RECORDS", "RECORDS RECORD CRLF");
 $prod_int_0 = $p->push("RECORD", "INTEGER");
 $prod_int_1 = $p->push("RECORD", "RECORD COMMA INTEGER");
-$p->push("DECIMAL", "INTEGER COMMA INTEGER");
+$p->push("DECIMAL", "INTEGER COMMA INTEGER"); /* Production index unused. */
 $prod_dec_0 = $p->push("RECORD", "'\"' DECIMAL '\"'");
 $prod_dec_1 = $p->push("RECORD", "RECORD COMMA '\"' DECIMAL '\"'");
 $p->build();
