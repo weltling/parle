@@ -373,8 +373,14 @@ _lexer_token(INTERNAL_FUNCTION_PARAMETERS, zend_class_entry *ce) noexcept
 
 	try {
 		object_init_ex(return_value, ParleToken_ce);
-		std::string ret = lex.results.str();
-		add_property_long_ex(return_value, "id", sizeof("id")-1, static_cast<zend_long>(lex.results.id));
+		std::string ret;
+		if (lex.par) {
+			ret = std::string(lex.iter_prev->first, lex.iter_prev->second);
+			add_property_long_ex(return_value, "id", sizeof("id")-1, static_cast<zend_long>(lex.iter_prev->id));
+		} else {
+			ret = lex.results.str();
+			add_property_long_ex(return_value, "id", sizeof("id")-1, static_cast<zend_long>(lex.results.id));
+		}
 #if PHP_MAJOR_VERSION > 7 || PHP_MAJOR_VERSION >= 7 && PHP_MINOR_VERSION >= 2
 		add_property_stringl_ex(return_value, "value", sizeof("value")-1, ret.c_str(), ret.size());
 #else
