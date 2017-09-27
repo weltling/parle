@@ -829,6 +829,10 @@ PHP_METHOD(ParleParser, consume)
 		auto &par = *zppo->par;
 		par.lex = static_cast<parle::lexer::lexer *>(zplo->lex);
 		auto &lex = *par.lex;
+		if (lex.sm.empty()) {
+			zend_throw_exception(ParleLexerException_ce, "Lexer state machine is empty", 0);
+			return;
+		}
 		lex.in = ZSTR_VAL(in);
 		lex.iter = parle::lexer::siterator(lex.in.begin(), lex.in.end(), lex.sm);
 		lex.results = *lex.iter;
