@@ -89,7 +89,7 @@ object(Parle\Lexer)#%d (5) {
   ["bol"]=>
   bool(false)
   ["flags"]=>
-  int(4)
+  int(6)
   ["state"]=>
   int(0)
   ["marker"]=>

@@ -1204,7 +1204,7 @@ php_parle_lexer_obj_ctor(zend_class_entry *ce) noexcept
 	zplo->zo.handlers = &parle_lexer_handlers;
 
 	zplo->lex = new lexer_type{};
-//	zplo->lex->rules.flags(zplo->lex->rules.flags() | lexertl::dot_not_newline | lexertl::dot_not_cr_lf);
+	zplo->lex->rules.flags(lexertl::dot_not_newline | lexertl::dot_not_cr_lf);
 
 	return &zplo->zo;
 }/*}}}*/
