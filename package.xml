@@ -22,6 +22,8 @@
 	<license uri="http://opensource.org/licenses/BSD-2-Clause">BSD 2-clause</license>
 	<notes>
 		- Improved var_dump() output for Parle\Stack
+		- Parser::trace() will return NULL if called in inappropriate context
+		- Fixed Lexer functionality while used in Parser
 	</notes>
 	<contents>
 		<dir name="/">
