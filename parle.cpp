@@ -1251,7 +1251,7 @@ php_parle_lex_read_property(zval *object, zval *member, int type, void **cache_s
 		}
 	} else if (strcmp(Z_STRVAL_P(member), "cursor") == 0) {
 		if (in_parser) {
-			ZVAL_LONG(retval, lex.results.second - lex.in.begin());
+			ZVAL_LONG(retval, lex.iter_prev->second - lex.in.begin());
 		} else {
 			ZVAL_LONG(retval, lex.results.second - lex.in.begin());
 		}
