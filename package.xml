@@ -24,6 +24,7 @@
 		- Improved var_dump() output for Parle\Stack
 		- Parser::trace() will return NULL if called in inappropriate context
 		- Fixed Lexer functionality while used in Parser
+		- Lexers always use DOT_NOT_LF | DOT_NOT_CRLF flags by default
 	</notes>
 	<contents>
 		<dir name="/">
