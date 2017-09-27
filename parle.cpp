@@ -942,8 +942,10 @@ PHP_METHOD(ParleParser, errorInfo)
 
 	if (par.results.entry.action != parsertl::error) {
 		return;
+	} else if (nullptr == par.lex) {
+		zend_throw_exception(ParleParserException_ce, "No lexer supplied", 0);
+		return;
 	}
-
 
 	try {
 		add_property_long_ex(return_value, "id", sizeof("id")-1, static_cast<zend_long>(par.results.entry.param));
