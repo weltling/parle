@@ -12,20 +12,16 @@
 	</lead>
 	<date>2017-09-28</date>
 	<version>
-		<release>0.6.5</release>
-		<api>0.6.5</api>
+		<release>0.7.0</release>
+		<api>0.7.0</api>
 	</version>
 	<stability>
-		<release>alpha</release>
-		<api>alpha</api>
+		<release>beta</release>
+		<api>beta</api>
 	</stability>
 	<license uri="http://opensource.org/licenses/BSD-2-Clause">BSD 2-clause</license>
 	<notes>
-		- Improved var_dump() output for Parle\Stack
-		- Parser::trace() will return NULL if called in inappropriate context
-		- Fixed Lexer functionality while used in Parser
-		- Lexers always use DOT_NOT_LF | DOT_NOT_CRLF flags by default
-		- General bugfixes
+		- some
 	</notes>
 	<contents>
 		<dir name="/">
@@ -137,6 +133,25 @@
 	<providesextension>parle</providesextension>
 	<extsrcrelease />
 	<changelog>
+		<release>
+			<date>2017-09-28</date>
+			<version>
+				<release>0.6.5</release>
+				<api>0.6.5</api>
+			</version>
+			<stability>
+				<release>alpha</release>
+				<api>alpha</api>
+			</stability>
+			<license uri="http://opensource.org/licenses/BSD-2-Clause">BSD 2-clause</license>
+			<notes>
+				- Improved var_dump() output for Parle\Stack
+				- Parser::trace() will return NULL if called in inappropriate context
+				- Fixed Lexer functionality while used in Parser
+				- Lexers always use DOT_NOT_LF | DOT_NOT_CRLF flags by default
+				- General bugfixes
+			</notes>
+		</release>
 		<release>
 			<date>2017-09-25</date>
 			<version>
