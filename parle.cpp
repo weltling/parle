@@ -67,6 +67,7 @@ namespace parle {/*{{{*/
 
 	namespace parser {
 		struct parser;
+		struct rparser;
 	}
 
 	namespace lexer {
@@ -87,7 +88,7 @@ namespace parle {/*{{{*/
 		using debug = lexertl::basic_debug<state_machine, char_type, id_type>;
 
 		struct lexer {
-			lexer() : in(""), rules(), sm(), par(nullptr), results(), iter() {}
+			lexer() : in(""), par(nullptr) {}
 			std::string in;
 			parle_rules rules;
 			state_machine sm;
@@ -97,7 +98,7 @@ namespace parle {/*{{{*/
 		};
 
 		struct rlexer : public lexer {
-			rlexer() : lexer(), results(), iter() {}
+			rlexer() : lexer() {}
 			srmatch results;
 			sriterator iter;
 		};
@@ -108,14 +109,22 @@ namespace parle {/*{{{*/
 		using match_results = parsertl::basic_match_results<id_type>;
 		using parle_rules = parsertl::basic_rules<char_type>;
 		using generator = parsertl::basic_generator<parle_rules, id_type>;
-		using parle_productions = parsertl::token<parle::lexer::sriterator>::token_vector;
+		using parle_productions = parsertl::token<parle::lexer::siterator>::token_vector;
+		using parle_rproductions = parsertl::token<parle::lexer::sriterator>::token_vector;
 
 		struct parser {
-			parle::lexer::lexer *lex;
+			parser() : lex(nullptr) {}
 			parle_rules rules;
 			state_machine sm;
 			match_results results;
+			parle::lexer::lexer *lex;
 			parle_productions productions;
+		};
+
+		struct rparser : public parser {
+			rparser() : parser() {}
+			parle::lexer::rlexer *lex;
+			parle_rproductions productions;
 		};
 	}
 
@@ -146,6 +155,11 @@ struct ze_parle_parser_obj {/*{{{*/
 	zend_object zo;
 };/*}}}*/
 
+struct ze_parle_rparser_obj {/*{{{*/
+	parle::parser::rparser *par;
+	zend_object zo;
+};/*}}}*/
+
 struct ze_parle_stack_obj {/*{{{*/
 	parle::stack::stack *stack;
 	zend_object zo;
@@ -155,11 +169,13 @@ struct ze_parle_stack_obj {/*{{{*/
 zend_object_handlers parle_lexer_handlers;
 zend_object_handlers parle_rlexer_handlers;
 zend_object_handlers parle_parser_handlers;
+zend_object_handlers parle_rparser_handlers;
 zend_object_handlers parle_stack_handlers;
 
 static zend_class_entry *ParleLexer_ce;
 static zend_class_entry *ParleRLexer_ce;
 static zend_class_entry *ParleParser_ce;
+static zend_class_entry *ParleRParser_ce;
 static zend_class_entry *ParleStack_ce;
 static zend_class_entry *ParleLexerException_ce;
 static zend_class_entry *ParleParserException_ce;
@@ -186,10 +202,22 @@ php_parle_rlexer_fetch_obj(zend_object *obj) noexcept
 	return _php_parle_lexer_fetch_zobj<ze_parle_rlexer_obj>(obj);
 }/*}}}*/
 
+template<typename parser_obj_type> parser_obj_type *
+_php_parle_parser_fetch_zobj(zend_object *obj) noexcept
+{/*{{{*/
+	return (parser_obj_type *)((char *)obj - XtOffsetOf(parser_obj_type, zo));
+}/*}}}*/
+
 static zend_always_inline ze_parle_parser_obj *
 php_parle_parser_fetch_obj(zend_object *obj) noexcept
 {/*{{{*/
-	return (ze_parle_parser_obj *)((char *)obj - XtOffsetOf(ze_parle_parser_obj, zo));
+	return _php_parle_parser_fetch_zobj<ze_parle_parser_obj>(obj);
+}/*}}}*/
+
+static zend_always_inline ze_parle_rparser_obj *
+php_parle_rparser_fetch_obj(zend_object *obj) noexcept
+{/*{{{*/
+	return _php_parle_parser_fetch_zobj<ze_parle_rparser_obj>(obj);
 }/*}}}*/
 
 static zend_always_inline ze_parle_stack_obj *
@@ -527,8 +555,8 @@ _lexer_dump(INTERNAL_FUNCTION_PARAMETERS, zend_class_entry *ce) noexcept
 		zend_throw_exception(ParleLexerException_ce, e.what(), 0);
 	}
 }
-/* }}} */
-
+ /* }}} */
+ 
 /* {{{ public void Lexer::dump(void) */
 PHP_METHOD(ParleLexer, dump)
 {
@@ -543,19 +571,19 @@ PHP_METHOD(ParleRLexer, dump)
 }
 /* }}} */
 
-/* {{{ public void Parser::token(string $token) */
-PHP_METHOD(ParleParser, token)
-{
-	ze_parle_parser_obj *zppo;
+template <typename parser_obj_type> void
+_parser_token(INTERNAL_FUNCTION_PARAMETERS, zend_class_entry *ce) noexcept
+{/*{{{*/
+	parser_obj_type *zppo;
 	zval *me;
 	zend_string *tok;
 
 	/* XXX map the full signature. */
-	if(zend_parse_method_parameters(ZEND_NUM_ARGS(), getThis(), "OS", &me, ParleParser_ce, &tok) == FAILURE) {
+	if(zend_parse_method_parameters(ZEND_NUM_ARGS(), getThis(), "OS", &me, ce, &tok) == FAILURE) {
 		return;
 	}
 
-	zppo = php_parle_parser_fetch_obj(Z_OBJ_P(me));
+	zppo = _php_parle_parser_fetch_zobj<parser_obj_type>(Z_OBJ_P(me));
 
 	try {
 		auto &rules = zppo->par->rules;
@@ -563,21 +591,34 @@ PHP_METHOD(ParleParser, token)
 	} catch (const std::exception &e) {
 		zend_throw_exception(ParleParserException_ce, e.what(), 0);
 	}
+}/*}}}*/
+
+/* {{{ public void Parser::token(string $token) */
+PHP_METHOD(ParleParser, token)
+{
+	_parser_token<ze_parle_parser_obj>(INTERNAL_FUNCTION_PARAM_PASSTHRU, ParleParser_ce);
 }
 /* }}} */
 
-/* {{{ public void Parser::left(string $token) */
-PHP_METHOD(ParleParser, left)
+/* {{{ public void RParser::token(string $token) */
+PHP_METHOD(ParleRParser, token)
 {
-	ze_parle_parser_obj *zppo;
+	_parser_token<ze_parle_rparser_obj>(INTERNAL_FUNCTION_PARAM_PASSTHRU, ParleRParser_ce);
+}
+/* }}} */
+
+template <typename parser_obj_type> void
+_parser_left(INTERNAL_FUNCTION_PARAMETERS, zend_class_entry *ce) noexcept
+{/*{{{*/
+	parser_obj_type *zppo;
 	zval *me;
 	zend_string *tok;
 
-	if(zend_parse_method_parameters(ZEND_NUM_ARGS(), getThis(), "OS", &me, ParleParser_ce, &tok) == FAILURE) {
+	if(zend_parse_method_parameters(ZEND_NUM_ARGS(), getThis(), "OS", &me, ce, &tok) == FAILURE) {
 		return;
 	}
 
-	zppo = php_parle_parser_fetch_obj(Z_OBJ_P(me));
+	zppo = _php_parle_parser_fetch_zobj<parser_obj_type>(Z_OBJ_P(me));
 
 	try {
 		auto &rules = zppo->par->rules;
@@ -585,21 +626,35 @@ PHP_METHOD(ParleParser, left)
 	} catch (const std::exception &e) {
 		zend_throw_exception(ParleParserException_ce, e.what(), 0);
 	}
+}/*}}}*/
+
+/* {{{ public void Parser::left(string $token) */
+PHP_METHOD(ParleParser, left)
+{
+	_parser_left<ze_parle_parser_obj>(INTERNAL_FUNCTION_PARAM_PASSTHRU, ParleParser_ce);
 }
 /* }}} */
 
-/* {{{ public void Parser::right(string $token) */
-PHP_METHOD(ParleParser, right)
+/* {{{ public void RParser::left(string $token) */
+PHP_METHOD(ParleRParser, left)
 {
-	ze_parle_parser_obj *zppo;
+	_parser_left<ze_parle_rparser_obj>(INTERNAL_FUNCTION_PARAM_PASSTHRU, ParleRParser_ce);
+}
+/* }}} */
+
+template <typename parser_obj_type> void
+_parser_right(INTERNAL_FUNCTION_PARAMETERS, zend_class_entry *ce) noexcept
+{/*{{{*/
+	parser_obj_type *zppo;
 	zval *me;
 	zend_string *tok;
 
-	if(zend_parse_method_parameters(ZEND_NUM_ARGS(), getThis(), "OS", &me, ParleParser_ce, &tok) == FAILURE) {
+	if(zend_parse_method_parameters(ZEND_NUM_ARGS(), getThis(), "OS", &me, ce, &tok) == FAILURE) {
 		return;
 	}
 
-	zppo = php_parle_parser_fetch_obj(Z_OBJ_P(me));
+	zppo = _php_parle_parser_fetch_zobj<parser_obj_type>(Z_OBJ_P(me));
+
 
 	try {
 		auto &rules = zppo->par->rules;
@@ -607,21 +662,34 @@ PHP_METHOD(ParleParser, right)
 	} catch (const std::exception &e) {
 		zend_throw_exception(ParleParserException_ce, e.what(), 0);
 	}
+}/*}}}*/
+
+/* {{{ public void Parser::right(string $token) */
+PHP_METHOD(ParleParser, right)
+{
+	_parser_right<ze_parle_parser_obj>(INTERNAL_FUNCTION_PARAM_PASSTHRU, ParleParser_ce);
 }
 /* }}} */
 
-/* {{{ public void Parser::precedence(string $token) */
-PHP_METHOD(ParleParser, precedence)
+/* {{{ public void RParser::right(string $token) */
+PHP_METHOD(ParleRParser, right)
 {
-	ze_parle_parser_obj *zppo;
+	_parser_right<ze_parle_rparser_obj>(INTERNAL_FUNCTION_PARAM_PASSTHRU, ParleRParser_ce);
+}
+/* }}} */
+
+template <typename parser_obj_type> void
+_parser_precedence(INTERNAL_FUNCTION_PARAMETERS, zend_class_entry *ce) noexcept
+{/*{{{*/
+	parser_obj_type *zppo;
 	zval *me;
 	zend_string *tok;
 
-	if(zend_parse_method_parameters(ZEND_NUM_ARGS(), getThis(), "OS", &me, ParleParser_ce, &tok) == FAILURE) {
+	if(zend_parse_method_parameters(ZEND_NUM_ARGS(), getThis(), "OS", &me, ce, &tok) == FAILURE) {
 		return;
 	}
 
-	zppo = php_parle_parser_fetch_obj(Z_OBJ_P(me));
+	zppo = _php_parle_parser_fetch_zobj<parser_obj_type>(Z_OBJ_P(me));
 
 	try {
 		auto &rules = zppo->par->rules;
@@ -629,21 +697,34 @@ PHP_METHOD(ParleParser, precedence)
 	} catch (const std::exception &e) {
 		zend_throw_exception(ParleParserException_ce, e.what(), 0);
 	}
+}/*}}}*/
+
+/* {{{ public void Parser::precedence(string $token) */
+PHP_METHOD(ParleParser, precedence)
+{
+	_parser_precedence<ze_parle_parser_obj>(INTERNAL_FUNCTION_PARAM_PASSTHRU, ParleParser_ce);
 }
 /* }}} */
 
-/* {{{ public void Parser::nonassoc(string $token) */
-PHP_METHOD(ParleParser, nonassoc)
+/* {{{ public void RParser::precedence(string $token) */
+PHP_METHOD(ParleRParser, precedence)
 {
-	ze_parle_parser_obj *zppo;
+	_parser_precedence<ze_parle_rparser_obj>(INTERNAL_FUNCTION_PARAM_PASSTHRU, ParleRParser_ce);
+}
+/* }}} */
+
+template <typename parser_obj_type> void
+_parser_nonassoc(INTERNAL_FUNCTION_PARAMETERS, zend_class_entry *ce) noexcept
+{/*{{{*/
+	parser_obj_type *zppo;
 	zval *me;
 	zend_string *tok;
 
-	if(zend_parse_method_parameters(ZEND_NUM_ARGS(), getThis(), "OS", &me, ParleParser_ce, &tok) == FAILURE) {
+	if(zend_parse_method_parameters(ZEND_NUM_ARGS(), getThis(), "OS", &me, ce, &tok) == FAILURE) {
 		return;
 	}
 
-	zppo = php_parle_parser_fetch_obj(Z_OBJ_P(me));
+	zppo = _php_parle_parser_fetch_zobj<parser_obj_type>(Z_OBJ_P(me));
 
 	try {
 		auto &rules = zppo->par->rules;
@@ -651,20 +732,33 @@ PHP_METHOD(ParleParser, nonassoc)
 	} catch (const std::exception &e) {
 		zend_throw_exception(ParleParserException_ce, e.what(), 0);
 	}
+}/*}}}*/
+
+/* {{{ public void Parser::nonassoc(string $token) */
+PHP_METHOD(ParleParser, nonassoc)
+{
+	_parser_nonassoc<ze_parle_parser_obj>(INTERNAL_FUNCTION_PARAM_PASSTHRU, ParleParser_ce);
 }
 /* }}} */
 
-/* {{{ public void Parser::build(void) */
-PHP_METHOD(ParleParser, build)
+/* {{{ public void RParser::nonassoc(string $token) */
+PHP_METHOD(ParleRParser, nonassoc)
 {
-	ze_parle_parser_obj *zppo;
+	_parser_nonassoc<ze_parle_rparser_obj>(INTERNAL_FUNCTION_PARAM_PASSTHRU, ParleRParser_ce);
+}
+/* }}} */
+
+template <typename parser_obj_type> void
+_parser_build(INTERNAL_FUNCTION_PARAMETERS, zend_class_entry *ce) noexcept
+{/*{{{*/
+	parser_obj_type *zppo;
 	zval *me;
 
-	if(zend_parse_method_parameters(ZEND_NUM_ARGS(), getThis(), "O", &me, ParleParser_ce) == FAILURE) {
+	if(zend_parse_method_parameters(ZEND_NUM_ARGS(), getThis(), "O", &me, ce) == FAILURE) {
 		return;
 	}
 
-	zppo = php_parle_parser_fetch_obj(Z_OBJ_P(me));
+	zppo = _php_parle_parser_fetch_zobj<parser_obj_type>(Z_OBJ_P(me));
 
 	try {
 		auto &par = *zppo->par;
@@ -672,21 +766,34 @@ PHP_METHOD(ParleParser, build)
 	} catch (const std::exception &e) {
 		zend_throw_exception(ParleParserException_ce, e.what(), 0);
 	}
+}/*}}}*/
+
+/* {{{ public void Parser::build(void) */
+PHP_METHOD(ParleParser, build)
+{
+	_parser_build<ze_parle_parser_obj>(INTERNAL_FUNCTION_PARAM_PASSTHRU, ParleParser_ce);
 }
 /* }}} */
 
-/* {{{ public int Parser::push(string $name, string $rule) */
-PHP_METHOD(ParleParser, push)
+/* {{{ public void RParser::build(void) */
+PHP_METHOD(ParleRParser, build)
 {
-	ze_parle_parser_obj *zppo;
+	_parser_build<ze_parle_rparser_obj>(INTERNAL_FUNCTION_PARAM_PASSTHRU, ParleRParser_ce);
+}
+/* }}} */
+
+template <typename parser_obj_type> void
+_parser_push(INTERNAL_FUNCTION_PARAMETERS, zend_class_entry *ce) noexcept
+{/*{{{*/
+	parser_obj_type *zppo;
 	zval *me;
 	zend_string *lhs, *rhs;
 
-	if(zend_parse_method_parameters(ZEND_NUM_ARGS(), getThis(), "OSS", &me, ParleParser_ce, &lhs, &rhs) == FAILURE) {
+	if(zend_parse_method_parameters(ZEND_NUM_ARGS(), getThis(), "OSS", &me, ce, &lhs, &rhs) == FAILURE) {
 		return;
 	}
 
-	zppo = php_parle_parser_fetch_obj(Z_OBJ_P(me));
+	zppo = _php_parle_parser_fetch_zobj<parser_obj_type>(Z_OBJ_P(me));
 
 	try {
 		auto &rules = zppo->par->rules;
@@ -694,29 +801,42 @@ PHP_METHOD(ParleParser, push)
 	} catch (const std::exception &e) {
 		zend_throw_exception(ParleParserException_ce, e.what(), 0);
 	}
+}/*}}}*/
+
+/* {{{ public int Parser::push(string $name, string $rule) */
+PHP_METHOD(ParleParser, push)
+{
+	_parser_push<ze_parle_parser_obj>(INTERNAL_FUNCTION_PARAM_PASSTHRU, ParleParser_ce);
 }
 /* }}} */
 
-/* {{{ public boolean Parser::validate(void) */
-PHP_METHOD(ParleParser, validate)
+/* {{{ public int RParser::push(string $name, string $rule) */
+PHP_METHOD(ParleRParser, push)
 {
-	ze_parle_parser_obj *zppo;
-	ze_parle_lexer_obj *zplo;
+	_parser_push<ze_parle_rparser_obj>(INTERNAL_FUNCTION_PARAM_PASSTHRU, ParleRParser_ce);
+}
+/* }}} */
+
+template <typename parser_obj_type, typename lexer_obj_type, typename iter_type> void
+_parser_validate(INTERNAL_FUNCTION_PARAMETERS, zend_class_entry *par_ce, zend_class_entry *lex_ce) noexcept
+{/*{{{*/
+	parser_obj_type *zppo;
+	lexer_obj_type *zplo;
 	zval *me, *lex;
 	zend_string *in;
 
-	if(zend_parse_method_parameters(ZEND_NUM_ARGS(), getThis(), "OSO", &me, ParleParser_ce, &in, &lex, ParleLexer_ce) == FAILURE) {
+	if(zend_parse_method_parameters(ZEND_NUM_ARGS(), getThis(), "OSO", &me, par_ce, &in, &lex, lex_ce) == FAILURE) {
 		return;
 	}
 
-	zppo = php_parle_parser_fetch_obj(Z_OBJ_P(me));
-	zplo = php_parle_lexer_fetch_obj(Z_OBJ_P(lex));
+	zppo = _php_parle_parser_fetch_zobj<parser_obj_type>(Z_OBJ_P(me));
+	zplo = _php_parle_lexer_fetch_zobj<lexer_obj_type>(Z_OBJ_P(lex));
 
 	try {
 		auto &lex = *zplo->lex;
 		auto &par = *zppo->par;
 
-		parle::lexer::citerator iter(ZSTR_VAL(in), ZSTR_VAL(in) + ZSTR_LEN(in), lex.sm);
+		iter_type iter(ZSTR_VAL(in), ZSTR_VAL(in) + ZSTR_LEN(in), lex.sm);
 		
 		/* Since it's not more than parse, nothing is saved into the object. */
 		parle::parser::match_results results(iter->id, par.sm);
@@ -727,21 +847,34 @@ PHP_METHOD(ParleParser, validate)
 	}
 
 	RETURN_FALSE
+}/*}}}*/
+
+/* {{{ public boolean Parser::validate(void) */
+PHP_METHOD(ParleParser, validate)
+{
+	_parser_validate<ze_parle_parser_obj, ze_parle_lexer_obj, parle::lexer::citerator>(INTERNAL_FUNCTION_PARAM_PASSTHRU, ParleParser_ce, ParleLexer_ce);
 }
 /* }}} */
 
-/* {{{ public int Parser::tokenId(string $tok) */
-PHP_METHOD(ParleParser, tokenId)
+/* {{{ public boolean RParser::validate(void) */
+PHP_METHOD(ParleRParser, validate)
 {
-	ze_parle_parser_obj *zppo;
+	_parser_validate<ze_parle_rparser_obj, ze_parle_rlexer_obj, parle::lexer::criterator>(INTERNAL_FUNCTION_PARAM_PASSTHRU, ParleRParser_ce, ParleRLexer_ce);
+}
+/* }}} */
+
+template <typename parser_obj_type> void
+_parser_tokenId(INTERNAL_FUNCTION_PARAMETERS, zend_class_entry *ce) noexcept
+{/*{{{*/
+	parser_obj_type *zppo;
 	zval *me;
 	zend_string *nom;
 
-	if(zend_parse_method_parameters(ZEND_NUM_ARGS(), getThis(), "OS", &me, ParleParser_ce, &nom) == FAILURE) {
+	if(zend_parse_method_parameters(ZEND_NUM_ARGS(), getThis(), "OS", &me, ce, &nom) == FAILURE) {
 		return;
 	}
 
-	zppo = php_parle_parser_fetch_obj(Z_OBJ_P(me));
+	zppo = _php_parle_parser_fetch_zobj<parser_obj_type>(Z_OBJ_P(me));
 
 	try {
 		auto &rules = zppo->par->rules;
@@ -749,21 +882,34 @@ PHP_METHOD(ParleParser, tokenId)
 	} catch (const std::exception &e) {
 		zend_throw_exception(ParleParserException_ce, e.what(), 0);
 	}
+}/*}}}*/
+
+/* {{{ public int Parser::tokenId(string $tok) */
+PHP_METHOD(ParleParser, tokenId)
+{
+	_parser_tokenId<ze_parle_parser_obj>(INTERNAL_FUNCTION_PARAM_PASSTHRU, ParleParser_ce);
 }
 /* }}} */
 
-/* {{{ public string Parser::sigil(int $idx) */
-PHP_METHOD(ParleParser, sigil)
+/* {{{ public int RParser::tokenId(string $tok) */
+PHP_METHOD(ParleRParser, tokenId)
 {
-	ze_parle_parser_obj *zppo;
+	_parser_tokenId<ze_parle_rparser_obj>(INTERNAL_FUNCTION_PARAM_PASSTHRU, ParleRParser_ce);
+}
+/* }}} */
+
+template <typename parser_obj_type> void
+_parser_sigil(INTERNAL_FUNCTION_PARAMETERS, zend_class_entry *ce) noexcept
+{/*{{{*/
+	parser_obj_type *zppo;
 	zval *me;
 	zend_long idx = 0;
 
-	if(zend_parse_method_parameters(ZEND_NUM_ARGS(), getThis(), "O|l", &me, ParleParser_ce, &idx) == FAILURE) {
+	if(zend_parse_method_parameters(ZEND_NUM_ARGS(), getThis(), "O|l", &me, ce, &idx) == FAILURE) {
 		return;
 	}
 
-	zppo = php_parle_parser_fetch_obj(Z_OBJ_P(me));
+	zppo = _php_parle_parser_fetch_zobj<parser_obj_type>(Z_OBJ_P(me));
 
 	auto &par = *zppo->par;
 
@@ -784,20 +930,33 @@ PHP_METHOD(ParleParser, sigil)
 	} catch (const std::exception &e) {
 		zend_throw_exception(ParleParserException_ce, e.what(), 0);
 	}
+}/*}}}*/
+
+/* {{{ public string Parser::sigil(int $idx) */
+PHP_METHOD(ParleParser, sigil)
+{
+	_parser_sigil<ze_parle_parser_obj>(INTERNAL_FUNCTION_PARAM_PASSTHRU, ParleParser_ce);
 }
 /* }}} */
 
-/* {{{ public void Parser::advance(void) */
-PHP_METHOD(ParleParser, advance)
+/* {{{ public string RParser::sigil(int $idx) */
+PHP_METHOD(ParleRParser, sigil)
 {
-	ze_parle_parser_obj *zppo;
+	_parser_sigil<ze_parle_rparser_obj>(INTERNAL_FUNCTION_PARAM_PASSTHRU, ParleRParser_ce);
+}
+/* }}} */
+
+template <typename parser_obj_type> void
+_parser_advance(INTERNAL_FUNCTION_PARAMETERS, zend_class_entry *ce) noexcept
+{/*{{{*/
+	parser_obj_type *zppo;
 	zval *me;
 
-	if(zend_parse_method_parameters(ZEND_NUM_ARGS(), getThis(), "O", &me, ParleParser_ce) == FAILURE) {
+	if(zend_parse_method_parameters(ZEND_NUM_ARGS(), getThis(), "O", &me, ce) == FAILURE) {
 		return;
 	}
 
-	zppo = php_parle_parser_fetch_obj(Z_OBJ_P(me));
+	zppo = _php_parle_parser_fetch_zobj<parser_obj_type>(Z_OBJ_P(me));
 
 	try {
 		auto &par = *zppo->par;
@@ -807,55 +966,81 @@ PHP_METHOD(ParleParser, advance)
 	} catch (const std::exception &e) {
 		zend_throw_exception(ParleParserException_ce, e.what(), 0);
 	}
+}/*}}}*/
+
+/* {{{ public void Parser::advance(void) */
+PHP_METHOD(ParleParser, advance)
+{
+	_parser_advance<ze_parle_parser_obj>(INTERNAL_FUNCTION_PARAM_PASSTHRU, ParleRParser_ce);
 }
 /* }}} */
 
-/* {{{ public void Parser::consume(string $s, Lexer $lex) */
-PHP_METHOD(ParleParser, consume)
+/* {{{ public void RParser::advance(void) */
+PHP_METHOD(ParleRParser, advance)
 {
-	ze_parle_parser_obj *zppo;
-	ze_parle_lexer_obj *zplo;
+	_parser_advance<ze_parle_rparser_obj>(INTERNAL_FUNCTION_PARAM_PASSTHRU, ParleRParser_ce);
+}
+/* }}} */
+
+template <typename parser_obj_type, typename lexer_obj_type, typename iter_type, typename prod_type> void
+_parser_consume(INTERNAL_FUNCTION_PARAMETERS, zend_class_entry *par_ce, zend_class_entry *lex_ce) noexcept
+{/*{{{*/
+	parser_obj_type *zppo;
+	lexer_obj_type *zplo;
 	zval *me, *lex;
 	zend_string *in;
 
-	if(zend_parse_method_parameters(ZEND_NUM_ARGS(), getThis(), "OSO", &me, ParleParser_ce, &in, &lex, ParleLexer_ce) == FAILURE) {
+	if(zend_parse_method_parameters(ZEND_NUM_ARGS(), getThis(), "OSO", &me, par_ce, &in, &lex, lex_ce) == FAILURE) {
 		return;
 	}
 
-	zppo = php_parle_parser_fetch_obj(Z_OBJ_P(me));
-	zplo = php_parle_lexer_fetch_obj(Z_OBJ_P(lex));
+	zppo = _php_parle_parser_fetch_zobj<parser_obj_type>(Z_OBJ_P(me));
+	zplo = _php_parle_lexer_fetch_zobj<lexer_obj_type>(Z_OBJ_P(me));
 
 	try {
 		auto &par = *zppo->par;
-		par.lex = static_cast<parle::lexer::lexer *>(zplo->lex);
+		par.lex = zplo->lex;
 		auto &lex = *par.lex;
 		if (lex.sm.empty()) {
 			zend_throw_exception(ParleLexerException_ce, "Lexer state machine is empty", 0);
 			return;
 		}
 		lex.in = ZSTR_VAL(in);
-		lex.iter = parle::lexer::siterator(lex.in.begin(), lex.in.end(), lex.sm);
+		lex.iter = iter_type(lex.in.begin(), lex.in.end(), lex.sm);
 		lex.results = *lex.iter;
 		lex.par = zppo->par;
-		par.productions = parle::parser::parle_productions{};
+		par.productions = prod_type{};
 		par.results = parle::parser::match_results{lex.iter->id, par.sm};
 	} catch (const std::exception &e) {
 		zend_throw_exception(ParleLexerException_ce, e.what(), 0);
 	}
+}/*}}}*/
+
+/* {{{ public void Parser::consume(string $s, Lexer $lex) */
+PHP_METHOD(ParleParser, consume)
+{
+	_parser_consume<ze_parle_parser_obj, ze_parle_lexer_obj, parle::lexer::siterator, parle::parser::parle_productions>(INTERNAL_FUNCTION_PARAM_PASSTHRU, ParleParser_ce, ParleLexer_ce);
 }
 /* }}} */
 
-/* {{{ public void Parser::dump(void) */
-PHP_METHOD(ParleParser, dump)
+/* {{{ public void RParser::consume(string $s, RLexer $lex) */
+PHP_METHOD(ParleRParser, consume)
 {
-	ze_parle_parser_obj *zppo;
+	_parser_consume<ze_parle_rparser_obj, ze_parle_rlexer_obj, parle::lexer::sriterator, parle::parser::parle_rproductions>(INTERNAL_FUNCTION_PARAM_PASSTHRU, ParleRParser_ce, ParleRLexer_ce);
+}
+/* }}} */
+
+template <typename parser_obj_type> void
+_parser_dump(INTERNAL_FUNCTION_PARAMETERS, zend_class_entry *ce) noexcept
+{/*{{{*/
+	parser_obj_type *zppo;
 	zval *me;
 
-	if(zend_parse_method_parameters(ZEND_NUM_ARGS(), getThis(), "O", &me, ParleParser_ce) == FAILURE) {
+	if(zend_parse_method_parameters(ZEND_NUM_ARGS(), getThis(), "O", &me, ce) == FAILURE) {
 		return;
 	}
 
-	zppo = php_parle_parser_fetch_obj(Z_OBJ_P(me));
+	zppo = _php_parle_parser_fetch_zobj<parser_obj_type>(Z_OBJ_P(me));
 
 	try {
 		auto &par = *zppo->par;
@@ -864,20 +1049,33 @@ PHP_METHOD(ParleParser, dump)
 	} catch (const std::exception &e) {
 		zend_throw_exception(ParleLexerException_ce, e.what(), 0);
 	}
+}/*}}}*/
+
+/* {{{ public void Parser::dump(void) */
+PHP_METHOD(ParleParser, dump)
+{
+	_parser_dump<ze_parle_parser_obj>(INTERNAL_FUNCTION_PARAM_PASSTHRU, ParleParser_ce);
 }
 /* }}} */
 
-/* {{{ public string Parser::trace(void) */
-PHP_METHOD(ParleParser, trace)
+/* {{{ public void RParser::dump(void) */
+PHP_METHOD(ParleRParser, dump)
 {
-	ze_parle_parser_obj *zppo;
+	_parser_dump<ze_parle_rparser_obj>(INTERNAL_FUNCTION_PARAM_PASSTHRU, ParleRParser_ce);
+}
+/* }}} */
+
+template <typename parser_obj_type> void
+_parser_trace(INTERNAL_FUNCTION_PARAMETERS, zend_class_entry *ce) noexcept
+{/*{{{*/
+	parser_obj_type *zppo;
 	zval *me;
 
-	if(zend_parse_method_parameters(ZEND_NUM_ARGS(), getThis(), "O", &me, ParleParser_ce) == FAILURE) {
+	if(zend_parse_method_parameters(ZEND_NUM_ARGS(), getThis(), "O", &me, ce) == FAILURE) {
 		return;
 	}
 
-	zppo = php_parle_parser_fetch_obj(Z_OBJ_P(me));
+	zppo = _php_parle_parser_fetch_zobj<parser_obj_type>(Z_OBJ_P(me));
 	auto &par = *zppo->par;
 
 	try {
@@ -920,20 +1118,33 @@ PHP_METHOD(ParleParser, trace)
 	} catch (const std::exception &e) {
 		zend_throw_exception(ParleLexerException_ce, e.what(), 0);
 	}
+}/*}}}*/
+
+/* {{{ public string Parser::trace(void) */
+PHP_METHOD(ParleParser, trace)
+{
+	_parser_trace<ze_parle_parser_obj>(INTERNAL_FUNCTION_PARAM_PASSTHRU, ParleParser_ce);
 }
 /* }}} */
 
-/* {{{ public Parle\ErrorInfo Parser::errorInfo(void) */
-PHP_METHOD(ParleParser, errorInfo)
+/* {{{ public string RParser::trace(void) */
+PHP_METHOD(ParleRParser, trace)
 {
-	ze_parle_parser_obj *zppo;
+	_parser_trace<ze_parle_rparser_obj>(INTERNAL_FUNCTION_PARAM_PASSTHRU, ParleRParser_ce);
+}
+/* }}} */
+
+template <typename parser_obj_type> void
+_parser_errorinfo(INTERNAL_FUNCTION_PARAMETERS, zend_class_entry *ce) noexcept
+{/*{{{*/
+	parser_obj_type *zppo;
 	zval *me;
 
-	if(zend_parse_method_parameters(ZEND_NUM_ARGS(), getThis(), "O", &me, ParleParser_ce) == FAILURE) {
+	if(zend_parse_method_parameters(ZEND_NUM_ARGS(), getThis(), "O", &me, ce) == FAILURE) {
 		return;
 	}
 
-	zppo = php_parle_parser_fetch_obj(Z_OBJ_P(me));
+	zppo = _php_parle_parser_fetch_zobj<parser_obj_type>(Z_OBJ_P(me));
 
 	auto &par = *zppo->par;
 	auto &lex = *par.lex;
@@ -963,6 +1174,19 @@ PHP_METHOD(ParleParser, errorInfo)
 	} catch (const std::exception &e) {
 		zend_throw_exception(ParleLexerException_ce, e.what(), 0);
 	}
+}/*}}}*/
+
+/* {{{ public Parle\ErrorInfo Parser::errorInfo(void) */
+PHP_METHOD(ParleParser, errorInfo)
+{
+	_parser_errorinfo<ze_parle_parser_obj>(INTERNAL_FUNCTION_PARAM_PASSTHRU, ParleParser_ce);
+}
+/* }}} */
+
+/* {{{ public Parle\ErrorInfo RParser::errorInfo(void) */
+PHP_METHOD(ParleRParser, errorInfo)
+{
+	_parser_errorinfo<ze_parle_rparser_obj>(INTERNAL_FUNCTION_PARAM_PASSTHRU, ParleRParser_ce);
 }
 /* }}} */
 
@@ -1099,6 +1323,11 @@ ZEND_BEGIN_ARG_INFO_EX(arginfo_parle_parser_consume, 0, 0, 2)
 	ZEND_ARG_INFO(0, lexer) /* Parle\Lexer or a derivative. */
 ZEND_END_ARG_INFO();
 
+ZEND_BEGIN_ARG_INFO_EX(arginfo_parle_rparser_consume, 0, 0, 2)
+	ZEND_ARG_TYPE_INFO(0, data, IS_STRING, 0)
+	ZEND_ARG_INFO(0, lexer) /* Parle\Lexer or a derivative. */
+ZEND_END_ARG_INFO();
+
 ZEND_BEGIN_ARG_INFO_EX(arginfo_parle_parser_dump, 0, 0, 0)
 ZEND_END_ARG_INFO();
 
@@ -1182,6 +1411,25 @@ const zend_function_entry ParleParser_methods[] = {
 	PHP_FE_END
 };
 
+const zend_function_entry ParleRParser_methods[] = {
+	PHP_ME(ParleRParser, token, arginfo_parle_parser_token, ZEND_ACC_PUBLIC)
+	PHP_ME(ParleRParser, left, arginfo_parle_parser_left, ZEND_ACC_PUBLIC)
+	PHP_ME(ParleRParser, right, arginfo_parle_parser_right, ZEND_ACC_PUBLIC)
+	PHP_ME(ParleRParser, nonassoc, arginfo_parle_parser_nonassoc, ZEND_ACC_PUBLIC)
+	PHP_ME(ParleRParser, precedence, arginfo_parle_parser_precedence, ZEND_ACC_PUBLIC)
+	PHP_ME(ParleRParser, build, arginfo_parle_parser_build, ZEND_ACC_PUBLIC)
+	PHP_ME(ParleRParser, push, arginfo_parle_parser_push, ZEND_ACC_PUBLIC)
+	PHP_ME(ParleRParser, validate, arginfo_parle_parser_validate, ZEND_ACC_PUBLIC)
+	PHP_ME(ParleRParser, tokenId, arginfo_parle_parser_tokenid, ZEND_ACC_PUBLIC)
+	PHP_ME(ParleRParser, sigil, arginfo_parle_parser_sigil, ZEND_ACC_PUBLIC)
+	PHP_ME(ParleRParser, advance, arginfo_parle_parser_advance, ZEND_ACC_PUBLIC)
+	PHP_ME(ParleRParser, consume, arginfo_parle_rparser_consume, ZEND_ACC_PUBLIC)
+	PHP_ME(ParleRParser, dump, arginfo_parle_parser_dump, ZEND_ACC_PUBLIC)
+	PHP_ME(ParleRParser, trace, arginfo_parle_parser_trace, ZEND_ACC_PUBLIC)
+	PHP_ME(ParleRParser, errorInfo, arginfo_parle_parser_errorinfo, ZEND_ACC_PUBLIC)
+	PHP_FE_END
+};
+
 const zend_function_entry ParleStack_methods[] = {
 	PHP_ME(ParleStack, pop, arginfo_parle_stack_pop, ZEND_ACC_PUBLIC)
 	PHP_ME(ParleStack, push, arginfo_parle_stack_push, ZEND_ACC_PUBLIC)
@@ -1199,7 +1447,7 @@ php_parle_lexer_obj_dtor(lexer_type *zplo) noexcept
 }/*}}}*/
 
 template<typename lexer_obj_type, typename lexer_type> zend_object *
-php_parle_lexer_obj_ctor(zend_class_entry *ce) noexcept
+php_parle_lexer_obj_ctor(zend_class_entry *ce, zend_object_handlers *obj_handlers) noexcept
 {/*{{{*/
 	lexer_obj_type *zplo;
 
@@ -1207,7 +1455,7 @@ php_parle_lexer_obj_ctor(zend_class_entry *ce) noexcept
 
 	zend_object_std_init(&zplo->zo, ce);
 	object_properties_init(&zplo->zo, ce);
-	zplo->zo.handlers = &parle_lexer_handlers;
+	zplo->zo.handlers = obj_handlers;
 
 	zplo->lex = new lexer_type{};
 	zplo->lex->rules.flags(lexertl::dot_not_newline | lexertl::dot_not_cr_lf);
@@ -1329,7 +1577,7 @@ php_parle_lexer_obj_destroy(zend_object *obj) noexcept
 static zend_object *
 php_parle_lexer_object_init(zend_class_entry *ce) noexcept
 {/*{{{*/
-	return php_parle_lexer_obj_ctor<ze_parle_lexer_obj, parle::lexer::lexer>(ce);
+	return php_parle_lexer_obj_ctor<ze_parle_lexer_obj, parle::lexer::lexer>(ce, &parle_lexer_handlers);
 }/*}}}*/
 
 static zval * 
@@ -1360,7 +1608,7 @@ php_parle_rlexer_obj_destroy(zend_object *obj) noexcept
 static zend_object *
 php_parle_rlexer_object_init(zend_class_entry *ce) noexcept
 {/*{{{*/
-	return php_parle_lexer_obj_ctor<ze_parle_rlexer_obj, parle::lexer::rlexer>(ce);
+	return php_parle_lexer_obj_ctor<ze_parle_rlexer_obj, parle::lexer::rlexer>(ce, &parle_rlexer_handlers);
 }/*}}}*/
 
 static zval * 
@@ -1381,37 +1629,61 @@ php_parle_rlexer_get_properties(zval *object) noexcept
 	return php_parle_lex_get_properties<ze_parle_rlexer_obj>(object);
 }/*}}}*/
 
-static void
-php_parle_parser_obj_destroy(zend_object *obj) noexcept
+template<typename parser_type> void
+php_parle_parser_obj_dtor(parser_type *zppo) noexcept
 {/*{{{*/
-	ze_parle_parser_obj *zppo = php_parle_parser_fetch_obj(obj);
-
 	zend_object_std_dtor(&zppo->zo);
 
 	delete zppo->par;
 }/*}}}*/
 
-static zend_object *
-php_parle_parser_object_init(zend_class_entry *ce) noexcept
+template<typename parser_obj_type, typename parser_type> zend_object *
+php_parle_parser_obj_ctor(zend_class_entry *ce, zend_object_handlers *obj_handlers) noexcept
 {/*{{{*/
-	ze_parle_parser_obj *zppo;
+	parser_obj_type *zppo;
 
-	zppo = (ze_parle_parser_obj *)ecalloc(1, sizeof(ze_parle_parser_obj) + zend_object_properties_size(ce));
+	zppo = (parser_obj_type *)ecalloc(1, sizeof(parser_obj_type) + zend_object_properties_size(ce));
 
 	zend_object_std_init(&zppo->zo, ce);
 	object_properties_init(&zppo->zo, ce);
-	zppo->zo.handlers = &parle_parser_handlers;
+	zppo->zo.handlers = obj_handlers;
 
-	zppo->par = new parle::parser::parser{};
+	zppo->par = new parser_type;
 	zppo->par->lex = nullptr;
 
 	return &zppo->zo;
 }/*}}}*/
 
-static zval * 
-php_parle_parser_read_property(zval *object, zval *member, int type, void **cache_slot, zval *rv) noexcept
+static void
+php_parle_parser_obj_destroy(zend_object *obj) noexcept
 {/*{{{*/
-	ze_parle_parser_obj *zppo;
+	ze_parle_parser_obj *zppo = php_parle_parser_fetch_obj(obj);
+	php_parle_parser_obj_dtor<ze_parle_parser_obj>(zppo);
+}/*}}}*/
+
+static void
+php_parle_rparser_obj_destroy(zend_object *obj) noexcept
+{/*{{{*/
+	ze_parle_rparser_obj *zppo = php_parle_rparser_fetch_obj(obj);
+	php_parle_parser_obj_dtor<ze_parle_rparser_obj>(zppo);
+}/*}}}*/
+
+static zend_object *
+php_parle_parser_object_init(zend_class_entry *ce) noexcept
+{/*{{{*/
+	return php_parle_parser_obj_ctor<ze_parle_parser_obj, parle::parser::parser>(ce, &parle_parser_handlers);
+}/*}}}*/
+
+static zend_object *
+php_parle_rparser_object_init(zend_class_entry *ce) noexcept
+{/*{{{*/
+	return php_parle_parser_obj_ctor<ze_parle_rparser_obj, parle::parser::rparser>(ce, &parle_rparser_handlers);
+}/*}}}*/
+
+template<typename parser_obj_type> static zval * 
+php_parle_par_read_property(zval *object, zval *member, int type, void **cache_slot, zval *rv) noexcept
+{/*{{{*/
+	parser_obj_type *zppo;
 	zval tmp_member;
 	zval *retval = NULL;
 
@@ -1422,7 +1694,7 @@ php_parle_parser_read_property(zval *object, zval *member, int type, void **cach
 		cache_slot = NULL;
 	}
 
-	zppo = php_parle_parser_fetch_obj(Z_OBJ_P(object));
+	zppo = _php_parle_parser_fetch_zobj<parser_obj_type>(Z_OBJ_P(object));
 
 	auto &par = *zppo->par;
 
@@ -1446,10 +1718,22 @@ php_parle_parser_read_property(zval *object, zval *member, int type, void **cach
 	return retval;
 }/*}}}*/
 
-static void
-php_parle_parser_write_property(zval *object, zval *member, zval *value, void **cache_slot) noexcept
+static zval * 
+php_parle_parser_read_property(zval *object, zval *member, int type, void **cache_slot, zval *rv) noexcept
 {/*{{{*/
-	ze_parle_parser_obj *zppo;
+	return php_parle_par_read_property<ze_parle_parser_obj>(object, member, type, cache_slot, rv);
+}/*}}}*/
+
+static zval * 
+php_parle_rparser_read_property(zval *object, zval *member, int type, void **cache_slot, zval *rv) noexcept
+{/*{{{*/
+	return php_parle_par_read_property<ze_parle_parser_obj>(object, member, type, cache_slot, rv);
+}/*}}}*/
+
+template <typename parser_obj_type> void
+php_parle_par_write_property(zval *object, zval *member, zval *value, void **cache_slot) noexcept
+{/*{{{*/
+	parser_obj_type *zppo;
 	zval tmp_member;
 
 	if (Z_TYPE_P(member) != IS_STRING) {
@@ -1459,7 +1743,7 @@ php_parle_parser_write_property(zval *object, zval *member, zval *value, void **
 		cache_slot = NULL;
 	}
 
-	zppo = php_parle_parser_fetch_obj(Z_OBJ_P(object));
+	zppo = _php_parle_parser_fetch_zobj<parser_obj_type>(Z_OBJ_P(object));
 
 	if (strcmp(Z_STRVAL_P(member), "action") == 0) {
 		zend_throw_exception_ex(ParleParserException_ce, 0, "Cannot set readonly property $action of class %s", ZSTR_VAL(Z_OBJ_P(object)->ce->name));
@@ -1474,15 +1758,27 @@ php_parle_parser_write_property(zval *object, zval *member, zval *value, void **
 	}
 }/*}}}*/
 
-static HashTable * 
-php_parle_parser_get_properties(zval *object) noexcept
+static void
+php_parle_parser_write_property(zval *object, zval *member, zval *value, void **cache_slot) noexcept
 {/*{{{*/
-	ze_parle_parser_obj *zppo;
+	return php_parle_par_write_property<ze_parle_parser_obj>(object, member, value, cache_slot);
+}/*}}}*/
+
+static void
+php_parle_rparser_write_property(zval *object, zval *member, zval *value, void **cache_slot) noexcept
+{/*{{{*/
+	return php_parle_par_write_property<ze_parle_rparser_obj>(object, member, value, cache_slot);
+}/*}}}*/
+
+template <typename parser_obj_type> HashTable *
+php_parle_par_get_properties(zval *object) noexcept
+{/*{{{*/
+	parser_obj_type *zppo;
 	HashTable *props;
 	zval zv;
 
 	props = zend_std_get_properties(object);
-	zppo = php_parle_parser_fetch_obj(Z_OBJ_P(object));
+	zppo = _php_parle_parser_fetch_zobj<parser_obj_type>(Z_OBJ_P(object));
 
 	auto &par = *zppo->par;
 
@@ -1496,6 +1792,18 @@ php_parle_parser_get_properties(zval *object) noexcept
 	zend_hash_str_update(props, "reduceId", sizeof("reduceId")-1, &zv);
 
 	return props;
+}/*}}}*//*}}}*/
+
+static HashTable * 
+php_parle_parser_get_properties(zval *object) noexcept
+{/*{{{*/
+	return php_parle_par_get_properties<ze_parle_parser_obj>(object);
+}/*}}}*/
+
+static HashTable * 
+php_parle_rparser_get_properties(zval *object) noexcept
+{/*{{{*/
+	return php_parle_par_get_properties<ze_parle_rparser_obj>(object);
 }/*}}}*/
 
 static void
@@ -1760,6 +2068,18 @@ PHP_MINIT_FUNCTION(parle)
 	zend_declare_property_long(ParleParser_ce, "reduceId", sizeof("reduceId")-1, 0, ZEND_ACC_PUBLIC);
 	ParleParser_ce->serialize = zend_class_serialize_deny;
 	ParleParser_ce->unserialize = zend_class_unserialize_deny;
+
+	memcpy(&parle_rparser_handlers, zend_get_std_object_handlers(), sizeof(zend_object_handlers));
+	parle_rparser_handlers.clone_obj = NULL;
+	parle_rparser_handlers.offset = XtOffsetOf(ze_parle_rparser_obj, zo);
+	parle_rparser_handlers.free_obj = php_parle_rparser_obj_destroy;
+	parle_rparser_handlers.read_property = php_parle_rparser_read_property;
+	parle_rparser_handlers.write_property = php_parle_rparser_write_property;
+	parle_rparser_handlers.get_properties = php_parle_rparser_get_properties;
+	parle_rparser_handlers.get_property_ptr_ptr = NULL;
+	INIT_CLASS_ENTRY(ce, "Parle\\RParser", ParleRParser_methods);
+	ParleRParser_ce = zend_register_internal_class(&ce);
+	ParleRParser_ce->create_object = php_parle_rparser_object_init;
 
 	memcpy(&parle_stack_handlers, zend_get_std_object_handlers(), sizeof(zend_object_handlers));
 	parle_stack_handlers.clone_obj = NULL;
