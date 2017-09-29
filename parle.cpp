@@ -995,7 +995,7 @@ _parser_consume(INTERNAL_FUNCTION_PARAMETERS, zend_class_entry *par_ce, zend_cla
 	}
 
 	zppo = _php_parle_parser_fetch_zobj<parser_obj_type>(Z_OBJ_P(me));
-	zplo = _php_parle_lexer_fetch_zobj<lexer_obj_type>(Z_OBJ_P(me));
+	zplo = _php_parle_lexer_fetch_zobj<lexer_obj_type>(Z_OBJ_P(lex));
 
 	try {
 		auto &par = *zppo->par;
@@ -1305,6 +1305,13 @@ PARLE_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(arginfo_parle_parser_push, 0, 2, IS_LON
 ZEND_END_ARG_INFO();
 
 PARLE_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(arginfo_parle_parser_validate, 0, 0, _IS_BOOL, 0)
+	ZEND_ARG_TYPE_INFO(0, data, IS_STRING, 0)
+	ZEND_ARG_OBJ_INFO(0, lexer, Parle\\Lexer, 0)
+ZEND_END_ARG_INFO();
+
+PARLE_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(arginfo_parle_rparser_validate, 0, 0, _IS_BOOL, 0)
+	ZEND_ARG_TYPE_INFO(0, data, IS_STRING, 0)
+	ZEND_ARG_OBJ_INFO(0, lexer, Parle\\RLexer, 0)
 ZEND_END_ARG_INFO();
 
 PARLE_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(arginfo_parle_parser_tokenid, 0, 1, IS_LONG, 0)
@@ -1320,12 +1327,12 @@ ZEND_END_ARG_INFO();
 
 ZEND_BEGIN_ARG_INFO_EX(arginfo_parle_parser_consume, 0, 0, 2)
 	ZEND_ARG_TYPE_INFO(0, data, IS_STRING, 0)
-	ZEND_ARG_INFO(0, lexer) /* Parle\Lexer or a derivative. */
+	ZEND_ARG_OBJ_INFO(0, lexer, Parle\\Lexer, 0)
 ZEND_END_ARG_INFO();
 
 ZEND_BEGIN_ARG_INFO_EX(arginfo_parle_rparser_consume, 0, 0, 2)
 	ZEND_ARG_TYPE_INFO(0, data, IS_STRING, 0)
-	ZEND_ARG_INFO(0, lexer) /* Parle\Lexer or a derivative. */
+	ZEND_ARG_OBJ_INFO(0, lexer, Parle\\RLexer, 0)
 ZEND_END_ARG_INFO();
 
 ZEND_BEGIN_ARG_INFO_EX(arginfo_parle_parser_dump, 0, 0, 0)
@@ -1419,7 +1426,7 @@ const zend_function_entry ParleRParser_methods[] = {
 	PHP_ME(ParleRParser, precedence, arginfo_parle_parser_precedence, ZEND_ACC_PUBLIC)
 	PHP_ME(ParleRParser, build, arginfo_parle_parser_build, ZEND_ACC_PUBLIC)
 	PHP_ME(ParleRParser, push, arginfo_parle_parser_push, ZEND_ACC_PUBLIC)
-	PHP_ME(ParleRParser, validate, arginfo_parle_parser_validate, ZEND_ACC_PUBLIC)
+	PHP_ME(ParleRParser, validate, arginfo_parle_rparser_validate, ZEND_ACC_PUBLIC)
 	PHP_ME(ParleRParser, tokenId, arginfo_parle_parser_tokenid, ZEND_ACC_PUBLIC)
 	PHP_ME(ParleRParser, sigil, arginfo_parle_parser_sigil, ZEND_ACC_PUBLIC)
 	PHP_ME(ParleRParser, advance, arginfo_parle_parser_advance, ZEND_ACC_PUBLIC)
