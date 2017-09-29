@@ -971,7 +971,7 @@ _parser_advance(INTERNAL_FUNCTION_PARAMETERS, zend_class_entry *ce) noexcept
 /* {{{ public void Parser::advance(void) */
 PHP_METHOD(ParleParser, advance)
 {
-	_parser_advance<ze_parle_parser_obj>(INTERNAL_FUNCTION_PARAM_PASSTHRU, ParleRParser_ce);
+	_parser_advance<ze_parle_parser_obj>(INTERNAL_FUNCTION_PARAM_PASSTHRU, ParleParser_ce);
 }
 /* }}} */
 
