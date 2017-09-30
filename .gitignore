@@ -27,12 +27,12 @@ missing
 mkinstalldirs
 modules
 run-tests.php
-tests/*/*.diff
-tests/*/*.out
-tests/*/*.php
-tests/*/*.exp
-tests/*/*.log
-tests/*/*.sh
+tests/*.diff
+tests/*.out
+tests/*.php
+tests/*.exp
+tests/*.log
+tests/*.sh
 config.nice.bat
 configure.bat
 configure.js
@@ -41,3 +41,7 @@ Release
 Release_TS
 Debug
 Debug_TS
+*.patch
+*.diff
+*.tmp
+*.swp
