@@ -226,6 +226,17 @@ php_parle_parser_stack_fetch_obj(zend_object *obj) noexcept
 	return (ze_parle_stack_obj *)((char *)obj - XtOffsetOf(ze_parle_stack_obj, zo));
 }/*}}}*/
 
+static void
+php_parle_rethrow_from_cpp(zend_class_entry *ce, const char *msg, zend_long code)
+{/*{{{*/
+#if 0
+	const char *m = estrdup(msg);
+	zend_throw_exception_ex(ce, code, "%s", m);
+	efree((void *)m);
+#endif
+	zend_throw_exception_ex(ce, code, "%s", msg);
+}/*}}}*/
+
 /* {{{ public void Lexer::push(...) */
 PHP_METHOD(ParleLexer, push)
 {
@@ -246,7 +257,7 @@ PHP_METHOD(ParleLexer, push)
 		if (user_id < 0) user_id = lex.results.npos();
 		lex.rules.push(ZSTR_VAL(regex), static_cast<parle::id_type>(id), static_cast<parle::id_type>(user_id));
 	} catch (const std::exception &e) {
-		zend_throw_exception(ParleLexerException_ce, e.what(), 0);
+		php_parle_rethrow_from_cpp(ParleLexerException_ce, e.what(), 0);
 	}
 }
 /* }}} */
@@ -281,7 +292,7 @@ PHP_METHOD(ParleRLexer, push)
 			zend_throw_exception(ParleLexerException_ce, "Couldn't match the method signature", 0);
 		}
 	} catch (const std::exception &e) {
-		zend_throw_exception(ParleLexerException_ce, e.what(), 0);
+		php_parle_rethrow_from_cpp(ParleLexerException_ce, e.what(), 0);
 	}
 #undef PREPARE_PUSH
 }
@@ -304,7 +315,7 @@ _lexer_build(INTERNAL_FUNCTION_PARAMETERS, zend_class_entry *ce) noexcept
 	try {
 		parle::lexer::generator::build(lex.rules, lex.sm);
 	} catch (const std::exception &e) {
-		zend_throw_exception(ParleLexerException_ce, e.what(), 0);
+		php_parle_rethrow_from_cpp(ParleLexerException_ce, e.what(), 0);
 	}
 }/*}}}*/
 
@@ -342,7 +353,7 @@ _lexer_consume(INTERNAL_FUNCTION_PARAMETERS, zend_class_entry *ce) noexcept
 		lex.in = std::string{in};
 		lex.results.reset(lex.in.begin(), lex.in.end());
 	} catch (const std::exception &e) {
-		zend_throw_exception(ParleLexerException_ce, e.what(), 0);
+		php_parle_rethrow_from_cpp(ParleLexerException_ce, e.what(), 0);
 	}
 }/*}}}*/
 
@@ -378,7 +389,7 @@ PHP_METHOD(ParleRLexer, pushState)
 		auto &rules = zplo->lex->rules;
 		RETURN_LONG(rules.push_state(state));
 	} catch (const std::exception &e) {
-		zend_throw_exception(ParleLexerException_ce, e.what(), 0);
+		php_parle_rethrow_from_cpp(ParleLexerException_ce, e.what(), 0);
 	}
 }
 /* }}} */
@@ -409,7 +420,7 @@ _lexer_token(INTERNAL_FUNCTION_PARAMETERS, zend_class_entry *ce) noexcept
 #endif
 
 	} catch (const std::exception &e) {
-		zend_throw_exception(ParleLexerException_ce, e.what(), 0);
+		php_parle_rethrow_from_cpp(ParleLexerException_ce, e.what(), 0);
 	}
 }/*}}}*/
 
@@ -443,7 +454,7 @@ _lexer_advance(INTERNAL_FUNCTION_PARAMETERS, zend_class_entry *ce) noexcept
 		auto &lex = *zplo->lex;
 		lexertl::lookup(lex.sm, lex.results);
 	} catch (const std::exception &e) {
-		zend_throw_exception(ParleLexerException_ce, e.what(), 0);
+		php_parle_rethrow_from_cpp(ParleLexerException_ce, e.what(), 0);
 	}
 }/*}}}*/
 
@@ -515,7 +526,7 @@ _lexer_macro(INTERNAL_FUNCTION_PARAMETERS, zend_class_entry *ce) noexcept
 		auto &lex = *zplo->lex;
 		lex.rules.insert_macro(ZSTR_VAL(name), ZSTR_VAL(regex));
 	} catch (const std::exception &e) {
-		zend_throw_exception(ParleLexerException_ce, e.what(), 0);
+		php_parle_rethrow_from_cpp(ParleLexerException_ce, e.what(), 0);
 	}
 }/*}}}*/
 
@@ -552,7 +563,7 @@ _lexer_dump(INTERNAL_FUNCTION_PARAMETERS, zend_class_entry *ce) noexcept
 			descriptor from the SAPI and convert to a usable stream. */
 		parle::lexer::debug::dump(lex.sm, lex.rules, std::cout);
 	} catch (const std::exception &e) {
-		zend_throw_exception(ParleLexerException_ce, e.what(), 0);
+		php_parle_rethrow_from_cpp(ParleLexerException_ce, e.what(), 0);
 	}
 }
  /* }}} */
@@ -589,7 +600,7 @@ _parser_token(INTERNAL_FUNCTION_PARAMETERS, zend_class_entry *ce) noexcept
 		auto &rules = zppo->par->rules;
 		rules.token(ZSTR_VAL(tok));
 	} catch (const std::exception &e) {
-		zend_throw_exception(ParleParserException_ce, e.what(), 0);
+		php_parle_rethrow_from_cpp(ParleParserException_ce, e.what(), 0);
 	}
 }/*}}}*/
 
@@ -624,7 +635,7 @@ _parser_left(INTERNAL_FUNCTION_PARAMETERS, zend_class_entry *ce) noexcept
 		auto &rules = zppo->par->rules;
 		rules.left(ZSTR_VAL(tok));
 	} catch (const std::exception &e) {
-		zend_throw_exception(ParleParserException_ce, e.what(), 0);
+		php_parle_rethrow_from_cpp(ParleParserException_ce, e.what(), 0);
 	}
 }/*}}}*/
 
@@ -660,7 +671,7 @@ _parser_right(INTERNAL_FUNCTION_PARAMETERS, zend_class_entry *ce) noexcept
 		auto &rules = zppo->par->rules;
 		rules.right(ZSTR_VAL(tok));
 	} catch (const std::exception &e) {
-		zend_throw_exception(ParleParserException_ce, e.what(), 0);
+		php_parle_rethrow_from_cpp(ParleParserException_ce, e.what(), 0);
 	}
 }/*}}}*/
 
@@ -695,7 +706,7 @@ _parser_precedence(INTERNAL_FUNCTION_PARAMETERS, zend_class_entry *ce) noexcept
 		auto &rules = zppo->par->rules;
 		rules.precedence(ZSTR_VAL(tok));
 	} catch (const std::exception &e) {
-		zend_throw_exception(ParleParserException_ce, e.what(), 0);
+		php_parle_rethrow_from_cpp(ParleParserException_ce, e.what(), 0);
 	}
 }/*}}}*/
 
@@ -730,7 +741,7 @@ _parser_nonassoc(INTERNAL_FUNCTION_PARAMETERS, zend_class_entry *ce) noexcept
 		auto &rules = zppo->par->rules;
 		rules.nonassoc(ZSTR_VAL(tok));
 	} catch (const std::exception &e) {
-		zend_throw_exception(ParleParserException_ce, e.what(), 0);
+		php_parle_rethrow_from_cpp(ParleParserException_ce, e.what(), 0);
 	}
 }/*}}}*/
 
@@ -764,7 +775,7 @@ _parser_build(INTERNAL_FUNCTION_PARAMETERS, zend_class_entry *ce) noexcept
 		auto &par = *zppo->par;
 		parle::parser::generator::build(par.rules, par.sm);
 	} catch (const std::exception &e) {
-		zend_throw_exception(ParleParserException_ce, e.what(), 0);
+		php_parle_rethrow_from_cpp(ParleParserException_ce, e.what(), 0);
 	}
 }/*}}}*/
 
@@ -799,7 +810,7 @@ _parser_push(INTERNAL_FUNCTION_PARAMETERS, zend_class_entry *ce) noexcept
 		auto &rules = zppo->par->rules;
 		RETURN_LONG(static_cast<zend_long>(rules.push(ZSTR_VAL(lhs), ZSTR_VAL(rhs))));
 	} catch (const std::exception &e) {
-		zend_throw_exception(ParleParserException_ce, e.what(), 0);
+		php_parle_rethrow_from_cpp(ParleParserException_ce, e.what(), 0);
 	}
 }/*}}}*/
 
@@ -851,7 +862,7 @@ _parser_validate(INTERNAL_FUNCTION_PARAMETERS, zend_class_entry *par_ce, zend_cl
 
 		RETURN_BOOL(parsertl::parse(par.sm, iter, results));
 	} catch (const std::exception &e) {
-		zend_throw_exception(ParleParserException_ce, e.what(), 0);
+		php_parle_rethrow_from_cpp(ParleParserException_ce, e.what(), 0);
 	}
 
 	RETURN_FALSE
@@ -888,7 +899,7 @@ _parser_tokenId(INTERNAL_FUNCTION_PARAMETERS, zend_class_entry *ce) noexcept
 		auto &rules = zppo->par->rules;
 		RETURN_LONG(rules.token_id(ZSTR_VAL(nom)));
 	} catch (const std::exception &e) {
-		zend_throw_exception(ParleParserException_ce, e.what(), 0);
+		php_parle_rethrow_from_cpp(ParleParserException_ce, e.what(), 0);
 	}
 }/*}}}*/
 
@@ -936,7 +947,7 @@ _parser_sigil(INTERNAL_FUNCTION_PARAMETERS, zend_class_entry *ce) noexcept
 		const char *in = lex.in.c_str();
 		RETURN_STRINGL(in + start_pos, ret.second - ret.first);
 	} catch (const std::exception &e) {
-		zend_throw_exception(ParleParserException_ce, e.what(), 0);
+		php_parle_rethrow_from_cpp(ParleParserException_ce, e.what(), 0);
 	}
 }/*}}}*/
 
@@ -982,7 +993,7 @@ _parser_advance(INTERNAL_FUNCTION_PARAMETERS, zend_class_entry *ce) noexcept
 		parsertl::lookup(par.sm, lex.iter, par.results, par.productions);
 		lex.results = *lex.iter;
 	} catch (const std::exception &e) {
-		zend_throw_exception(ParleParserException_ce, e.what(), 0);
+		php_parle_rethrow_from_cpp(ParleParserException_ce, e.what(), 0);
 	}
 }/*}}}*/
 
@@ -1033,7 +1044,7 @@ _parser_consume(INTERNAL_FUNCTION_PARAMETERS, zend_class_entry *par_ce, zend_cla
 		par.productions = prod_type{};
 		par.results = parle::parser::match_results{lex.iter->id, par.sm};
 	} catch (const std::exception &e) {
-		zend_throw_exception(ParleLexerException_ce, e.what(), 0);
+		php_parle_rethrow_from_cpp(ParleLexerException_ce, e.what(), 0);
 	}
 }/*}}}*/
 
@@ -1068,7 +1079,7 @@ _parser_dump(INTERNAL_FUNCTION_PARAMETERS, zend_class_entry *ce) noexcept
 		/* XXX See comment in _lexer_dump(). */
 		parsertl::debug::dump(par.rules, std::cout);
 	} catch (const std::exception &e) {
-		zend_throw_exception(ParleLexerException_ce, e.what(), 0);
+		php_parle_rethrow_from_cpp(ParleLexerException_ce, e.what(), 0);
 	}
 }/*}}}*/
 
@@ -1137,7 +1148,7 @@ _parser_trace(INTERNAL_FUNCTION_PARAMETERS, zend_class_entry *ce) noexcept
 				break;
 		}
 	} catch (const std::exception &e) {
-		zend_throw_exception(ParleLexerException_ce, e.what(), 0);
+		php_parle_rethrow_from_cpp(ParleLexerException_ce, e.what(), 0);
 	}
 }/*}}}*/
 
@@ -1193,7 +1204,7 @@ _parser_errorinfo(INTERNAL_FUNCTION_PARAMETERS, zend_class_entry *ce) noexcept
 		add_property_zval_ex(return_value, "token", sizeof("token")-1, &token);
 		/* TODO provide details also for other error types, if possible. */
 	} catch (const std::exception &e) {
-		zend_throw_exception(ParleLexerException_ce, e.what(), 0);
+		php_parle_rethrow_from_cpp(ParleLexerException_ce, e.what(), 0);
 	}
 }/*}}}*/
 
@@ -1733,7 +1744,7 @@ php_parle_par_read_property(zval *object, zval *member, int type, void **cache_s
 		try {
 			ZVAL_LONG(retval, par.results.reduce_id());
 		} catch (const std::exception &e) {
-			zend_throw_exception(ParleParserException_ce, e.what(), 0);
+			php_parle_rethrow_from_cpp(ParleParserException_ce, e.what(), 0);
 		}
 	} else {
 		retval = (zend_get_std_object_handlers())->read_property(object, member, type, cache_slot, rv);
