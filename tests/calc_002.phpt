@@ -8,7 +8,7 @@ Advanced calc with state
 use Parle\Parser;
 use Parle\Stack;
 use Parle\ParserException;
-use Parle\RLexer;
+use Parle\Lexer;
 use Parle\Token;
 
 $p = new Parser;
@@ -29,7 +29,7 @@ $int_idx = $p->push("exp", "INTEGER");
 
 $p->build();
 
-$lex = new RLexer;
+$lex = new Lexer;
 $lex->push("[+]", $p->tokenId("'+'"));
 $lex->push("[-]", $p->tokenId("'-'"));
 $lex->push("[*]", $p->tokenId("'*'"));

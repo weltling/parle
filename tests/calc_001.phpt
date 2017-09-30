@@ -5,12 +5,12 @@ Simple stackless calc
 --FILE--
 <?php 
 
-use Parle\Parser;
+use Parle\RParser;
 use Parle\ParserException;
 use Parle\RLexer;
 use Parle\Token;
 
-$p = new Parser;
+$p = new RParser;
 $p->token("INTEGER");
 $p->left("'+' '-' '*' '/'");
 
@@ -47,16 +47,16 @@ foreach ($exp as $in) {
 
 	$p->consume($in, $lex);
 
-	while (Parser::ACTION_ERROR != $p->action && Parser::ACTION_ACCEPT != $p->action) {
+	while (RParser::ACTION_ERROR != $p->action && RParser::ACTION_ACCEPT != $p->action) {
 		switch ($p->action) {
-			case Parser::ACTION_ERROR:
+			case RParser::ACTION_ERROR:
 				throw new ParserException("Parser error");
 				break;
-			case Parser::ACTION_SHIFT:
-			case Parser::ACTION_GOTO:
-			case Parser::ACTION_ACCEPT:
+			case RParser::ACTION_SHIFT:
+			case RParser::ACTION_GOTO:
+			case RParser::ACTION_ACCEPT:
 				break;
-			case Parser::ACTION_REDUCE:
+			case RParser::ACTION_REDUCE:
 				switch ($p->reduceId) {
 					case $add_idx:
 						$l = $p->sigil(0);

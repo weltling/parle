@@ -2031,6 +2031,23 @@ PHP_MINIT_FUNCTION(parle)
 	zend_declare_property_long(ParleToken_ce, "id", sizeof("id")-1, static_cast<zend_long>(lexertl::smatch::npos()), ZEND_ACC_PUBLIC);
 	zend_declare_property_null(ParleToken_ce, "value", sizeof("value")-1, ZEND_ACC_PUBLIC);
 
+	auto init_lexer_consts_and_props = [](zend_class_entry *ce) {
+#define DECL_CONST(name, val) zend_declare_class_constant_long(ce, name, sizeof(name) - 1, val);
+		DECL_CONST("ICASE", lexertl::icase)
+		DECL_CONST("DOT_NOT_LF", lexertl::dot_not_newline)
+		DECL_CONST("DOT_NOT_CRLF", lexertl::dot_not_cr_lf)
+		DECL_CONST("SKIP_WS", lexertl::skip_ws)
+		DECL_CONST("MATCH_ZERO_LEN", lexertl::match_zero_len)
+#undef DECL_CONST
+		zend_declare_property_bool(ce, "bol", sizeof("bol")-1, 0, ZEND_ACC_PUBLIC);
+		zend_declare_property_long(ce, "flags", sizeof("flags")-1, 0, ZEND_ACC_PUBLIC);
+		zend_declare_property_long(ce, "state", sizeof("state")-1, 0, ZEND_ACC_PUBLIC);
+		zend_declare_property_long(ce, "marker", sizeof("marker")-1, Z_L(-1), ZEND_ACC_PUBLIC);
+		zend_declare_property_long(ce, "cursor", sizeof("cursor")-1, Z_L(-1), ZEND_ACC_PUBLIC);
+		ce->serialize = zend_class_serialize_deny;
+		ce->unserialize = zend_class_unserialize_deny;
+	};
+
 	memcpy(&parle_lexer_handlers, zend_get_std_object_handlers(), sizeof(zend_object_handlers));
 	parle_lexer_handlers.clone_obj = NULL;
 	parle_lexer_handlers.offset = XtOffsetOf(ze_parle_lexer_obj, zo);
@@ -2041,21 +2058,8 @@ PHP_MINIT_FUNCTION(parle)
 	parle_lexer_handlers.get_property_ptr_ptr = NULL;
 	INIT_CLASS_ENTRY(ce, "Parle\\Lexer", ParleLexer_methods);
 	ce.create_object = php_parle_lexer_object_init;
-	ce.serialize = zend_class_serialize_deny;
-	ce.unserialize = zend_class_unserialize_deny;
 	ParleLexer_ce = zend_register_internal_class(&ce);
-#define DECL_CONST(name, val) zend_declare_class_constant_long(ParleLexer_ce, name, sizeof(name) - 1, val);
-	DECL_CONST("ICASE", lexertl::icase)
-	DECL_CONST("DOT_NOT_LF", lexertl::dot_not_newline)
-	DECL_CONST("DOT_NOT_CRLF", lexertl::dot_not_cr_lf)
-	DECL_CONST("SKIP_WS", lexertl::skip_ws)
-	DECL_CONST("MATCH_ZERO_LEN", lexertl::match_zero_len)
-#undef DECL_CONST
-	zend_declare_property_bool(ParleLexer_ce, "bol", sizeof("bol")-1, 0, ZEND_ACC_PUBLIC);
-	zend_declare_property_long(ParleLexer_ce, "flags", sizeof("flags")-1, 0, ZEND_ACC_PUBLIC);
-	zend_declare_property_long(ParleLexer_ce, "state", sizeof("state")-1, 0, ZEND_ACC_PUBLIC);
-	zend_declare_property_long(ParleLexer_ce, "marker", sizeof("marker")-1, Z_L(-1), ZEND_ACC_PUBLIC);
-	zend_declare_property_long(ParleLexer_ce, "cursor", sizeof("cursor")-1, Z_L(-1), ZEND_ACC_PUBLIC);
+	init_lexer_consts_and_props(ParleLexer_ce);
 
 	memcpy(&parle_rlexer_handlers, zend_get_std_object_handlers(), sizeof(zend_object_handlers));
 	parle_rlexer_handlers.clone_obj = NULL;
@@ -2066,10 +2070,26 @@ PHP_MINIT_FUNCTION(parle)
 	parle_rlexer_handlers.get_properties = php_parle_rlexer_get_properties;
 	parle_rlexer_handlers.get_property_ptr_ptr = NULL;
 	INIT_CLASS_ENTRY(ce, "Parle\\RLexer", ParleRLexer_methods);
-	//ce.create_object = php_parle_rlexer_object_init;
-	ParleRLexer_ce = zend_register_internal_class_ex(&ce, ParleLexer_ce);
-	// Hack over do_inherit_parent_constructor, create_object is unconditionally overridden.
-	ParleRLexer_ce->create_object = php_parle_rlexer_object_init;
+	ce.create_object = php_parle_rlexer_object_init;
+	ParleRLexer_ce = zend_register_internal_class(&ce);
+	init_lexer_consts_and_props(ParleRLexer_ce);
+
+	auto init_parser_consts_and_props = [](zend_class_entry *ce) {
+#define DECL_CONST(name, val) zend_declare_class_constant_long(ce, name, sizeof(name) - 1, val);
+		DECL_CONST("ACTION_ERROR", parsertl::error)
+		DECL_CONST("ACTION_SHIFT", parsertl::shift)
+		DECL_CONST("ACTION_REDUCE", parsertl::reduce)
+		DECL_CONST("ACTION_GOTO", parsertl::go_to)
+		DECL_CONST("ACTION_ACCEPT", parsertl::accept)
+		DECL_CONST("ERROR_SYNTAX", parsertl::syntax_error)
+		DECL_CONST("ERROR_NON_ASSOCIATIVE", parsertl::non_associative)
+		DECL_CONST("ERROR_UNKOWN_TOKEN", parsertl::unknown_token)
+#undef DECL_CONST
+		zend_declare_property_long(ce, "action", sizeof("action")-1, 0, ZEND_ACC_PUBLIC);
+		zend_declare_property_long(ce, "reduceId", sizeof("reduceId")-1, 0, ZEND_ACC_PUBLIC);
+		ce->serialize = zend_class_serialize_deny;
+		ce->unserialize = zend_class_unserialize_deny;
+	};
 
 	memcpy(&parle_parser_handlers, zend_get_std_object_handlers(), sizeof(zend_object_handlers));
 	parle_parser_handlers.clone_obj = NULL;
@@ -2082,20 +2102,7 @@ PHP_MINIT_FUNCTION(parle)
 	INIT_CLASS_ENTRY(ce, "Parle\\Parser", ParleParser_methods);
 	ce.create_object = php_parle_parser_object_init;
 	ParleParser_ce = zend_register_internal_class(&ce);
-#define DECL_CONST(name, val) zend_declare_class_constant_long(ParleParser_ce, name, sizeof(name) - 1, val);
-	DECL_CONST("ACTION_ERROR", parsertl::error)
-	DECL_CONST("ACTION_SHIFT", parsertl::shift)
-	DECL_CONST("ACTION_REDUCE", parsertl::reduce)
-	DECL_CONST("ACTION_GOTO", parsertl::go_to)
-	DECL_CONST("ACTION_ACCEPT", parsertl::accept)
-	DECL_CONST("ERROR_SYNTAX", parsertl::syntax_error)
-	DECL_CONST("ERROR_NON_ASSOCIATIVE", parsertl::non_associative)
-	DECL_CONST("ERROR_UNKOWN_TOKEN", parsertl::unknown_token)
-#undef DECL_CONST
-	zend_declare_property_long(ParleParser_ce, "action", sizeof("action")-1, 0, ZEND_ACC_PUBLIC);
-	zend_declare_property_long(ParleParser_ce, "reduceId", sizeof("reduceId")-1, 0, ZEND_ACC_PUBLIC);
-	ParleParser_ce->serialize = zend_class_serialize_deny;
-	ParleParser_ce->unserialize = zend_class_unserialize_deny;
+	init_parser_consts_and_props(ParleParser_ce);
 
 	memcpy(&parle_rparser_handlers, zend_get_std_object_handlers(), sizeof(zend_object_handlers));
 	parle_rparser_handlers.clone_obj = NULL;
@@ -2106,8 +2113,9 @@ PHP_MINIT_FUNCTION(parle)
 	parle_rparser_handlers.get_properties = php_parle_rparser_get_properties;
 	parle_rparser_handlers.get_property_ptr_ptr = NULL;
 	INIT_CLASS_ENTRY(ce, "Parle\\RParser", ParleRParser_methods);
+	ce.create_object = php_parle_rparser_object_init;
 	ParleRParser_ce = zend_register_internal_class(&ce);
-	ParleRParser_ce->create_object = php_parle_rparser_object_init;
+	init_parser_consts_and_props(ParleRParser_ce);
 
 	memcpy(&parle_stack_handlers, zend_get_std_object_handlers(), sizeof(zend_object_handlers));
 	parle_stack_handlers.clone_obj = NULL;
