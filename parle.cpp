@@ -836,6 +836,14 @@ _parser_validate(INTERNAL_FUNCTION_PARAMETERS, zend_class_entry *par_ce, zend_cl
 		auto &lex = *zplo->lex;
 		auto &par = *zppo->par;
 
+		if (lex.sm.empty()) {
+			zend_throw_exception(ParleLexerException_ce, "Lexer state machine is empty", 0);
+			return;
+		} else if (par.sm.empty()) {
+			zend_throw_exception(ParleParserException_ce, "Parser state machine is empty", 0);
+			return;
+		}
+
 		iter_type iter(ZSTR_VAL(in), ZSTR_VAL(in) + ZSTR_LEN(in), lex.sm);
 		
 		/* Since it's not more than parse, nothing is saved into the object. */
@@ -961,6 +969,16 @@ _parser_advance(INTERNAL_FUNCTION_PARAMETERS, zend_class_entry *ce) noexcept
 	try {
 		auto &par = *zppo->par;
 		auto &lex = *par.lex;
+		if (nullptr == par.lex) {
+			zend_throw_exception(ParleLexerException_ce, "No Lexer supplied", 0);
+			return;
+		} else if (lex.sm.empty()) {
+			zend_throw_exception(ParleLexerException_ce, "Lexer state machine is empty", 0);
+			return;
+		} else if (par.sm.empty()) {
+			zend_throw_exception(ParleParserException_ce, "Parser state machine is empty", 0);
+			return;
+		}
 		parsertl::lookup(par.sm, lex.iter, par.results, par.productions);
 		lex.results = *lex.iter;
 	} catch (const std::exception &e) {
@@ -1003,6 +1021,9 @@ _parser_consume(INTERNAL_FUNCTION_PARAMETERS, zend_class_entry *par_ce, zend_cla
 		auto &lex = *par.lex;
 		if (lex.sm.empty()) {
 			zend_throw_exception(ParleLexerException_ce, "Lexer state machine is empty", 0);
+			return;
+		} else if (par.sm.empty()) {
+			zend_throw_exception(ParleParserException_ce, "Parser state machine is empty", 0);
 			return;
 		}
 		lex.in = ZSTR_VAL(in);
