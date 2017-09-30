@@ -1498,6 +1498,7 @@ php_parle_lexer_obj_ctor(zend_class_entry *ce, zend_object_handlers *obj_handler
 
 	zplo->lex = new lexer_type{};
 	zplo->lex->rules.flags(lexertl::dot_not_newline | lexertl::dot_not_cr_lf);
+	zplo->lex->par = nullptr;
 
 	return &zplo->zo;
 }/*}}}*/
