@@ -1669,6 +1669,60 @@ php_parle_rlexer_get_properties(zval *object) noexcept
 	return php_parle_lex_get_properties<ze_parle_rlexer_obj>(object);
 }/*}}}*/
 
+template <typename lexer_obj_type> static int
+php_parle_lex_has_property(zval *object, zval *member, int type, void **cache_slot)
+{/*{{{*/
+	zval tmp_member, rv, *prop;
+	int retval = 0;
+
+	if (Z_TYPE_P(member) != IS_STRING) {
+		ZVAL_COPY(&tmp_member, member);
+		convert_to_string(&tmp_member);
+		member = &tmp_member;
+		cache_slot = NULL;
+	}
+
+    prop = php_parle_lex_read_property<lexer_obj_type>(object, member, BP_VAR_IS, cache_slot, &rv);
+
+	if (prop != &EG(uninitialized_zval)) {
+		if (type == 2) {
+			retval = 1;
+		} else if (type == 1) {
+			retval = zend_is_true(prop);
+		} else if (type == 0) {
+			retval = (Z_TYPE(*prop) != IS_NULL);
+		}
+	} else {
+		retval = (zend_get_std_object_handlers())->has_property(object, member, type, cache_slot);
+	}
+
+	if (member == &tmp_member) {
+		zval_dtor(member);
+	}
+
+	return retval;
+}/*}}}*/
+
+static int
+php_parle_lexer_has_property(zval *object, zval *member, int type, void **cache_slot)
+{/*{{{*/
+	return php_parle_lex_has_property<ze_parle_lexer_obj>(object, member, type, cache_slot);
+}/*}}}*/
+
+static int
+php_parle_rlexer_has_property(zval *object, zval *member, int type, void **cache_slot)
+{/*{{{*/
+	return php_parle_lex_has_property<ze_parle_rlexer_obj>(object, member, type, cache_slot);
+}/*}}}*/
+
+static HashTable *
+php_parle_lex_get_gc(zval *object, zval **gc_data, int *gc_data_count)
+{/*{{{*/
+	*gc_data = NULL;
+	*gc_data_count = 0;
+	return zend_std_get_properties(object);
+}/*}}}*/
+
 template<typename parser_type> void
 php_parle_parser_obj_dtor(parser_type *zppo) noexcept
 {/*{{{*/
@@ -1846,6 +1900,60 @@ php_parle_rparser_get_properties(zval *object) noexcept
 	return php_parle_par_get_properties<ze_parle_rparser_obj>(object);
 }/*}}}*/
 
+template <typename parser_obj_type> static int
+php_parle_par_has_property(zval *object, zval *member, int type, void **cache_slot)
+{/*{{{*/
+	zval tmp_member, rv, *prop;
+	int retval = 0;
+
+	if (Z_TYPE_P(member) != IS_STRING) {
+		ZVAL_COPY(&tmp_member, member);
+		convert_to_string(&tmp_member);
+		member = &tmp_member;
+		cache_slot = NULL;
+	}
+
+    prop = php_parle_par_read_property<parser_obj_type>(object, member, BP_VAR_IS, cache_slot, &rv);
+
+	if (prop != &EG(uninitialized_zval)) {
+		if (type == 2) {
+			retval = 1;
+		} else if (type == 1) {
+			retval = zend_is_true(prop);
+		} else if (type == 0) {
+			retval = (Z_TYPE(*prop) != IS_NULL);
+		}
+	} else {
+		retval = (zend_get_std_object_handlers())->has_property(object, member, type, cache_slot);
+	}
+
+	if (member == &tmp_member) {
+		zval_dtor(member);
+	}
+
+	return retval;
+}/*}}}*/
+
+static int
+php_parle_parser_has_property(zval *object, zval *member, int type, void **cache_slot)
+{/*{{{*/
+	return php_parle_par_has_property<ze_parle_parser_obj>(object, member, type, cache_slot);
+}/*}}}*/
+
+static int
+php_parle_rparser_has_property(zval *object, zval *member, int type, void **cache_slot)
+{/*{{{*/
+	return php_parle_par_has_property<ze_parle_rparser_obj>(object, member, type, cache_slot);
+}/*}}}*/
+
+static HashTable *
+php_parle_par_get_gc(zval *object, zval **gc_data, int *gc_data_count)
+{/*{{{*/
+	*gc_data = NULL;
+	*gc_data_count = 0;
+	return zend_std_get_properties(object);
+}/*}}}*/
+
 static void
 php_parle_parser_stack_obj_destroy(zend_object *obj) noexcept
 {/*{{{*/
@@ -1996,6 +2104,48 @@ php_parle_stack_get_properties(zval *object) noexcept
 	return props;
 }/*}}}*/
 
+static int
+php_parle_stack_has_property(zval *object, zval *member, int type, void **cache_slot)
+{/*{{{*/
+	zval tmp_member, rv, *prop;
+	int retval = 0;
+
+	if (Z_TYPE_P(member) != IS_STRING) {
+		ZVAL_COPY(&tmp_member, member);
+		convert_to_string(&tmp_member);
+		member = &tmp_member;
+		cache_slot = NULL;
+	}
+
+    prop = php_parle_stack_read_property(object, member, BP_VAR_IS, cache_slot, &rv);
+
+	if (prop != &EG(uninitialized_zval)) {
+		if (type == 2) {
+			retval = 1;
+		} else if (type == 1) {
+			retval = zend_is_true(prop);
+		} else if (type == 0) {
+			retval = (Z_TYPE(*prop) != IS_NULL);
+		}
+	} else {
+		retval = (zend_get_std_object_handlers())->has_property(object, member, type, cache_slot);
+	}
+
+	if (member == &tmp_member) {
+		zval_dtor(member);
+	}
+
+	return retval;
+}/*}}}*/
+
+static HashTable *
+php_parle_stack_get_gc(zval *object, zval **gc_data, int *gc_data_count)
+{/*{{{*/
+	*gc_data = NULL;
+	*gc_data_count = 0;
+	return zend_std_get_properties(object);
+}/*}}}*/
+
 /* {{{ PHP_INI
  */
 /* Remove comments and fill if you need to have entries in php.ini
@@ -2067,6 +2217,8 @@ PHP_MINIT_FUNCTION(parle)
 	parle_lexer_handlers.read_property = php_parle_lexer_read_property;
 	parle_lexer_handlers.write_property = php_parle_lexer_write_property;
 	parle_lexer_handlers.get_properties = php_parle_lexer_get_properties;
+	parle_lexer_handlers.has_property = php_parle_lexer_has_property;
+	parle_lexer_handlers.get_gc = php_parle_lex_get_gc;
 	parle_lexer_handlers.get_property_ptr_ptr = NULL;
 	INIT_CLASS_ENTRY(ce, "Parle\\Lexer", ParleLexer_methods);
 	ce.create_object = php_parle_lexer_object_init;
@@ -2080,6 +2232,8 @@ PHP_MINIT_FUNCTION(parle)
 	parle_rlexer_handlers.read_property = php_parle_rlexer_read_property;
 	parle_rlexer_handlers.write_property = php_parle_rlexer_write_property;
 	parle_rlexer_handlers.get_properties = php_parle_rlexer_get_properties;
+	parle_rlexer_handlers.has_property = php_parle_rlexer_has_property;
+	parle_rlexer_handlers.get_gc = php_parle_lex_get_gc;
 	parle_rlexer_handlers.get_property_ptr_ptr = NULL;
 	INIT_CLASS_ENTRY(ce, "Parle\\RLexer", ParleRLexer_methods);
 	ce.create_object = php_parle_rlexer_object_init;
@@ -2110,6 +2264,8 @@ PHP_MINIT_FUNCTION(parle)
 	parle_parser_handlers.read_property = php_parle_parser_read_property;
 	parle_parser_handlers.write_property = php_parle_parser_write_property;
 	parle_parser_handlers.get_properties = php_parle_parser_get_properties;
+	parle_parser_handlers.has_property = php_parle_parser_has_property;
+	parle_parser_handlers.get_gc = php_parle_par_get_gc;
 	parle_parser_handlers.get_property_ptr_ptr = NULL;
 	INIT_CLASS_ENTRY(ce, "Parle\\Parser", ParleParser_methods);
 	ce.create_object = php_parle_parser_object_init;
@@ -2123,6 +2279,8 @@ PHP_MINIT_FUNCTION(parle)
 	parle_rparser_handlers.read_property = php_parle_rparser_read_property;
 	parle_rparser_handlers.write_property = php_parle_rparser_write_property;
 	parle_rparser_handlers.get_properties = php_parle_rparser_get_properties;
+	parle_rparser_handlers.has_property = php_parle_rparser_has_property;
+	parle_rparser_handlers.get_gc = php_parle_par_get_gc;
 	parle_rparser_handlers.get_property_ptr_ptr = NULL;
 	INIT_CLASS_ENTRY(ce, "Parle\\RParser", ParleRParser_methods);
 	ce.create_object = php_parle_rparser_object_init;
@@ -2136,6 +2294,8 @@ PHP_MINIT_FUNCTION(parle)
 	parle_stack_handlers.read_property = php_parle_stack_read_property;
 	parle_stack_handlers.write_property = php_parle_stack_write_property;
 	parle_stack_handlers.get_properties = php_parle_stack_get_properties;
+	parle_stack_handlers.has_property = php_parle_stack_has_property;
+	parle_stack_handlers.get_gc = php_parle_stack_get_gc;
 	parle_stack_handlers.get_property_ptr_ptr = NULL;
 	INIT_CLASS_ENTRY(ce, "Parle\\Stack", ParleStack_methods);
 	ce.create_object = php_parle_parser_stack_object_init;
