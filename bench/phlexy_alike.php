@@ -62,7 +62,7 @@ $lex = new RLexer;
 testLexingPerformance($lex, $alphabetDefs, $randomString);
 echo "\n";
 
-function testLexingPerformance(Lexer $lex, $defs, $in)
+function testLexingPerformance($lex, $defs, $in)
 {
 	$startTime = microtime(true);
 
