@@ -10,7 +10,7 @@
 		<email>ab@php.net</email>
 		<active>yes</active>
 	</lead>
-	<date>2017-09-28</date>
+	<date>2017-10-01</date>
 	<version>
 		<release>0.7.0</release>
 		<api>0.7.0</api>
@@ -21,7 +21,9 @@
 	</stability>
 	<license uri="http://opensource.org/licenses/BSD-2-Clause">BSD 2-clause</license>
 	<notes>
-		- some
+		- Introduced RParser class
+		- RLexer doesn't inherit from Lexer anymore, Lexer and Parser, as well RLexer and RParser have to be used pairwise
+		- General bugfixes
 	</notes>
 	<contents>
 		<dir name="/">
