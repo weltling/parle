@@ -1196,6 +1196,7 @@ _parser_errorinfo(INTERNAL_FUNCTION_PARAMETERS, zend_class_entry *ce) noexcept
 		zval token;
 		std::string ret = lex.iter->str();
 		object_init_ex(&token, ParleToken_ce);
+		add_property_long_ex(&token, "id", sizeof("id")-1, lex.iter->id);
 #if PHP_MAJOR_VERSION > 7 || PHP_MAJOR_VERSION >= 7 && PHP_MINOR_VERSION >= 2
 		add_property_stringl_ex(&token, "value", sizeof("value")-1, ret.c_str(), ret.size());
 #else
