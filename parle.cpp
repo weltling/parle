@@ -933,7 +933,7 @@ _parser_sigil(INTERNAL_FUNCTION_PARAMETERS, zend_class_entry *ce) noexcept
 	auto &par = *zppo->par;
 
 	if (idx < Z_L(0) ||
-		par.productions.size() - par.sm._rules[par.results.entry.param].second.size() + static_cast<size_t>(idx) >= par.productions.size()) {
+		par.productions.size() - par.results.production_size(par.sm, par.results.entry.param) + static_cast<size_t>(idx) >= par.productions.size()) {
 		zend_throw_exception_ex(ParleParserException_ce, 0, "Invalid index " ZEND_LONG_FMT, idx);
 		return;
 	/*} else if (par.sm._rules[par.results.entry.param].second.empty()) {
