@@ -1485,6 +1485,20 @@ php_parle_lexer_obj_dtor(lexer_type *zplo) noexcept
 	delete zplo->lex;
 }/*}}}*/
 
+static void
+php_parle_lexer_obj_destroy(zend_object *obj) noexcept
+{/*{{{*/
+	ze_parle_lexer_obj *zplo = php_parle_lexer_fetch_obj(obj);
+	php_parle_lexer_obj_dtor<ze_parle_lexer_obj>(zplo);
+}/*}}}*/
+
+static void
+php_parle_rlexer_obj_destroy(zend_object *obj) noexcept
+{/*{{{*/
+	ze_parle_rlexer_obj *zplo = php_parle_rlexer_fetch_obj(obj);
+	php_parle_lexer_obj_dtor<ze_parle_rlexer_obj>(zplo);
+}/*}}}*/
+
 template<typename lexer_obj_type, typename lexer_type> zend_object *
 php_parle_lexer_obj_ctor(zend_class_entry *ce, zend_object_handlers *obj_handlers) noexcept
 {/*{{{*/
@@ -1501,6 +1515,18 @@ php_parle_lexer_obj_ctor(zend_class_entry *ce, zend_object_handlers *obj_handler
 	zplo->lex->par = nullptr;
 
 	return &zplo->zo;
+}/*}}}*/
+
+static zend_object *
+php_parle_rlexer_object_init(zend_class_entry *ce) noexcept
+{/*{{{*/
+	return php_parle_lexer_obj_ctor<ze_parle_rlexer_obj, parle::lexer::rlexer>(ce, &parle_rlexer_handlers);
+}/*}}}*/
+
+static zend_object *
+php_parle_lexer_object_init(zend_class_entry *ce) noexcept
+{/*{{{*/
+	return php_parle_lexer_obj_ctor<ze_parle_lexer_obj, parle::lexer::lexer>(ce, &parle_lexer_handlers);
 }/*}}}*/
 
 template <typename lexer_obj_type> zval * 
@@ -1540,6 +1566,18 @@ php_parle_lex_read_property(zval *object, zval *member, int type, void **cache_s
 	}
 
 	return retval;
+}/*}}}*/
+
+static zval * 
+php_parle_lexer_read_property(zval *object, zval *member, int type, void **cache_slot, zval *rv) noexcept
+{/*{{{*/
+	return php_parle_lex_read_property<ze_parle_lexer_obj>(object, member, type, cache_slot, rv);
+}/*}}}*/
+
+static zval * 
+php_parle_rlexer_read_property(zval *object, zval *member, int type, void **cache_slot, zval *rv) noexcept
+{/*{{{*/
+	return php_parle_lex_read_property<ze_parle_rlexer_obj>(object, member, type, cache_slot, rv);
 }/*}}}*/
 
 template <typename lexer_obj_type> void
@@ -1582,6 +1620,18 @@ php_parle_lex_write_property(zval *object, zval *member, zval *value, void **cac
 	}
 }/*}}}*/
 
+static void
+php_parle_lexer_write_property(zval *object, zval *member, zval *value, void **cache_slot) noexcept
+{/*{{{*/
+	php_parle_lex_write_property<ze_parle_lexer_obj>(object, member, value, cache_slot);
+}/*}}}*/
+
+static void
+php_parle_rlexer_write_property(zval *object, zval *member, zval *value, void **cache_slot) noexcept
+{/*{{{*/
+	php_parle_lex_write_property<ze_parle_rlexer_obj>(object, member, value, cache_slot);
+}/*}}}*/
+
 template <typename lexer_obj_type> HashTable * 
 php_parle_lex_get_properties(zval *object) noexcept
 {/*{{{*/
@@ -1607,60 +1657,10 @@ php_parle_lex_get_properties(zval *object) noexcept
 	return props;
 }/*}}}*/
 
-static void
-php_parle_lexer_obj_destroy(zend_object *obj) noexcept
-{/*{{{*/
-	ze_parle_lexer_obj *zplo = php_parle_lexer_fetch_obj(obj);
-	php_parle_lexer_obj_dtor<ze_parle_lexer_obj>(zplo);
-}/*}}}*/
-
-static zend_object *
-php_parle_lexer_object_init(zend_class_entry *ce) noexcept
-{/*{{{*/
-	return php_parle_lexer_obj_ctor<ze_parle_lexer_obj, parle::lexer::lexer>(ce, &parle_lexer_handlers);
-}/*}}}*/
-
-static zval * 
-php_parle_lexer_read_property(zval *object, zval *member, int type, void **cache_slot, zval *rv) noexcept
-{/*{{{*/
-	return php_parle_lex_read_property<ze_parle_lexer_obj>(object, member, type, cache_slot, rv);
-}/*}}}*/
-
-static void
-php_parle_lexer_write_property(zval *object, zval *member, zval *value, void **cache_slot) noexcept
-{/*{{{*/
-	php_parle_lex_write_property<ze_parle_lexer_obj>(object, member, value, cache_slot);
-}/*}}}*/
-
 static HashTable * 
 php_parle_lexer_get_properties(zval *object) noexcept
 {/*{{{*/
 	return php_parle_lex_get_properties<ze_parle_lexer_obj>(object);
-}/*}}}*/
-
-static void
-php_parle_rlexer_obj_destroy(zend_object *obj) noexcept
-{/*{{{*/
-	ze_parle_rlexer_obj *zplo = php_parle_rlexer_fetch_obj(obj);
-	php_parle_lexer_obj_dtor<ze_parle_rlexer_obj>(zplo);
-}/*}}}*/
-
-static zend_object *
-php_parle_rlexer_object_init(zend_class_entry *ce) noexcept
-{/*{{{*/
-	return php_parle_lexer_obj_ctor<ze_parle_rlexer_obj, parle::lexer::rlexer>(ce, &parle_rlexer_handlers);
-}/*}}}*/
-
-static zval * 
-php_parle_rlexer_read_property(zval *object, zval *member, int type, void **cache_slot, zval *rv) noexcept
-{/*{{{*/
-	return php_parle_lex_read_property<ze_parle_rlexer_obj>(object, member, type, cache_slot, rv);
-}/*}}}*/
-
-static void
-php_parle_rlexer_write_property(zval *object, zval *member, zval *value, void **cache_slot) noexcept
-{/*{{{*/
-	php_parle_lex_write_property<ze_parle_rlexer_obj>(object, member, value, cache_slot);
 }/*}}}*/
 
 static HashTable * 
