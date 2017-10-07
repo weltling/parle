@@ -1688,7 +1688,7 @@ php_parle_rlexer_get_properties(zval *object) noexcept
 }/*}}}*/
 
 template <typename lexer_obj_type> static int
-php_parle_lex_has_property(zval *object, zval *member, int type, void **cache_slot)
+php_parle_lex_has_property(zval *object, zval *member, int type, void **cache_slot) noexcept
 {/*{{{*/
 	zval tmp_member, rv, *prop;
 	int retval = 0;
@@ -1722,19 +1722,19 @@ php_parle_lex_has_property(zval *object, zval *member, int type, void **cache_sl
 }/*}}}*/
 
 static int
-php_parle_lexer_has_property(zval *object, zval *member, int type, void **cache_slot)
+php_parle_lexer_has_property(zval *object, zval *member, int type, void **cache_slot) noexcept
 {/*{{{*/
 	return php_parle_lex_has_property<ze_parle_lexer_obj>(object, member, type, cache_slot);
 }/*}}}*/
 
 static int
-php_parle_rlexer_has_property(zval *object, zval *member, int type, void **cache_slot)
+php_parle_rlexer_has_property(zval *object, zval *member, int type, void **cache_slot) noexcept
 {/*{{{*/
 	return php_parle_lex_has_property<ze_parle_rlexer_obj>(object, member, type, cache_slot);
 }/*}}}*/
 
 static HashTable *
-php_parle_lex_get_gc(zval *object, zval **gc_data, int *gc_data_count)
+php_parle_lex_get_gc(zval *object, zval **gc_data, int *gc_data_count) noexcept
 {/*{{{*/
 	*gc_data = NULL;
 	*gc_data_count = 0;
@@ -1742,7 +1742,7 @@ php_parle_lex_get_gc(zval *object, zval **gc_data, int *gc_data_count)
 }/*}}}*/
 
 template <typename lexer_obj_type> static zval *
-php_parle_lex_get_property_ptr_ptr(zval *object, zval *member, int type, void **cache_slot)
+php_parle_lex_get_property_ptr_ptr(zval *object, zval *member, int type, void **cache_slot) noexcept
 {/*{{{*/
 	zval tmp_member, *prop;
 
@@ -1768,13 +1768,13 @@ php_parle_lex_get_property_ptr_ptr(zval *object, zval *member, int type, void **
 }/*}}}*/
 
 static zval *
-php_parle_lexer_get_property_ptr_ptr(zval *object, zval *member, int type, void **cache_slot)
+php_parle_lexer_get_property_ptr_ptr(zval *object, zval *member, int type, void **cache_slot) noexcept
 {/*{{{*/
 	return php_parle_lex_get_property_ptr_ptr<ze_parle_lexer_obj>(object, member, type, cache_slot);
 }/*}}}*/
 
 static zval *
-php_parle_rlexer_get_property_ptr_ptr(zval *object, zval *member, int type, void **cache_slot)
+php_parle_rlexer_get_property_ptr_ptr(zval *object, zval *member, int type, void **cache_slot) noexcept
 {/*{{{*/
 	return php_parle_lex_get_property_ptr_ptr<ze_parle_rlexer_obj>(object, member, type, cache_slot);
 }/*}}}*/
@@ -1960,7 +1960,7 @@ php_parle_rparser_get_properties(zval *object) noexcept
 }/*}}}*/
 
 template <typename parser_obj_type> static int
-php_parle_par_has_property(zval *object, zval *member, int type, void **cache_slot)
+php_parle_par_has_property(zval *object, zval *member, int type, void **cache_slot) noexcept
 {/*{{{*/
 	zval tmp_member, rv, *prop;
 	int retval = 0;
@@ -1994,19 +1994,19 @@ php_parle_par_has_property(zval *object, zval *member, int type, void **cache_sl
 }/*}}}*/
 
 static int
-php_parle_parser_has_property(zval *object, zval *member, int type, void **cache_slot)
+php_parle_parser_has_property(zval *object, zval *member, int type, void **cache_slot) noexcept
 {/*{{{*/
 	return php_parle_par_has_property<ze_parle_parser_obj>(object, member, type, cache_slot);
 }/*}}}*/
 
 static int
-php_parle_rparser_has_property(zval *object, zval *member, int type, void **cache_slot)
+php_parle_rparser_has_property(zval *object, zval *member, int type, void **cache_slot) noexcept
 {/*{{{*/
 	return php_parle_par_has_property<ze_parle_rparser_obj>(object, member, type, cache_slot);
 }/*}}}*/
 
 static HashTable *
-php_parle_par_get_gc(zval *object, zval **gc_data, int *gc_data_count)
+php_parle_par_get_gc(zval *object, zval **gc_data, int *gc_data_count) noexcept
 {/*{{{*/
 	*gc_data = NULL;
 	*gc_data_count = 0;
@@ -2014,7 +2014,7 @@ php_parle_par_get_gc(zval *object, zval **gc_data, int *gc_data_count)
 }/*}}}*/
 
 template <typename parser_obj_type> static zval *
-php_parle_par_get_property_ptr_ptr(zval *object, zval *member, int type, void **cache_slot)
+php_parle_par_get_property_ptr_ptr(zval *object, zval *member, int type, void **cache_slot) noexcept
 {/*{{{*/
 	zval tmp_member, *prop;
 
@@ -2040,13 +2040,13 @@ php_parle_par_get_property_ptr_ptr(zval *object, zval *member, int type, void **
 }/*}}}*/
 
 static zval *
-php_parle_parser_get_property_ptr_ptr(zval *object, zval *member, int type, void **cache_slot)
+php_parle_parser_get_property_ptr_ptr(zval *object, zval *member, int type, void **cache_slot) noexcept
 {/*{{{*/
 	return php_parle_par_get_property_ptr_ptr<ze_parle_parser_obj>(object, member, type, cache_slot);
 }/*}}}*/
 
 static zval *
-php_parle_rparser_get_property_ptr_ptr(zval *object, zval *member, int type, void **cache_slot)
+php_parle_rparser_get_property_ptr_ptr(zval *object, zval *member, int type, void **cache_slot) noexcept
 {/*{{{*/
 	return php_parle_par_get_property_ptr_ptr<ze_parle_rparser_obj>(object, member, type, cache_slot);
 }/*}}}*/
@@ -2205,7 +2205,7 @@ php_parle_stack_get_properties(zval *object) noexcept
 }/*}}}*/
 
 static int
-php_parle_stack_has_property(zval *object, zval *member, int type, void **cache_slot)
+php_parle_stack_has_property(zval *object, zval *member, int type, void **cache_slot) noexcept
 {/*{{{*/
 	zval tmp_member, rv, *prop;
 	int retval = 0;
@@ -2239,7 +2239,7 @@ php_parle_stack_has_property(zval *object, zval *member, int type, void **cache_
 }/*}}}*/
 
 static HashTable *
-php_parle_stack_get_gc(zval *object, zval **gc_data, int *gc_data_count)
+php_parle_stack_get_gc(zval *object, zval **gc_data, int *gc_data_count) noexcept
 {/*{{{*/
 	*gc_data = NULL;
 	*gc_data_count = 0;
@@ -2247,7 +2247,7 @@ php_parle_stack_get_gc(zval *object, zval **gc_data, int *gc_data_count)
 }/*}}}*/
 
 static zval *
-php_parle_stack_get_property_ptr_ptr(zval *object, zval *member, int type, void **cache_slot)
+php_parle_stack_get_property_ptr_ptr(zval *object, zval *member, int type, void **cache_slot) noexcept
 {/*{{{*/
 	zval tmp_member, *prop;
 
