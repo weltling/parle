@@ -221,7 +221,7 @@ php_parle_rparser_fetch_obj(zend_object *obj) noexcept
 }/*}}}*/
 
 static zend_always_inline ze_parle_stack_obj *
-php_parle_parser_stack_fetch_obj(zend_object *obj) noexcept
+php_parle_stack_fetch_obj(zend_object *obj) noexcept
 {/*{{{*/
 	return (ze_parle_stack_obj *)((char *)obj - XtOffsetOf(ze_parle_stack_obj, zo));
 }/*}}}*/
@@ -1232,7 +1232,7 @@ PHP_METHOD(ParleStack, pop)
 		return;
 	}
 
-	zpso = php_parle_parser_stack_fetch_obj(Z_OBJ_P(me));
+	zpso = php_parle_stack_fetch_obj(Z_OBJ_P(me));
 
 	if (zpso->stack->empty()) {
 		return;
@@ -1258,7 +1258,7 @@ PHP_METHOD(ParleStack, push)
 		return;
 	}
 
-	zpso = php_parle_parser_stack_fetch_obj(Z_OBJ_P(me));
+	zpso = php_parle_stack_fetch_obj(Z_OBJ_P(me));
 
 	save = (zval *) emalloc(sizeof(zval));
 	ZVAL_COPY(save, in);
@@ -1476,6 +1476,21 @@ const zend_function_entry ParleStack_methods[] = {
 };
 /* }}} */
 
+#define PARLE_IS_PROP(name) (zend_binary_strcmp(name, sizeof(name) - 1, Z_STRVAL_P(member), Z_STRLEN_P(member)) == 0)
+#define PARLE_CHECK_THROW_RO_PROP_EX(ex_ce, prop, action) \
+	if (PARLE_IS_PROP(prop)) { \
+		zend_throw_exception_ex(ex_ce, 0, "Cannot set readonly property $%s of class %s", prop, ZSTR_VAL(Z_OBJ_P(object)->ce->name)); \
+		if (member == &tmp_member) { \
+			zval_dtor(member); \
+		} \
+		action; \
+	}
+#define PARLE_LEX_CHECK_THROW_RET_RO_PROP(prop) PARLE_CHECK_THROW_RO_PROP_EX(ParleLexerException_ce, prop, return &EG(uninitialized_zval))
+#define PARLE_LEX_CHECK_THROW_RO_PROP(prop) PARLE_CHECK_THROW_RO_PROP_EX(ParleLexerException_ce, prop, return)
+#define PARLE_PAR_CHECK_THROW_RET_RO_PROP(prop) PARLE_CHECK_THROW_RO_PROP_EX(ParleParserException_ce, prop, return &EG(uninitialized_zval))
+#define PARLE_PAR_CHECK_THROW_RO_PROP(prop) PARLE_CHECK_THROW_RO_PROP_EX(ParleParserException_ce, prop, return)
+#define PARLE_STACK_CHECK_THROW_RET_RO_PROP(prop) PARLE_CHECK_THROW_RO_PROP_EX(ParleStackException_ce, prop, return &EG(uninitialized_zval))
+#define PARLE_STACK_CHECK_THROW_RO_PROP(prop) PARLE_CHECK_THROW_RO_PROP_EX(ParleStackException_ce, prop, return)
 
 template<typename lexer_type> void
 php_parle_lexer_obj_dtor(lexer_type *zplo) noexcept
@@ -1543,19 +1558,25 @@ php_parle_lex_read_property(zval *object, zval *member, int type, void **cache_s
 		cache_slot = NULL;
 	}
 
+	if (type != BP_VAR_R && type != BP_VAR_IS) {
+		PARLE_LEX_CHECK_THROW_RET_RO_PROP("state")
+		PARLE_LEX_CHECK_THROW_RET_RO_PROP("marker")
+		PARLE_LEX_CHECK_THROW_RET_RO_PROP("cursor")
+	}
+
 	zplo = _php_parle_lexer_fetch_zobj<lexer_obj_type>(Z_OBJ_P(object));
 
 	auto &lex = *zplo->lex;
 	retval = rv;
-	if (strcmp(Z_STRVAL_P(member), "bol") == 0) {
+	if (PARLE_IS_PROP("bol")) {
 		ZVAL_BOOL(retval, lex.results.bol);
-	} else if (strcmp(Z_STRVAL_P(member), "flags") == 0) {
+	} else if (PARLE_IS_PROP("flags")) {
 		ZVAL_LONG(retval, lex.rules.flags());
-	} else if (strcmp(Z_STRVAL_P(member), "state") == 0) {
+	} else if (PARLE_IS_PROP("state")) {
 		ZVAL_LONG(retval, lex.results.state);
-	} else if (strcmp(Z_STRVAL_P(member), "marker") == 0) {
+	} else if (PARLE_IS_PROP("marker")) {
 		ZVAL_LONG(retval, lex.results.first - lex.in.begin());
-	} else if (strcmp(Z_STRVAL_P(member), "cursor") == 0) {
+	} else if (PARLE_IS_PROP("cursor")) {
 		ZVAL_LONG(retval, lex.results.second - lex.in.begin());
 	} else {
 		retval = (zend_get_std_object_handlers())->read_property(object, member, type, cache_slot, rv);
@@ -1596,22 +1617,19 @@ php_parle_lex_write_property(zval *object, zval *member, zval *value, void **cac
 	zplo = _php_parle_lexer_fetch_zobj<lexer_obj_type>(Z_OBJ_P(object));
 
 	auto &lex = *zplo->lex;
-	if (strcmp(Z_STRVAL_P(member), "bol") == 0) {
+	if (PARLE_IS_PROP("bol")) {
 		if (lex.par) {
 			/* Iterator has it const. */
 			zend_throw_exception_ex(ParleLexerException_ce, 0, "Cannot set readonly property $bol of class %s", ZSTR_VAL(Z_OBJ_P(object)->ce->name));
 		} else {
 			lex.results.bol = static_cast<bool>(zval_is_true(value) == 1);
 		}
-	} else if (strcmp(Z_STRVAL_P(member), "flags") == 0) {
+	} else if (PARLE_IS_PROP("flags")) {
 		lex.rules.flags(zval_get_long(value));
-	} else if (strcmp(Z_STRVAL_P(member), "state") == 0) {
-		zend_throw_exception_ex(ParleLexerException_ce, 0, "Cannot set readonly property $state of class %s", ZSTR_VAL(Z_OBJ_P(object)->ce->name));
-	} else if (strcmp(Z_STRVAL_P(member), "cursor") == 0) {
-		zend_throw_exception_ex(ParleLexerException_ce, 0, "Cannot set readonly property $cursor of class %s", ZSTR_VAL(Z_OBJ_P(object)->ce->name));
-	} else if (strcmp(Z_STRVAL_P(member), "marker") == 0) {
-		zend_throw_exception_ex(ParleLexerException_ce, 0, "Cannot set readonly property $marker of class %s", ZSTR_VAL(Z_OBJ_P(object)->ce->name));
-	} else {
+	} else PARLE_LEX_CHECK_THROW_RO_PROP("state")
+	  else PARLE_LEX_CHECK_THROW_RO_PROP("cursor")
+	  else PARLE_LEX_CHECK_THROW_RO_PROP("marker")
+	else {
 		(zend_get_std_object_handlers())->write_property(object, member, value, cache_slot);
 	}
 
@@ -1723,6 +1741,44 @@ php_parle_lex_get_gc(zval *object, zval **gc_data, int *gc_data_count)
 	return zend_std_get_properties(object);
 }/*}}}*/
 
+template <typename lexer_obj_type> static zval *
+php_parle_lex_get_property_ptr_ptr(zval *object, zval *member, int type, void **cache_slot)
+{/*{{{*/
+	zval tmp_member, *prop;
+
+	if (Z_TYPE_P(member) != IS_STRING) {
+		ZVAL_COPY(&tmp_member, member);
+		convert_to_string(&tmp_member);
+		member = &tmp_member;
+		cache_slot = NULL;
+	}
+
+	if (PARLE_IS_PROP("state") || PARLE_IS_PROP("marker") || PARLE_IS_PROP("cursor") || PARLE_IS_PROP("bol") || PARLE_IS_PROP("flags")) {
+		/* Fallback to read_property. */
+		return NULL;
+	}
+
+	prop = (zend_get_std_object_handlers())->get_property_ptr_ptr(object, member, type, cache_slot);
+
+	if (member == &tmp_member) {
+		zval_dtor(member);
+	}
+
+	return prop;
+}/*}}}*/
+
+static zval *
+php_parle_lexer_get_property_ptr_ptr(zval *object, zval *member, int type, void **cache_slot)
+{/*{{{*/
+	return php_parle_lex_get_property_ptr_ptr<ze_parle_lexer_obj>(object, member, type, cache_slot);
+}/*}}}*/
+
+static zval *
+php_parle_rlexer_get_property_ptr_ptr(zval *object, zval *member, int type, void **cache_slot)
+{/*{{{*/
+	return php_parle_lex_get_property_ptr_ptr<ze_parle_rlexer_obj>(object, member, type, cache_slot);
+}/*}}}*/
+
 template<typename parser_type> void
 php_parle_parser_obj_dtor(parser_type *zppo) noexcept
 {/*{{{*/
@@ -1788,14 +1844,19 @@ php_parle_par_read_property(zval *object, zval *member, int type, void **cache_s
 		cache_slot = NULL;
 	}
 
+	if (type != BP_VAR_R && type != BP_VAR_IS) {
+		PARLE_PAR_CHECK_THROW_RET_RO_PROP("action")
+		PARLE_PAR_CHECK_THROW_RET_RO_PROP("reduceId")
+	}
+
 	zppo = _php_parle_parser_fetch_zobj<parser_obj_type>(Z_OBJ_P(object));
 
 	auto &par = *zppo->par;
 
 	retval = rv;
-	if (strcmp(Z_STRVAL_P(member), "action") == 0) {
+	if (PARLE_IS_PROP("action")) {
 		ZVAL_LONG(retval, par.results.entry.action);
-	} else if (strcmp(Z_STRVAL_P(member), "reduceId") == 0) {
+	} else if (PARLE_IS_PROP("reduceId")) {
 		try {
 			ZVAL_LONG(retval, par.results.reduce_id());
 		} catch (const std::exception &e) {
@@ -1839,11 +1900,9 @@ php_parle_par_write_property(zval *object, zval *member, zval *value, void **cac
 
 	zppo = _php_parle_parser_fetch_zobj<parser_obj_type>(Z_OBJ_P(object));
 
-	if (strcmp(Z_STRVAL_P(member), "action") == 0) {
-		zend_throw_exception_ex(ParleParserException_ce, 0, "Cannot set readonly property $action of class %s", ZSTR_VAL(Z_OBJ_P(object)->ce->name));
-	} else if (strcmp(Z_STRVAL_P(member), "reduceId") == 0) {
-		zend_throw_exception_ex(ParleParserException_ce, 0, "Cannot set readonly property $reduceId of class %s", ZSTR_VAL(Z_OBJ_P(object)->ce->name));
-	} else {
+	PARLE_PAR_CHECK_THROW_RO_PROP("action")
+	else PARLE_PAR_CHECK_THROW_RO_PROP("reduceId")
+	else {
 		(zend_get_std_object_handlers())->write_property(object, member, value, cache_slot);
 	}
 
@@ -1954,10 +2013,48 @@ php_parle_par_get_gc(zval *object, zval **gc_data, int *gc_data_count)
 	return zend_std_get_properties(object);
 }/*}}}*/
 
-static void
-php_parle_parser_stack_obj_destroy(zend_object *obj) noexcept
+template <typename parser_obj_type> static zval *
+php_parle_par_get_property_ptr_ptr(zval *object, zval *member, int type, void **cache_slot)
 {/*{{{*/
-	ze_parle_stack_obj *zpso = php_parle_parser_stack_fetch_obj(obj);
+	zval tmp_member, *prop;
+
+	if (Z_TYPE_P(member) != IS_STRING) {
+		ZVAL_COPY(&tmp_member, member);
+		convert_to_string(&tmp_member);
+		member = &tmp_member;
+		cache_slot = NULL;
+	}
+
+	if (PARLE_IS_PROP("action") || PARLE_IS_PROP("reduceId")) {
+		/* Fallback to read_property. */
+		return NULL;
+	}
+
+	prop = (zend_get_std_object_handlers())->get_property_ptr_ptr(object, member, type, cache_slot);
+
+	if (member == &tmp_member) {
+		zval_dtor(member);
+	}
+
+	return prop;
+}/*}}}*/
+
+static zval *
+php_parle_parser_get_property_ptr_ptr(zval *object, zval *member, int type, void **cache_slot)
+{/*{{{*/
+	return php_parle_par_get_property_ptr_ptr<ze_parle_parser_obj>(object, member, type, cache_slot);
+}/*}}}*/
+
+static zval *
+php_parle_rparser_get_property_ptr_ptr(zval *object, zval *member, int type, void **cache_slot)
+{/*{{{*/
+	return php_parle_par_get_property_ptr_ptr<ze_parle_rparser_obj>(object, member, type, cache_slot);
+}/*}}}*/
+
+static void
+php_parle_stack_obj_destroy(zend_object *obj) noexcept
+{/*{{{*/
+	ze_parle_stack_obj *zpso = php_parle_stack_fetch_obj(obj);
 
 	zend_object_std_dtor(&zpso->zo);
 
@@ -1975,7 +2072,7 @@ php_parle_parser_stack_obj_destroy(zend_object *obj) noexcept
 }/*}}}*/
 
 static zend_object *
-php_parle_parser_stack_object_init(zend_class_entry *ce) noexcept
+php_parle_stack_object_init(zend_class_entry *ce) noexcept
 {/*{{{*/
 	ze_parle_stack_obj *zpso;
 
@@ -2004,18 +2101,23 @@ php_parle_stack_read_property(zval *object, zval *member, int type, void **cache
 		cache_slot = NULL;
 	}
 
-	zpso = php_parle_parser_stack_fetch_obj(Z_OBJ_P(object));
+	if (type != BP_VAR_R && type != BP_VAR_IS) {
+		PARLE_STACK_CHECK_THROW_RET_RO_PROP("empty")
+		PARLE_STACK_CHECK_THROW_RET_RO_PROP("size")
+	}
+
+	zpso = php_parle_stack_fetch_obj(Z_OBJ_P(object));
 
 	retval = rv;
-	if (strcmp(Z_STRVAL_P(member), "top") == 0) {
+	if (PARLE_IS_PROP("top")) {
 		if (zpso->stack->empty()) {
 			ZVAL_NULL(retval);
 		} else {
 			ZVAL_COPY(retval, zpso->stack->top());
 		}
-	} else if (strcmp(Z_STRVAL_P(member), "empty") == 0) {
+	} else if (PARLE_IS_PROP("empty")) {
 		ZVAL_BOOL(retval, zpso->stack->empty());
-	} else if (strcmp(Z_STRVAL_P(member), "size") == 0) {
+	} else if (PARLE_IS_PROP("size")) {
 		ZVAL_LONG(retval, zpso->stack->size());
 	} else {
 		retval = (zend_get_std_object_handlers())->read_property(object, member, type, cache_slot, rv);
@@ -2041,9 +2143,9 @@ php_parle_stack_write_property(zval *object, zval *member, zval *value, void **c
 		cache_slot = NULL;
 	}
 
-	zpso = php_parle_parser_stack_fetch_obj(Z_OBJ_P(object));
+	zpso = php_parle_stack_fetch_obj(Z_OBJ_P(object));
 
-	if (strcmp(Z_STRVAL_P(member), "top") == 0) {
+	if (PARLE_IS_PROP("top")) {
 		if (zpso->stack->empty()) {
 			// XXX should this be done?
 			zval *z = (zval *) emalloc(sizeof(zval));
@@ -2061,11 +2163,9 @@ php_parle_stack_write_property(zval *object, zval *member, zval *value, void **c
 			zval_ptr_dtor(old);
 			efree(old);
 		}
-	} else if (strcmp(Z_STRVAL_P(member), "empty") == 0) {
-		zend_throw_exception_ex(ParleParserException_ce, 0, "Cannot set readonly property $empty of class %s", ZSTR_VAL(Z_OBJ_P(object)->ce->name));
-	} else if (strcmp(Z_STRVAL_P(member), "size") == 0) {
-		zend_throw_exception_ex(ParleParserException_ce, 0, "Cannot set readonly property $size reduceId of class %s", ZSTR_VAL(Z_OBJ_P(object)->ce->name));
-	} else {
+	} else PARLE_STACK_CHECK_THROW_RO_PROP("empty")
+	  else PARLE_STACK_CHECK_THROW_RO_PROP("size")
+	  else {
 		(zend_get_std_object_handlers())->write_property(object, member, value, cache_slot);
 	}
 
@@ -2082,7 +2182,7 @@ php_parle_stack_get_properties(zval *object) noexcept
 	zval zv;
 
 	props = zend_std_get_properties(object);
-	zpso = php_parle_parser_stack_fetch_obj(Z_OBJ_P(object));
+	zpso = php_parle_stack_fetch_obj(Z_OBJ_P(object));
 
 	ZVAL_BOOL(&zv, zpso->stack->empty());
 	zend_hash_str_update(props, "empty", sizeof("empty")-1, &zv);
@@ -2144,6 +2244,32 @@ php_parle_stack_get_gc(zval *object, zval **gc_data, int *gc_data_count)
 	*gc_data = NULL;
 	*gc_data_count = 0;
 	return zend_std_get_properties(object);
+}/*}}}*/
+
+static zval *
+php_parle_stack_get_property_ptr_ptr(zval *object, zval *member, int type, void **cache_slot)
+{/*{{{*/
+	zval tmp_member, *prop;
+
+	if (Z_TYPE_P(member) != IS_STRING) {
+		ZVAL_COPY(&tmp_member, member);
+		convert_to_string(&tmp_member);
+		member = &tmp_member;
+		cache_slot = NULL;
+	}
+
+	if (PARLE_IS_PROP("top") || PARLE_IS_PROP("empty") || PARLE_IS_PROP("size")) {
+		/* Fallback to read_property. */
+		return NULL;
+	}
+
+	prop = (zend_get_std_object_handlers())->get_property_ptr_ptr(object, member, type, cache_slot);
+
+	if (member == &tmp_member) {
+		zval_dtor(member);
+	}
+
+	return prop;
 }/*}}}*/
 
 /* {{{ PHP_INI
@@ -2219,7 +2345,7 @@ PHP_MINIT_FUNCTION(parle)
 	parle_lexer_handlers.get_properties = php_parle_lexer_get_properties;
 	parle_lexer_handlers.has_property = php_parle_lexer_has_property;
 	parle_lexer_handlers.get_gc = php_parle_lex_get_gc;
-	parle_lexer_handlers.get_property_ptr_ptr = NULL;
+	parle_lexer_handlers.get_property_ptr_ptr = php_parle_lexer_get_property_ptr_ptr;
 	INIT_CLASS_ENTRY(ce, "Parle\\Lexer", ParleLexer_methods);
 	ce.create_object = php_parle_lexer_object_init;
 	ParleLexer_ce = zend_register_internal_class(&ce);
@@ -2234,7 +2360,7 @@ PHP_MINIT_FUNCTION(parle)
 	parle_rlexer_handlers.get_properties = php_parle_rlexer_get_properties;
 	parle_rlexer_handlers.has_property = php_parle_rlexer_has_property;
 	parle_rlexer_handlers.get_gc = php_parle_lex_get_gc;
-	parle_rlexer_handlers.get_property_ptr_ptr = NULL;
+	parle_rlexer_handlers.get_property_ptr_ptr = php_parle_rlexer_get_property_ptr_ptr;
 	INIT_CLASS_ENTRY(ce, "Parle\\RLexer", ParleRLexer_methods);
 	ce.create_object = php_parle_rlexer_object_init;
 	ParleRLexer_ce = zend_register_internal_class(&ce);
@@ -2266,7 +2392,7 @@ PHP_MINIT_FUNCTION(parle)
 	parle_parser_handlers.get_properties = php_parle_parser_get_properties;
 	parle_parser_handlers.has_property = php_parle_parser_has_property;
 	parle_parser_handlers.get_gc = php_parle_par_get_gc;
-	parle_parser_handlers.get_property_ptr_ptr = NULL;
+	parle_parser_handlers.get_property_ptr_ptr = php_parle_parser_get_property_ptr_ptr;
 	INIT_CLASS_ENTRY(ce, "Parle\\Parser", ParleParser_methods);
 	ce.create_object = php_parle_parser_object_init;
 	ParleParser_ce = zend_register_internal_class(&ce);
@@ -2281,7 +2407,7 @@ PHP_MINIT_FUNCTION(parle)
 	parle_rparser_handlers.get_properties = php_parle_rparser_get_properties;
 	parle_rparser_handlers.has_property = php_parle_rparser_has_property;
 	parle_rparser_handlers.get_gc = php_parle_par_get_gc;
-	parle_rparser_handlers.get_property_ptr_ptr = NULL;
+	parle_rparser_handlers.get_property_ptr_ptr = php_parle_rparser_get_property_ptr_ptr;
 	INIT_CLASS_ENTRY(ce, "Parle\\RParser", ParleRParser_methods);
 	ce.create_object = php_parle_rparser_object_init;
 	ParleRParser_ce = zend_register_internal_class(&ce);
@@ -2290,15 +2416,15 @@ PHP_MINIT_FUNCTION(parle)
 	memcpy(&parle_stack_handlers, zend_get_std_object_handlers(), sizeof(zend_object_handlers));
 	parle_stack_handlers.clone_obj = NULL;
 	parle_stack_handlers.offset = XtOffsetOf(ze_parle_stack_obj, zo);
-	parle_stack_handlers.free_obj = php_parle_parser_stack_obj_destroy;
+	parle_stack_handlers.free_obj = php_parle_stack_obj_destroy;
 	parle_stack_handlers.read_property = php_parle_stack_read_property;
 	parle_stack_handlers.write_property = php_parle_stack_write_property;
 	parle_stack_handlers.get_properties = php_parle_stack_get_properties;
 	parle_stack_handlers.has_property = php_parle_stack_has_property;
 	parle_stack_handlers.get_gc = php_parle_stack_get_gc;
-	parle_stack_handlers.get_property_ptr_ptr = NULL;
+	parle_stack_handlers.get_property_ptr_ptr = php_parle_stack_get_property_ptr_ptr;
 	INIT_CLASS_ENTRY(ce, "Parle\\Stack", ParleStack_methods);
-	ce.create_object = php_parle_parser_stack_object_init;
+	ce.create_object = php_parle_stack_object_init;
 	ParleStack_ce = zend_register_internal_class(&ce);
 	zend_declare_property_bool(ParleStack_ce, "empty", sizeof("empty")-1, 0, ZEND_ACC_PUBLIC);
 	zend_declare_property_long(ParleStack_ce, "size", sizeof("size")-1, 0, ZEND_ACC_PUBLIC);
