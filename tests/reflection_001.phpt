@@ -11,11 +11,14 @@ $r = new ReflectionMethod("Parle\\RLexer", "getToken");
 var_dump((string)$r->getReturnType());
 $r = new ReflectionMethod("Parle\\Parser", "errorInfo");
 var_dump((string)$r->getReturnType());
+$r = new ReflectionMethod("Parle\\RParser", "errorInfo");
+var_dump((string)$r->getReturnType());
 
 ?>
 ==DONE==
 --EXPECTF--
 string(11) "Parle\Token"
 string(11) "Parle\Token"
+string(15) "Parle\ErrorInfo"
 string(15) "Parle\ErrorInfo"
 ==DONE==
