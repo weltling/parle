@@ -1221,6 +1221,38 @@ PHP_METHOD(ParleRParser, errorInfo)
 }
 /* }}} */
 
+template <typename parser_obj_type> void
+_parser_reset(INTERNAL_FUNCTION_PARAMETERS, zend_class_entry *ce) noexcept
+{/*{{{*/
+	parser_obj_type *zppo;
+	zval *me;
+	zend_long tid;
+
+	if(zend_parse_method_parameters(ZEND_NUM_ARGS(), getThis(), "Ol", &me, ce, &tid) == FAILURE) {
+		return;
+	}
+
+	zppo = _php_parle_parser_fetch_zobj<parser_obj_type>(Z_OBJ_P(me));
+	auto &par = *zppo->par;
+
+	par.results.reset(static_cast<parle::id_type>(tid), par.sm);
+}
+/* }}} */
+
+/* {{{ public void Parser::reset(int $tokenId) */
+PHP_METHOD(ParleParser, reset)
+{
+	_parser_reset<ze_parle_parser_obj>(INTERNAL_FUNCTION_PARAM_PASSTHRU, ParleParser_ce);
+}
+/* }}} */
+
+/* {{{ public void RParser::reset(int $tokenId) */
+PHP_METHOD(ParleRParser, reset)
+{
+	_parser_reset<ze_parle_rparser_obj>(INTERNAL_FUNCTION_PARAM_PASSTHRU, ParleRParser_ce);
+}
+/* }}} */
+
 /* {{{ public void Stack::pop(void) */
 PHP_METHOD(ParleStack, pop)
 {
@@ -1366,6 +1398,10 @@ ZEND_BEGIN_ARG_INFO_EX(arginfo_parle_rparser_consume, 0, 0, 2)
 	ZEND_ARG_OBJ_INFO(0, lexer, Parle\\RLexer, 0)
 ZEND_END_ARG_INFO();
 
+ZEND_BEGIN_ARG_INFO_EX(arginfo_parle_parser_reset, 0, 0, 1)
+	ZEND_ARG_TYPE_INFO(0, tok, IS_LONG, 0)
+ZEND_END_ARG_INFO();
+
 ZEND_BEGIN_ARG_INFO_EX(arginfo_parle_parser_dump, 0, 0, 0)
 ZEND_END_ARG_INFO();
 
@@ -1446,6 +1482,7 @@ const zend_function_entry ParleParser_methods[] = {
 	PHP_ME(ParleParser, dump, arginfo_parle_parser_dump, ZEND_ACC_PUBLIC)
 	PHP_ME(ParleParser, trace, arginfo_parle_parser_trace, ZEND_ACC_PUBLIC)
 	PHP_ME(ParleParser, errorInfo, arginfo_parle_parser_errorinfo, ZEND_ACC_PUBLIC)
+	PHP_ME(ParleParser, reset, arginfo_parle_parser_reset, ZEND_ACC_PUBLIC)
 	PHP_FE_END
 };
 
@@ -1465,6 +1502,7 @@ const zend_function_entry ParleRParser_methods[] = {
 	PHP_ME(ParleRParser, dump, arginfo_parle_parser_dump, ZEND_ACC_PUBLIC)
 	PHP_ME(ParleRParser, trace, arginfo_parle_parser_trace, ZEND_ACC_PUBLIC)
 	PHP_ME(ParleRParser, errorInfo, arginfo_parle_parser_errorinfo, ZEND_ACC_PUBLIC)
+	PHP_ME(ParleRParser, reset, arginfo_parle_parser_reset, ZEND_ACC_PUBLIC)
 	PHP_FE_END
 };
 
