@@ -21,7 +21,7 @@
 	</stability>
 	<license uri="http://opensource.org/licenses/BSD-2-Clause">BSD 2-clause</license>
 	<notes>
-		- some
+		- Lexer::restart is renamed to Lexer::reset, same with RLexer
 	</notes>
 	<contents>
 		<dir name="/">
