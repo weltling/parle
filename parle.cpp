@@ -472,7 +472,7 @@ PHP_METHOD(ParleRLexer, advance)
 /* }}} */
 
 template<typename lexer_obj_type> void
-_lexer_restart(INTERNAL_FUNCTION_PARAMETERS, zend_class_entry *ce) noexcept
+_lexer_reset(INTERNAL_FUNCTION_PARAMETERS, zend_class_entry *ce) noexcept
 {/*{{{*/
 	lexer_obj_type *zplo;
 	zval *me;
@@ -495,17 +495,17 @@ _lexer_restart(INTERNAL_FUNCTION_PARAMETERS, zend_class_entry *ce) noexcept
 	lex.iter.reset(lex.in.begin() + pos, lex.in.begin() + pos);
 }/*}}}*/
 
-/* {{{ public void Lexer::restart(int $position) */
-PHP_METHOD(ParleLexer, restart)
+/* {{{ public void Lexer::reset(int $position) */
+PHP_METHOD(ParleLexer, reset)
 {
-	_lexer_restart<ze_parle_lexer_obj>(INTERNAL_FUNCTION_PARAM_PASSTHRU, ParleLexer_ce);
+	_lexer_reset<ze_parle_lexer_obj>(INTERNAL_FUNCTION_PARAM_PASSTHRU, ParleLexer_ce);
 }
 /* }}} */
 
-/* {{{ public void RLexer::restart(int $position) */
-PHP_METHOD(ParleRLexer, restart)
+/* {{{ public void RLexer::reset(int $position) */
+PHP_METHOD(ParleRLexer, reset)
 {
-	_lexer_restart<ze_parle_rlexer_obj>(INTERNAL_FUNCTION_PARAM_PASSTHRU, ParleRLexer_ce);
+	_lexer_reset<ze_parle_rlexer_obj>(INTERNAL_FUNCTION_PARAM_PASSTHRU, ParleRLexer_ce);
 }
 /* }}} */
 
@@ -1296,7 +1296,7 @@ ZEND_END_ARG_INFO();
 ZEND_BEGIN_ARG_INFO_EX(arginfo_parle_lexer_advance, 0, 0, 0)
 ZEND_END_ARG_INFO();
 
-ZEND_BEGIN_ARG_INFO_EX(arginfo_parle_lexer_restart, 0, 0, 1)
+ZEND_BEGIN_ARG_INFO_EX(arginfo_parle_lexer_reset, 0, 0, 1)
 	ZEND_ARG_TYPE_INFO(0, pos, IS_LONG, 0)
 ZEND_END_ARG_INFO();
 
@@ -1411,7 +1411,7 @@ const zend_function_entry ParleLexer_methods[] = {
 	PHP_ME(ParleLexer, build, arginfo_parle_lexer_build, ZEND_ACC_PUBLIC)
 	PHP_ME(ParleLexer, consume, arginfo_parle_lexer_consume, ZEND_ACC_PUBLIC)
 	PHP_ME(ParleLexer, advance, arginfo_parle_lexer_advance, ZEND_ACC_PUBLIC)
-	PHP_ME(ParleLexer, restart, arginfo_parle_lexer_restart, ZEND_ACC_PUBLIC)
+	PHP_ME(ParleLexer, reset, arginfo_parle_lexer_reset, ZEND_ACC_PUBLIC)
 	PHP_ME(ParleLexer, insertMacro, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(ParleLexer, dump, arginfo_parle_lexer_dump, ZEND_ACC_PUBLIC)
 	PHP_FE_END
@@ -1423,7 +1423,7 @@ const zend_function_entry ParleRLexer_methods[] = {
 	PHP_ME(ParleRLexer, build, arginfo_parle_lexer_build, ZEND_ACC_PUBLIC)
 	PHP_ME(ParleRLexer, consume, arginfo_parle_lexer_consume, ZEND_ACC_PUBLIC)
 	PHP_ME(ParleRLexer, advance, arginfo_parle_lexer_advance, ZEND_ACC_PUBLIC)
-	PHP_ME(ParleRLexer, restart, arginfo_parle_lexer_restart, ZEND_ACC_PUBLIC)
+	PHP_ME(ParleRLexer, reset, arginfo_parle_lexer_reset, ZEND_ACC_PUBLIC)
 	PHP_ME(ParleRLexer, pushState, arginfo_parle_lexer_pushstate, ZEND_ACC_PUBLIC)
 	PHP_ME(ParleRLexer, insertMacro, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(ParleRLexer, dump, arginfo_parle_lexer_dump, ZEND_ACC_PUBLIC)

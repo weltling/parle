@@ -21,7 +21,7 @@ $lex->build();
 $s = "can\ncmd\na cmd\ncmd again\nanother cmd";
 $lex->consume($s);
 
-$lex->restart(4);
+$lex->reset(4);
 $lex->bol = true;
 
 $lex->advance();
