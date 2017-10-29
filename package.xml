@@ -12,8 +12,8 @@
 	</lead>
 	<date>2017-10-29</date>
 	<version>
-		<release>0.7.1</release>
-		<api>0.7.1</api>
+		<release>0.7.2</release>
+		<api>0.7.2</api>
 	</version>
 	<stability>
 		<release>beta</release>
@@ -21,9 +21,7 @@
 	</stability>
 	<license uri="http://opensource.org/licenses/BSD-2-Clause">BSD 2-clause</license>
 	<notes>
-		- Lexer::restart() is renamed to Lexer::reset, same with RLexer
-		- Added reset() method to parser classes
-		- Improved property handling
+		- some
 	</notes>
 	<contents>
 		<dir name="/">
@@ -116,7 +114,12 @@
 				<file role="test" name="lexer_003.phpt"/>
 				<file role="test" name="lexer_003.json"/>
 				<file role="test" name="lexer_004.phpt"/>
+				<file role="test" name="lexer_005.phpt"/>
+				<file role="test" name="lexer_flags.phpt"/>
+				<file role="test" name="lexer_position_tracking.phpt"/>
 				<file role="test" name="reflection_001.phpt"/>
+				<file role="test" name="reflection_002.phpt"/>
+				<file role="test" name="stack_001.phpt"/>
 				<file role="test" name="words_001.phpt"/>
 				<file role="test" name="words_002.phpt"/>
 			</dir>
@@ -135,6 +138,23 @@
 	<providesextension>parle</providesextension>
 	<extsrcrelease />
 	<changelog>
+		<release>
+			<date>2017-10-29</date>
+			<version>
+				<release>0.7.1</release>
+				<api>0.7.1</api>
+			</version>
+			<stability>
+				<release>beta</release>
+				<api>beta</api>
+			</stability>
+			<license uri="http://opensource.org/licenses/BSD-2-Clause">BSD 2-clause</license>
+			<notes>
+				- Lexer::restart() is renamed to Lexer::reset, same with RLexer
+				- Added reset() method to parser classes
+				- Improved property handling
+			</notes>
+		</release>
 		<release>
 			<date>2017-10-01</date>
 			<version>
