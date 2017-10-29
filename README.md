@@ -106,7 +106,7 @@ do {
 				$msg = "Unknown token '{$tok->value}' at offset {$err->position}";
 			} else if (Parser::ERROR_NON_ASSOCIATIVE == $err->id) {
 				$tok = $err->token;
-				$msg = "Token '{$tok->id}' at offset {$lex->marker}";
+				$msg = "Token '{$tok->id}' at offset {$lex->marker} is not associative";
 			} else if (Parser::ERROR_SYNTAX == $err->id) {
 				$tok = $err->token;
 				$msg = "Syntax error at offset {$lex->marker}";
