@@ -451,6 +451,9 @@ _lexer_advance(INTERNAL_FUNCTION_PARAMETERS, zend_class_entry *ce) noexcept
 
 	try {
 		auto &lex = *zplo->lex;
+		if (lex.iter->first == lex.iter->eoi) {
+			return;
+		}
 		lex.iter++;
 	} catch (const std::exception &e) {
 		php_parle_rethrow_from_cpp(ParleLexerException_ce, e.what(), 0);
