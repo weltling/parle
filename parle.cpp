@@ -100,6 +100,7 @@ namespace parle {/*{{{*/
 
 		struct rlexer : public lexer {
 			rlexer() : lexer() {}
+			parle::parser::rparser *par;
 			sriterator iter;
 		};
 	}
