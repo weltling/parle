@@ -40,7 +40,6 @@
 #include "lexertl/lookup.hpp"
 #include "lexertl/iterator.hpp"
 #include "lexertl/debug.hpp"
-//#include "lexertl/iterator.hpp"
 #include "lexertl/match_results.hpp"
 #include "lexertl/state_machine.hpp"
 
@@ -73,18 +72,25 @@ namespace parle {/*{{{*/
 	}
 
 	namespace lexer {
+		struct token_cb {
+			zval cb;
+		};
+
+		struct lexer;
+		struct rlexer;
+
 		using state_machine = lexertl::basic_state_machine<char_type, id_type>;
 		using parle_rules = lexertl::basic_rules<char_type, char_type, id_type>;
 
 		using cmatch = lexertl::match_results<const char_type *, id_type>;
 		using crmatch = lexertl::recursive_match_results<const char_type *, id_type>;
-		using citerator = iterator<const char_type *, state_machine, cmatch>;
-		using criterator = iterator<const char_type *, state_machine, crmatch>;
+		using citerator = iterator<const char_type *, state_machine, cmatch, lexer, token_cb, id_type>;
+		using criterator = iterator<const char_type *, state_machine, crmatch, rlexer, token_cb, id_type>;
 
 		using smatch = lexertl::match_results<std::string::const_iterator, id_type>;
 		using srmatch = lexertl::recursive_match_results<std::string::const_iterator, id_type>;
-		using siterator = iterator<std::string::const_iterator, state_machine, smatch>;
-		using sriterator = iterator<std::string::const_iterator, state_machine, srmatch>;
+		using siterator = iterator<std::string::const_iterator, state_machine, smatch, lexer, token_cb, id_type>;
+		using sriterator = iterator<std::string::const_iterator, state_machine, srmatch, rlexer, token_cb, id_type>;
 
 		using generator = lexertl::basic_generator<parle_rules, state_machine>;
 		using debug = lexertl::basic_debug<state_machine, char_type, id_type>;
@@ -96,12 +102,18 @@ namespace parle {/*{{{*/
 			state_machine sm;
 			parle::parser::parser *par;
 			siterator iter;
+			siterator::cb_map cb_map;
+			void setCallback(id_type id, token_cb &cb)
+			{
+				cb_map.emplace(id, std::move(cb));
+			}
 		};
 
 		struct rlexer : public lexer {
 			rlexer() : lexer() {}
 			parle::parser::rparser *par;
 			sriterator iter;
+			sriterator::cb_map cb_map;
 		};
 	}
 
@@ -299,6 +311,50 @@ PHP_METHOD(ParleRLexer, push)
 }
 /* }}} */
 
+template<typename lexer_obj_type, typename iter_type> void
+_lexer_set_callback(INTERNAL_FUNCTION_PARAMETERS, zend_class_entry *ce) noexcept
+{/*{{{*/
+	lexer_obj_type *zplo;
+	zval *me, *cb;
+	parle::lexer::token_cb tcb;
+	zend_long id;
+	zend_string *cb_name;
+
+	if(zend_parse_method_parameters(ZEND_NUM_ARGS(), getThis(), "Olz", &me, ce, &id, &cb) == FAILURE) {
+		return;
+	}
+
+	zplo = _php_parle_lexer_fetch_zobj<lexer_obj_type>(Z_OBJ_P(me));
+
+	auto &lex = *zplo->lex;
+
+	if (!zend_is_callable(cb, 0, &cb_name)) {
+		zend_throw_exception_ex(ParleLexerException_ce, 0, "%s is not callable", ZSTR_VAL(cb_name));
+		zend_string_release(cb_name);
+		return;
+	}
+	zend_string_release(cb_name);
+
+	ZVAL_COPY(&tcb.cb, cb);
+	lex.setCallback(id, tcb);
+
+}/*}}}*/
+
+/* {{{ public void Lexer::setCallback(integer $id, callable $callback) */
+PHP_METHOD(ParleLexer, setCallback)
+{
+	_lexer_set_callback<ze_parle_lexer_obj, parle::lexer::siterator>(INTERNAL_FUNCTION_PARAM_PASSTHRU, ParleLexer_ce);
+}
+/* }}} */
+
+/* {{{ public void RLexer::setCallback(integer $id, callable $callback) */
+PHP_METHOD(ParleRLexer, setCallback)
+{
+	_lexer_set_callback<ze_parle_rlexer_obj, parle::lexer::sriterator>(INTERNAL_FUNCTION_PARAM_PASSTHRU, ParleRLexer_ce);
+}
+/* }}} */
+
+/* }}} */
 template<typename lexer_obj_type> void
 _lexer_build(INTERNAL_FUNCTION_PARAMETERS, zend_class_entry *ce) noexcept
 {/*{{{*/
@@ -352,7 +408,7 @@ _lexer_consume(INTERNAL_FUNCTION_PARAMETERS, zend_class_entry *ce) noexcept
 
 	try {
 		lex.in = std::string{in};
-		lex.iter = iter_type(lex.in.begin(), lex.in.end(), lex.sm);
+		lex.iter = iter_type(lex.in.begin(), lex.in.end(), lex.sm, lex);
 	} catch (const std::exception &e) {
 		php_parle_rethrow_from_cpp(ParleLexerException_ce, e.what(), 0);
 	}
@@ -832,25 +888,25 @@ PHP_METHOD(ParleRParser, push)
 }
 /* }}} */
 
-template <typename parser_obj_type, typename lexer_obj_type, typename iter_type> void
+template <typename parser_obj_type, typename lexer_obj_type, typename iter_type, typename prod_type> void
 _parser_validate(INTERNAL_FUNCTION_PARAMETERS, zend_class_entry *par_ce, zend_class_entry *lex_ce) noexcept
 {/*{{{*/
 	parser_obj_type *zppo;
 	lexer_obj_type *zplo;
-	zval *me, *lex;
+	zval *me, *zlex;
 	zend_string *in;
 
-	if(zend_parse_method_parameters(ZEND_NUM_ARGS(), getThis(), "OSO", &me, par_ce, &in, &lex, lex_ce) == FAILURE) {
+	if(zend_parse_method_parameters(ZEND_NUM_ARGS(), getThis(), "OSO", &me, par_ce, &in, &zlex, lex_ce) == FAILURE) {
 		return;
 	}
 
 	zppo = _php_parle_parser_fetch_zobj<parser_obj_type>(Z_OBJ_P(me));
-	zplo = _php_parle_lexer_fetch_zobj<lexer_obj_type>(Z_OBJ_P(lex));
+	zplo = _php_parle_lexer_fetch_zobj<lexer_obj_type>(Z_OBJ_P(zlex));
 
 	try {
-		auto &lex = *zplo->lex;
 		auto &par = *zppo->par;
-
+		par.lex = zplo->lex;
+		auto &lex = *par.lex;
 		if (lex.sm.empty()) {
 			zend_throw_exception(ParleLexerException_ce, "Lexer state machine is empty", 0);
 			return;
@@ -858,13 +914,12 @@ _parser_validate(INTERNAL_FUNCTION_PARAMETERS, zend_class_entry *par_ce, zend_cl
 			zend_throw_exception(ParleParserException_ce, "Parser state machine is empty", 0);
 			return;
 		}
-
-		iter_type iter(ZSTR_VAL(in), ZSTR_VAL(in) + ZSTR_LEN(in), lex.sm, true);
-		
-		/* Since it's not more than parse, nothing is saved into the object. */
-		parle::parser::match_results results(iter->id, par.sm);
-
-		RETURN_BOOL(parsertl::parse(par.sm, iter, results));
+		lex.in = ZSTR_VAL(in);
+		lex.iter = iter_type(lex.in.begin(), lex.in.end(), lex.sm, lex, true);
+		lex.par = zppo->par;
+		par.productions = prod_type{};
+		par.results = parle::parser::match_results{lex.iter->id, par.sm};
+		RETURN_BOOL(parsertl::parse(par.sm, lex.iter, par.results));
 	} catch (const std::exception &e) {
 		php_parle_rethrow_from_cpp(ParleParserException_ce, e.what(), 0);
 	}
@@ -875,14 +930,14 @@ _parser_validate(INTERNAL_FUNCTION_PARAMETERS, zend_class_entry *par_ce, zend_cl
 /* {{{ public boolean Parser::validate(void) */
 PHP_METHOD(ParleParser, validate)
 {
-	_parser_validate<ze_parle_parser_obj, ze_parle_lexer_obj, parle::lexer::citerator>(INTERNAL_FUNCTION_PARAM_PASSTHRU, ParleParser_ce, ParleLexer_ce);
+	_parser_validate<ze_parle_parser_obj, ze_parle_lexer_obj, parle::lexer::siterator, parle::parser::parle_productions>(INTERNAL_FUNCTION_PARAM_PASSTHRU, ParleParser_ce, ParleLexer_ce);
 }
 /* }}} */
 
 /* {{{ public boolean RParser::validate(void) */
 PHP_METHOD(ParleRParser, validate)
 {
-	_parser_validate<ze_parle_rparser_obj, ze_parle_rlexer_obj, parle::lexer::criterator>(INTERNAL_FUNCTION_PARAM_PASSTHRU, ParleRParser_ce, ParleRLexer_ce);
+	_parser_validate<ze_parle_rparser_obj, ze_parle_rlexer_obj, parle::lexer::sriterator, parle::parser::parle_rproductions>(INTERNAL_FUNCTION_PARAM_PASSTHRU, ParleRParser_ce, ParleRLexer_ce);
 }
 /* }}} */
 
@@ -1019,15 +1074,15 @@ _parser_consume(INTERNAL_FUNCTION_PARAMETERS, zend_class_entry *par_ce, zend_cla
 {/*{{{*/
 	parser_obj_type *zppo;
 	lexer_obj_type *zplo;
-	zval *me, *lex;
+	zval *me, *zlex;
 	zend_string *in;
 
-	if(zend_parse_method_parameters(ZEND_NUM_ARGS(), getThis(), "OSO", &me, par_ce, &in, &lex, lex_ce) == FAILURE) {
+	if(zend_parse_method_parameters(ZEND_NUM_ARGS(), getThis(), "OSO", &me, par_ce, &in, &zlex, lex_ce) == FAILURE) {
 		return;
 	}
 
 	zppo = _php_parle_parser_fetch_zobj<parser_obj_type>(Z_OBJ_P(me));
-	zplo = _php_parle_lexer_fetch_zobj<lexer_obj_type>(Z_OBJ_P(lex));
+	zplo = _php_parle_lexer_fetch_zobj<lexer_obj_type>(Z_OBJ_P(zlex));
 
 	try {
 		auto &par = *zppo->par;
@@ -1041,7 +1096,7 @@ _parser_consume(INTERNAL_FUNCTION_PARAMETERS, zend_class_entry *par_ce, zend_cla
 			return;
 		}
 		lex.in = ZSTR_VAL(in);
-		lex.iter = iter_type(lex.in.begin(), lex.in.end(), lex.sm, true);
+		lex.iter = iter_type(lex.in.begin(), lex.in.end(), lex.sm, lex, true);
 		lex.par = zppo->par;
 		par.productions = prod_type{};
 		par.results = parle::parser::match_results{lex.iter->id, par.sm};
@@ -1343,6 +1398,11 @@ PARLE_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(arginfo_parle_lexer_pushstate, 0, 1, IS
 	ZEND_ARG_TYPE_INFO(0, state, IS_STRING, 0)
 ZEND_END_ARG_INFO();
 
+ZEND_BEGIN_ARG_INFO_EX(arginfo_parle_lexer_set_callback, 0, 0, 2)
+	ZEND_ARG_TYPE_INFO(0, id, IS_LONG, 0)
+	ZEND_ARG_INFO(0, callback)
+ZEND_END_ARG_INFO();
+
 ZEND_BEGIN_ARG_INFO_EX(arginfo_parle_parser_token, 0, 0, 1)
 	ZEND_ARG_TYPE_INFO(0, tok, IS_STRING, 0)
 ZEND_END_ARG_INFO();
@@ -1454,6 +1514,7 @@ const zend_function_entry ParleLexer_methods[] = {
 	PHP_ME(ParleLexer, reset, arginfo_parle_lexer_reset, ZEND_ACC_PUBLIC)
 	PHP_ME(ParleLexer, insertMacro, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(ParleLexer, dump, arginfo_parle_lexer_dump, ZEND_ACC_PUBLIC)
+	PHP_ME(ParleLexer, setCallback, arginfo_parle_lexer_set_callback, ZEND_ACC_PUBLIC)
 	PHP_FE_END
 };
 
@@ -1467,6 +1528,7 @@ const zend_function_entry ParleRLexer_methods[] = {
 	PHP_ME(ParleRLexer, pushState, arginfo_parle_lexer_pushstate, ZEND_ACC_PUBLIC)
 	PHP_ME(ParleRLexer, insertMacro, NULL, ZEND_ACC_PUBLIC)
 	PHP_ME(ParleRLexer, dump, arginfo_parle_lexer_dump, ZEND_ACC_PUBLIC)
+	PHP_ME(ParleRLexer, setCallback, arginfo_parle_lexer_set_callback, ZEND_ACC_PUBLIC)
 	PHP_FE_END
 };
 
@@ -1537,6 +1599,12 @@ template<typename lexer_type> void
 php_parle_lexer_obj_dtor(lexer_type *zplo) noexcept
 {/*{{{*/
 	zend_object_std_dtor(&zplo->zo);
+
+	auto it = zplo->lex->cb_map.begin();
+	while (zplo->lex->cb_map.end() != it) {
+		zval_ptr_dtor(&it->second.cb);
+		zplo->lex->cb_map.erase(it++);
+	}
 
 	delete zplo->lex;
 }/*}}}*/

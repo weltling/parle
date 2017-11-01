@@ -4,6 +4,7 @@
 #define PARLE_LEXER_ITERATOR_HPP
 
 #include <iterator>
+#include <unordered_map>
 #include "lexertl/lookup.hpp"
 #include "lexertl/runtime_error.hpp"
 
@@ -13,7 +14,7 @@ namespace parle
 {
 namespace lexer
 {
-template<typename iter, typename sm_type, typename results>
+template<typename iter, typename sm_type, typename results, typename lexer_obj_type, typename token_cb_type, typename id_type>
 class iterator
 {
 public:
@@ -22,17 +23,21 @@ public:
 	using pointer = const value_type *;
 	using reference = const value_type &;
 	using iterator_category = std::forward_iterator_tag;
+	using cb_map = std::unordered_map<id_type, token_cb_type>;
 
 	iterator() :
 		_results(iter(), iter()),
-		_sm(nullptr)
+		_sm(nullptr),
+		_lex(nullptr)
 	{
 	}
 
-	iterator(const iter &start_, const iter &end_, const sm_type &sm, bool do_next = false) :
+	iterator(const iter &start_, const iter &end_, const sm_type &sm, lexer_obj_type &lex, bool do_next = false) :
 		_results(start_, end_),
-		_sm(&sm)
+		_sm(&sm),
+		_lex(&lex)
 	{
+
 		if (do_next) {
 			lookup();
 		}
@@ -57,6 +62,7 @@ public:
 	{
 		_results = rhs_._results;
 		_sm = rhs_._sm;
+		_lex = rhs_._lex;
 	}
 
 	// Only need this because of warnings with gcc with -Weffc++
@@ -66,6 +72,7 @@ public:
 		{
 			_results = rhs_._results;
 			_sm = rhs_._sm;
+			_lex = rhs_._lex;
 		}
 
 		return *this;
@@ -109,10 +116,28 @@ public:
 private:
 	value_type _results;
 	const sm_type *_sm;
+	lexer_obj_type *_lex;
 
 	void lookup()
 	{
 		lexertl::lookup(*_sm, _results);
+
+		auto it = _lex->cb_map.find(_results.id);
+		if (_lex->cb_map.end() != it) {
+			zval result;
+			token_cb_type cb = it->second;
+			zend_fcall_info fci;
+			zend_fcall_info_cache fcc;
+
+			// TODO error check
+			zend_fcall_info_init(&cb.cb, 0, &fci, &fcc, NULL, NULL);
+
+			fci.retval = &result;
+			fci.param_count = 0;
+		//	fci.no_separation = 1;
+
+			int ret = zend_call_function(&fci, &fcc);
+		}
 
 		if (_results.first == _results.eoi)
 		{
