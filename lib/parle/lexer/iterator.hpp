@@ -122,25 +122,38 @@ private:
 	{
 		lexertl::lookup(*_sm, _results);
 
-		auto it = _lex->cb_map.find(_results.id);
-		if (_lex->cb_map.end() != it) {
-			zval result;
-			token_cb_type cb = it->second;
-			zend_fcall_info fci;
-			zend_fcall_info_cache fcc;
+		if (_lex->cb_map.size() > 0) {
+			auto it = _lex->cb_map.find(_results.id);
+			if (_lex->cb_map.end() != it) {
+				zval result;
+				token_cb_type cb = it->second;
+				zend_fcall_info fci;
+				zend_fcall_info_cache fcc;
 
-			// TODO error check
-			zend_fcall_info_init(&cb.cb, 0, &fci, &fcc, NULL, NULL);
+				if (FAILURE == zend_fcall_info_init(&cb.cb, 0, &fci, &fcc, NULL, NULL)) {
+					zend_throw_exception_ex(ParleLexerException_ce, 0, "Failed to prepare function call");
+					if (_results.first == _results.eoi) {
+						_sm = nullptr;
+					}
+					return;
+				}
 
-			fci.retval = &result;
-			fci.param_count = 0;
-		//	fci.no_separation = 1;
+				fci.retval = &result;
+				fci.param_count = 0;
 
-			int ret = zend_call_function(&fci, &fcc);
+				if (FAILURE == zend_call_function(&fci, &fcc)) {
+					zend_throw_exception_ex(ParleLexerException_ce, 0, "Callback execution failed");
+					if (_results.first == _results.eoi) {
+						_sm = nullptr;
+					}
+					return;
+				}
+
+				// TODO In further might check the return value for whatever reasons
+			}
 		}
 
-		if (_results.first == _results.eoi)
-		{
+		if (_results.first == _results.eoi) {
 			_sm = nullptr;
 		}
 	}
