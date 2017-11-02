@@ -131,7 +131,7 @@ private:
 				zend_fcall_info_cache fcc;
 
 				if (FAILURE == zend_fcall_info_init(&cb.cb, 0, &fci, &fcc, NULL, NULL)) {
-					zend_throw_exception_ex(ParleLexerException_ce, 0, "Failed to prepare function call");
+					zend_throw_exception_ex(nullptr, 0, "Failed to prepare function call");
 					if (_results.first == _results.eoi) {
 						_sm = nullptr;
 					}
@@ -142,7 +142,7 @@ private:
 				fci.param_count = 0;
 
 				if (FAILURE == zend_call_function(&fci, &fcc)) {
-					zend_throw_exception_ex(ParleLexerException_ce, 0, "Callback execution failed");
+					zend_throw_exception_ex(nullptr, 0, "Callback execution failed");
 					if (_results.first == _results.eoi) {
 						_sm = nullptr;
 					}
