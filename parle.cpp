@@ -103,10 +103,6 @@ namespace parle {/*{{{*/
 			parle::parser::parser *par;
 			siterator iter;
 			siterator::cb_map cb_map;
-			void setCallback(id_type id, token_cb &cb)
-			{
-				cb_map.emplace(id, std::move(cb));
-			}
 		};
 
 		struct rlexer : public lexer {
@@ -336,8 +332,7 @@ _lexer_set_callback(INTERNAL_FUNCTION_PARAMETERS, zend_class_entry *ce) noexcept
 	zend_string_release(cb_name);
 
 	ZVAL_COPY(&tcb.cb, cb);
-	lex.setCallback(id, tcb);
-
+	lex.cb_map.emplace(static_cast<parle::id_type>(id), std::move(tcb));
 }/*}}}*/
 
 /* {{{ public void Lexer::setCallback(integer $id, callable $callback) */
