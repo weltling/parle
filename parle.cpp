@@ -1627,7 +1627,7 @@ php_parle_lexer_obj_ctor(zend_class_entry *ce, zend_object_handlers *obj_handler
 {/*{{{*/
 	lexer_obj_type *zplo;
 
-	zplo = (lexer_obj_type *)ecalloc(1, sizeof(lexer_type) + zend_object_properties_size(ce));
+	zplo = static_cast<lexer_obj_type *>(ecalloc(1, sizeof(lexer_type) + zend_object_properties_size(ce)));
 
 	zend_object_std_init(&zplo->zo, ce);
 	object_properties_init(&zplo->zo, ce);
@@ -1900,7 +1900,7 @@ php_parle_parser_obj_ctor(zend_class_entry *ce, zend_object_handlers *obj_handle
 {/*{{{*/
 	parser_obj_type *zppo;
 
-	zppo = (parser_obj_type *)ecalloc(1, sizeof(parser_obj_type) + zend_object_properties_size(ce));
+	zppo = static_cast<parser_obj_type *>(ecalloc(1, sizeof(parser_obj_type) + zend_object_properties_size(ce)));
 
 	zend_object_std_init(&zppo->zo, ce);
 	object_properties_init(&zppo->zo, ce);
@@ -2184,7 +2184,7 @@ php_parle_stack_object_init(zend_class_entry *ce) noexcept
 {/*{{{*/
 	ze_parle_stack_obj *zpso;
 
-	zpso = (ze_parle_stack_obj *)ecalloc(1, sizeof(ze_parle_stack_obj) + zend_object_properties_size(ce));
+	zpso = static_cast<ze_parle_stack_obj *>(ecalloc(1, sizeof(ze_parle_stack_obj) + zend_object_properties_size(ce)));
 
 	zend_object_std_init(&zpso->zo, ce);
 	object_properties_init(&zpso->zo, ce);
