@@ -124,8 +124,11 @@ namespace parle {/*{{{*/
 			siterator::cb_map cb_map;
 		};
 
-		struct rlexer : public lexer {
-			rlexer() : lexer() {}
+		struct rlexer {
+			rlexer() : in(""), par(nullptr) {}
+			std::string in;
+			parle_rules rules;
+			state_machine sm;
 			parle::parser::rparser *par;
 			sriterator iter;
 			sriterator::cb_map cb_map;
@@ -149,8 +152,11 @@ namespace parle {/*{{{*/
 			parle_productions productions;
 		};
 
-		struct rparser : public parser {
-			rparser() : parser() {}
+		struct rparser {
+			rparser() : lex(nullptr) {}
+			parle_rules rules;
+			state_machine sm;
+			match_results results;
 			parle::lexer::rlexer *lex;
 			parle_rproductions productions;
 		};
