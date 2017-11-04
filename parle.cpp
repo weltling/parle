@@ -1178,7 +1178,7 @@ _parser_trace(INTERNAL_FUNCTION_PARAMETERS, zend_class_entry *ce) noexcept
 			case parsertl::accept:
 				RETURN_STRINGL("accept", sizeof("accept")-1);
 				break;
-			case parsertl::reduce:
+			case parsertl::reduce: {
 				/* TODO symbols should be setup only once. */
 				parsertl::rules::string_vector symbols;
 				par.rules.terminals(symbols);
@@ -1197,6 +1197,10 @@ _parser_trace(INTERNAL_FUNCTION_PARAMETERS, zend_class_entry *ce) noexcept
 				}
 
 				RETURN_STRINGL(s.c_str(), s.size());
+				}
+				break;
+			case parsertl::error:
+				// pass
 				break;
 		}
 	} catch (const std::exception &e) {
