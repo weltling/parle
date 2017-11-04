@@ -274,17 +274,17 @@ PHP_METHOD(ParleLexer, push)
 /* {{{ public void RLexer::push(...) */
 PHP_METHOD(ParleRLexer, push)
 {
-	ze_parle_rlexer_obj *zplo;
-	zend_string *regex, *dfa, *new_dfa;
-	zend_long id, user_id = -1;
-	zval *me;
-
 #define PREPARE_PUSH() \
 	zplo = php_parle_rlexer_fetch_obj(Z_OBJ_P(me)); \
 	auto &lex = *zplo->lex; \
 	if (user_id < 0) user_id = lex.iter->npos();
 
 	try {
+		ze_parle_rlexer_obj *zplo;
+		zend_string *regex, *dfa, *new_dfa;
+		zend_long id, user_id = -1;
+		zval *me;
+
 		// Rules for INITIAL
 		if(zend_parse_method_parameters_ex(ZEND_PARSE_PARAMS_QUIET, ZEND_NUM_ARGS(), getThis(), "OSl|l", &me, ParleRLexer_ce, &regex, &id, &user_id) == SUCCESS) {
 			PREPARE_PUSH()
