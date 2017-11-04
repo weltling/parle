@@ -14,7 +14,7 @@ $lex->push("=", 2);
 $lex->push("\d+", 3);
 $lex->push(";", 4);
 $lex->push("[ ]+", 42);
-$lex->setCallback(42, function () use ($lex) {
+$lex->callout(42, function () use ($lex) {
 	echo "Custom handler called, token ", $lex->getToken()->id, " won't return\n";
 	do {
 		$lex->advance();
@@ -30,7 +30,7 @@ $f = function () use ($lex)
 	} while (24 == $tok->id);
 };
 $lex->push("[\n]+", 24);
-$lex->setCallback(24, $f);
+$lex->callout(24, $f);
 
 $lex->build();
 

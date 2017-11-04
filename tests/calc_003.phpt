@@ -39,7 +39,7 @@ $lex->push("\\d+", $p->tokenId("INTEGER"));
 $lex->push("[(]", $p->tokenId("'('"));
 $lex->push("[)]", $p->tokenId("')'"));
 $lex->push("\\s+", 42);
-$lex->setCallback(42, function () use ($lex) {
+$lex->callout(42, function () use ($lex) {
 	do {
 		$lex->advance();
 		$tok = $lex->getToken();
