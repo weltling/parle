@@ -1996,7 +1996,6 @@ php_parle_rparser_read_property(zval *object, zval *member, int type, void **cac
 template <typename parser_obj_type> void
 php_parle_par_write_property(zval *object, zval *member, zval *value, void **cache_slot) noexcept
 {/*{{{*/
-	parser_obj_type *zppo;
 	zval tmp_member;
 
 	if (Z_TYPE_P(member) != IS_STRING) {
@@ -2005,8 +2004,6 @@ php_parle_par_write_property(zval *object, zval *member, zval *value, void **cac
 		member = &tmp_member;
 		cache_slot = NULL;
 	}
-
-	zppo = _php_parle_parser_fetch_zobj<parser_obj_type>(Z_OBJ_P(object));
 
 	PARLE_PAR_CHECK_THROW_RO_PROP("action")
 	else PARLE_PAR_CHECK_THROW_RO_PROP("reduceId")
