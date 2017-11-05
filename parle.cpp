@@ -547,14 +547,14 @@ _lexer_reset(INTERNAL_FUNCTION_PARAMETERS, zend_class_entry *ce) noexcept
 
 	auto &lex = *zplo->lex;
 
-	if (pos < 0 || static_cast<parle::id_type>(pos) > lex.in.length()) {
+	if (pos < 0 || static_cast<size_t>(pos) > lex.in.length()) {
 		zend_throw_exception_ex(ParleLexerException_ce, 0, "Invalid offset " ZEND_LONG_FMT, pos);
 		return;
 	}
 
 	try {
 		// TODO check the behavior when inside parser
-		lex.iter.reset(lex.in.begin() + pos, lex.in.begin() + pos);
+		lex.iter.reset(lex.in.begin() + pos, lex.in.begin() + static_cast<size_t>(pos));
 	} catch (const std::exception &e) {
 		php_parle_rethrow_from_cpp(ParleLexerException_ce, e.what(), 0);
 	}
