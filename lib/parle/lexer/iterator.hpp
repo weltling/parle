@@ -54,7 +54,11 @@ public:
 			throw lexertl::runtime_error("Can only reset to a forward position");
 		}
 		_results.first = start_;
-		_results.second = end_;
+		_results.second = start_;
+		_results.eoi = end_;
+		_results.id = 0;
+		_results.bol = true;
+		_results.user_id = _results.npos();
 	}
 
 	// Only need this because of warnings with gcc with -Weffc++
