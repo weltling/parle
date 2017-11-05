@@ -53,12 +53,10 @@ public:
 		if (_results.first > start_) {
 			throw lexertl::runtime_error("Can only reset to a forward position");
 		}
-		_results.first = start_;
-		_results.second = start_;
-		_results.eoi = end_;
-		_results.id = 0;
-		_results.bol = true;
-		_results.user_id = _results.npos();
+//		id_type bak = _results.state;
+		_results.reset(start_, end_);
+//		_results.state = bak;
+
 	}
 
 	// Only need this because of warnings with gcc with -Weffc++
@@ -141,7 +139,7 @@ private:
 					}
 					return;
 				}
-
+				ZVAL_NULL(&result);
 				fci.retval = &result;
 				fci.param_count = 0;
 
@@ -153,7 +151,12 @@ private:
 					return;
 				}
 
-				// TODO In further might check the return value for whatever reasons
+#if 0
+				convert_to_boolean(&result);
+				if (Z_TYPE(result) == IS_FALSE && _results.first != _results.eoi) {
+					lexertl::lookup(*_sm, _results);
+				}
+#endif
 			}
 		}
 
