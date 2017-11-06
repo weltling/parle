@@ -7,35 +7,38 @@ Lexer token callback
 
 use Parle\{Token, Lexer};
 
+$in = '$x =  42;' . "\n\n" . '$y;';
+
 $lex = new Lexer;
 
 $lex->push("\$[a-zA-Z_][a-zA-Z0-9_]*", 1);
 $lex->push("=", 2);
 $lex->push("\d+", 3);
 $lex->push(";", 4);
-$lex->push("[ ]+", 42);
-$lex->callout(42, function () use ($lex) {
-	echo "Custom handler called, token ", $lex->getToken()->id, " won't return\n";
-	do {
-		$lex->advance();
-		$tok = $lex->getToken();
-	} while (42 == $tok->id);
+$lex->push("[ ]", 42);
+$lex->callout(42, function () use ($in, $lex) {
+	$tok = $lex->getToken();
+	echo "Custom handler called, token ", $tok->id, " won't return\n";
+	$i = $lex->cursor;
+	while (" " == $in[$i]) $i++;
+	$lex->reset($i);
+	$lex->advance();
 });
-$f = function () use ($lex)
+$f = function () use ($in, $lex)
 {
-	echo "Custom handler called, token ", $lex->getToken()->id, " won't return\n";
-	do {
-		$lex->advance();
-		$tok = $lex->getToken();
-	} while (24 == $tok->id);
+	$tok = $lex->getToken();
+	echo "Custom handler called, token ", $tok->id, " won't return\n";
+	$i = $lex->cursor;
+	while ("\n" == $in[$i]) $i++;
+	$lex->reset($i);
+	$lex->advance();
 };
-$lex->push("[\n]+", 24);
+$lex->push("[\n]", 24);
 $lex->callout(24, $f);
 
 $lex->build();
 
-$s = '$x = 42;' . "\n" . '$y;';
-$lex->consume($s);
+$lex->consume($in);
 
 do {
 	$lex->advance();
