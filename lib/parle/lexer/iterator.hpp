@@ -53,10 +53,9 @@ public:
 		if (_results.first > start_) {
 			throw lexertl::runtime_error("Can only reset to a forward position");
 		}
-//		id_type bak = _results.state;
-		_results.reset(start_, end_);
-//		_results.state = bak;
-
+		_results.first = start_;
+		_results.second = start_;
+		_results.eoi = end_;
 	}
 
 	// Only need this because of warnings with gcc with -Weffc++
