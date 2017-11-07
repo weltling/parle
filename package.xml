@@ -109,12 +109,14 @@
 			<dir name="tests">
 				<file role="test" name="calc_001.phpt"/>
 				<file role="test" name="calc_002.phpt"/>
+				<file role="test" name="calc_003.phpt"/>
 				<file role="test" name="lexer_001.phpt"/>
 				<file role="test" name="lexer_002.phpt"/>
 				<file role="test" name="lexer_003.phpt"/>
 				<file role="test" name="lexer_003.json"/>
 				<file role="test" name="lexer_004.phpt"/>
 				<file role="test" name="lexer_005.phpt"/>
+				<file role="test" name="lexer_006.phpt"/>
 				<file role="test" name="lexer_flags.phpt"/>
 				<file role="test" name="lexer_position_tracking.phpt"/>
 				<file role="test" name="reflection_001.phpt"/>
