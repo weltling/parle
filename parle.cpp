@@ -553,7 +553,8 @@ _lexer_reset(INTERNAL_FUNCTION_PARAMETERS, zend_class_entry *ce) noexcept
 	}
 
 	try {
-		lex.iter.reset(lex.in.begin() + static_cast<size_t>(pos), lex.in.end());
+		decltype(lex.iter) iter(lex.in.begin() + static_cast<size_t>(pos), lex.in.end(), lex);
+		lex.iter = iter;
 	} catch (const std::exception &e) {
 		php_parle_rethrow_from_cpp(ParleLexerException_ce, e.what(), 0);
 	}
