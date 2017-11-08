@@ -409,7 +409,7 @@ _lexer_consume(INTERNAL_FUNCTION_PARAMETERS, zend_class_entry *ce) noexcept
 
 	try {
 		lex.in = std::string{in};
-		lex.iter = iter_type(lex.in.begin(), lex.in.end(), lex.sm, lex);
+		lex.iter = iter_type(lex.in.begin(), lex.in.end(), lex);
 	} catch (const std::exception &e) {
 		php_parle_rethrow_from_cpp(ParleLexerException_ce, e.what(), 0);
 	}
@@ -919,7 +919,7 @@ _parser_validate(INTERNAL_FUNCTION_PARAMETERS, zend_class_entry *par_ce, zend_cl
 			return;
 		}
 		lex.in = ZSTR_VAL(in);
-		lex.iter = iter_type(lex.in.begin(), lex.in.end(), lex.sm, lex, true);
+		lex.iter = iter_type(lex.in.begin(), lex.in.end(), lex, true);
 		lex.par = zppo->par;
 		par.productions = prod_type{};
 		par.results = parle::parser::match_results{lex.iter->id, par.sm};
@@ -1100,7 +1100,7 @@ _parser_consume(INTERNAL_FUNCTION_PARAMETERS, zend_class_entry *par_ce, zend_cla
 			return;
 		}
 		lex.in = ZSTR_VAL(in);
-		lex.iter = iter_type(lex.in.begin(), lex.in.end(), lex.sm, lex, true);
+		lex.iter = iter_type(lex.in.begin(), lex.in.end(), lex, true);
 		lex.par = zppo->par;
 		par.productions = prod_type{};
 		par.results = parle::parser::match_results{lex.iter->id, par.sm};

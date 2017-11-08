@@ -32,9 +32,9 @@ public:
 	{
 	}
 
-	iterator(const iter &start_, const iter &end_, const sm_type &sm, lexer_obj_type &lex, bool do_next = false) :
+	iterator(const iter &start_, const iter &end_, lexer_obj_type &lex, bool do_next = false) :
 		_results(start_, end_),
-		_sm(&sm),
+		_sm(&lex.sm),
 		_lex(&lex)
 	{
 
