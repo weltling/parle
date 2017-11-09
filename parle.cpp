@@ -313,7 +313,7 @@ PHP_METHOD(ParleRLexer, push)
 }
 /* }}} */
 
-template<typename lexer_obj_type, typename iter_type> void
+template<typename lexer_obj_type> void
 _lexer_callout(INTERNAL_FUNCTION_PARAMETERS, zend_class_entry *ce) noexcept
 {/*{{{*/
 	lexer_obj_type *zplo;
@@ -344,14 +344,14 @@ _lexer_callout(INTERNAL_FUNCTION_PARAMETERS, zend_class_entry *ce) noexcept
 /* {{{ public void Lexer::callout(integer $id, callable $callback) */
 PHP_METHOD(ParleLexer, callout)
 {
-	_lexer_callout<ze_parle_lexer_obj, parle::lexer::siterator>(INTERNAL_FUNCTION_PARAM_PASSTHRU, ParleLexer_ce);
+	_lexer_callout<ze_parle_lexer_obj>(INTERNAL_FUNCTION_PARAM_PASSTHRU, ParleLexer_ce);
 }
 /* }}} */
 
 /* {{{ public void RLexer::callout(integer $id, callable $callback) */
 PHP_METHOD(ParleRLexer, callout)
 {
-	_lexer_callout<ze_parle_rlexer_obj, parle::lexer::sriterator>(INTERNAL_FUNCTION_PARAM_PASSTHRU, ParleRLexer_ce);
+	_lexer_callout<ze_parle_rlexer_obj>(INTERNAL_FUNCTION_PARAM_PASSTHRU, ParleRLexer_ce);
 }
 /* }}} */
 
@@ -391,7 +391,7 @@ PHP_METHOD(ParleRLexer, build)
 }
 /* }}} */
 
-template<typename lexer_obj_type, typename iter_type> void
+template<typename lexer_obj_type> void
 _lexer_consume(INTERNAL_FUNCTION_PARAMETERS, zend_class_entry *ce) noexcept
 {/*{{{*/
 	lexer_obj_type *zplo;
@@ -409,7 +409,7 @@ _lexer_consume(INTERNAL_FUNCTION_PARAMETERS, zend_class_entry *ce) noexcept
 
 	try {
 		lex.in = std::string{in};
-		lex.iter = iter_type(lex.in.begin(), lex.in.end(), lex);
+		lex.iter = {lex.in.begin(), lex.in.end(), lex};
 	} catch (const std::exception &e) {
 		php_parle_rethrow_from_cpp(ParleLexerException_ce, e.what(), 0);
 	}
@@ -418,14 +418,14 @@ _lexer_consume(INTERNAL_FUNCTION_PARAMETERS, zend_class_entry *ce) noexcept
 /* {{{ public void Lexer::consume(string $s) */
 PHP_METHOD(ParleLexer, consume)
 {
-	_lexer_consume<ze_parle_lexer_obj, parle::lexer::siterator>(INTERNAL_FUNCTION_PARAM_PASSTHRU, ParleLexer_ce);
+	_lexer_consume<ze_parle_lexer_obj>(INTERNAL_FUNCTION_PARAM_PASSTHRU, ParleLexer_ce);
 }
 /* }}} */
 
 /* {{{ public void RLexer::consume(string $s) */
 PHP_METHOD(ParleRLexer, consume)
 {
-	_lexer_consume<ze_parle_rlexer_obj, parle::lexer::sriterator>(INTERNAL_FUNCTION_PARAM_PASSTHRU, ParleRLexer_ce);
+	_lexer_consume<ze_parle_rlexer_obj>(INTERNAL_FUNCTION_PARAM_PASSTHRU, ParleRLexer_ce);
 }
 /* }}} */
 
@@ -553,8 +553,7 @@ _lexer_reset(INTERNAL_FUNCTION_PARAMETERS, zend_class_entry *ce) noexcept
 	}
 
 	try {
-		decltype(lex.iter) iter(lex.in.begin() + static_cast<size_t>(pos), lex.in.end(), lex);
-		lex.iter = iter;
+		lex.iter = {lex.in.begin() + static_cast<size_t>(pos), lex.in.end(), lex};
 	} catch (const std::exception &e) {
 		php_parle_rethrow_from_cpp(ParleLexerException_ce, e.what(), 0);
 	}
@@ -893,7 +892,7 @@ PHP_METHOD(ParleRParser, push)
 }
 /* }}} */
 
-template <typename parser_obj_type, typename lexer_obj_type, typename iter_type, typename prod_type> void
+template <typename parser_obj_type, typename lexer_obj_type> void
 _parser_validate(INTERNAL_FUNCTION_PARAMETERS, zend_class_entry *par_ce, zend_class_entry *lex_ce) noexcept
 {/*{{{*/
 	parser_obj_type *zppo;
@@ -920,10 +919,10 @@ _parser_validate(INTERNAL_FUNCTION_PARAMETERS, zend_class_entry *par_ce, zend_cl
 			return;
 		}
 		lex.in = ZSTR_VAL(in);
-		lex.iter = iter_type(lex.in.begin(), lex.in.end(), lex, true);
+		lex.iter = {lex.in.begin(), lex.in.end(), lex, true};
 		lex.par = zppo->par;
-		par.productions = prod_type{};
-		par.results = parle::parser::match_results{lex.iter->id, par.sm};
+		par.productions = {};
+		par.results = {lex.iter->id, par.sm};
 		RETURN_BOOL(parsertl::parse(par.sm, lex.iter, par.results));
 	} catch (const std::exception &e) {
 		php_parle_rethrow_from_cpp(ParleParserException_ce, e.what(), 0);
@@ -935,14 +934,14 @@ _parser_validate(INTERNAL_FUNCTION_PARAMETERS, zend_class_entry *par_ce, zend_cl
 /* {{{ public boolean Parser::validate(void) */
 PHP_METHOD(ParleParser, validate)
 {
-	_parser_validate<ze_parle_parser_obj, ze_parle_lexer_obj, parle::lexer::siterator, parle::parser::parle_productions>(INTERNAL_FUNCTION_PARAM_PASSTHRU, ParleParser_ce, ParleLexer_ce);
+	_parser_validate<ze_parle_parser_obj, ze_parle_lexer_obj>(INTERNAL_FUNCTION_PARAM_PASSTHRU, ParleParser_ce, ParleLexer_ce);
 }
 /* }}} */
 
 /* {{{ public boolean RParser::validate(void) */
 PHP_METHOD(ParleRParser, validate)
 {
-	_parser_validate<ze_parle_rparser_obj, ze_parle_rlexer_obj, parle::lexer::sriterator, parle::parser::parle_rproductions>(INTERNAL_FUNCTION_PARAM_PASSTHRU, ParleRParser_ce, ParleRLexer_ce);
+	_parser_validate<ze_parle_rparser_obj, ze_parle_rlexer_obj>(INTERNAL_FUNCTION_PARAM_PASSTHRU, ParleRParser_ce, ParleRLexer_ce);
 }
 /* }}} */
 
@@ -1074,7 +1073,7 @@ PHP_METHOD(ParleRParser, advance)
 }
 /* }}} */
 
-template <typename parser_obj_type, typename lexer_obj_type, typename iter_type, typename prod_type> void
+template <typename parser_obj_type, typename lexer_obj_type> void
 _parser_consume(INTERNAL_FUNCTION_PARAMETERS, zend_class_entry *par_ce, zend_class_entry *lex_ce) noexcept
 {/*{{{*/
 	parser_obj_type *zppo;
@@ -1101,10 +1100,10 @@ _parser_consume(INTERNAL_FUNCTION_PARAMETERS, zend_class_entry *par_ce, zend_cla
 			return;
 		}
 		lex.in = ZSTR_VAL(in);
-		lex.iter = iter_type(lex.in.begin(), lex.in.end(), lex, true);
+		lex.iter = {lex.in.begin(), lex.in.end(), lex, true};
 		lex.par = zppo->par;
-		par.productions = prod_type{};
-		par.results = parle::parser::match_results{lex.iter->id, par.sm};
+		par.productions = {};
+		par.results = {lex.iter->id, par.sm};
 	} catch (const std::exception &e) {
 		php_parle_rethrow_from_cpp(ParleLexerException_ce, e.what(), 0);
 	}
@@ -1113,14 +1112,14 @@ _parser_consume(INTERNAL_FUNCTION_PARAMETERS, zend_class_entry *par_ce, zend_cla
 /* {{{ public void Parser::consume(string $s, Lexer $lex) */
 PHP_METHOD(ParleParser, consume)
 {
-	_parser_consume<ze_parle_parser_obj, ze_parle_lexer_obj, parle::lexer::siterator, parle::parser::parle_productions>(INTERNAL_FUNCTION_PARAM_PASSTHRU, ParleParser_ce, ParleLexer_ce);
+	_parser_consume<ze_parle_parser_obj, ze_parle_lexer_obj>(INTERNAL_FUNCTION_PARAM_PASSTHRU, ParleParser_ce, ParleLexer_ce);
 }
 /* }}} */
 
 /* {{{ public void RParser::consume(string $s, RLexer $lex) */
 PHP_METHOD(ParleRParser, consume)
 {
-	_parser_consume<ze_parle_rparser_obj, ze_parle_rlexer_obj, parle::lexer::sriterator, parle::parser::parle_rproductions>(INTERNAL_FUNCTION_PARAM_PASSTHRU, ParleRParser_ce, ParleRLexer_ce);
+	_parser_consume<ze_parle_rparser_obj, ze_parle_rlexer_obj>(INTERNAL_FUNCTION_PARAM_PASSTHRU, ParleRParser_ce, ParleRLexer_ce);
 }
 /* }}} */
 
@@ -1632,20 +1631,21 @@ php_parle_rlexer_obj_destroy(zend_object *obj) noexcept
 	php_parle_lexer_obj_dtor<ze_parle_rlexer_obj>(zplo);
 }/*}}}*/
 
-template<typename lexer_obj_type, typename lexer_type> zend_object *
+template<typename lexer_obj_type> zend_object *
 php_parle_lexer_obj_ctor(zend_class_entry *ce, zend_object_handlers *obj_handlers) noexcept
 {/*{{{*/
 	lexer_obj_type *zplo;
 
-	zplo = static_cast<lexer_obj_type *>(ecalloc(1, sizeof(lexer_type) + zend_object_properties_size(ce)));
+	typedef std::remove_pointer_t<typename decltype(zplo->lex)> lex_type;
+//	std::cout << typeid(lex_type).name() << std::endl;
+	zplo = static_cast<lexer_obj_type *>(ecalloc(1, sizeof(lex_type) + zend_object_properties_size(ce)));
 
 	zend_object_std_init(&zplo->zo, ce);
 	object_properties_init(&zplo->zo, ce);
 	zplo->zo.handlers = obj_handlers;
 
-	zplo->lex = new lexer_type{};
+	zplo->lex = new lex_type{};
 	zplo->lex->rules.flags(lexertl::dot_not_newline | lexertl::dot_not_cr_lf);
-	zplo->lex->par = nullptr;
 
 	return &zplo->zo;
 }/*}}}*/
@@ -1653,13 +1653,13 @@ php_parle_lexer_obj_ctor(zend_class_entry *ce, zend_object_handlers *obj_handler
 static zend_object *
 php_parle_rlexer_object_init(zend_class_entry *ce) noexcept
 {/*{{{*/
-	return php_parle_lexer_obj_ctor<ze_parle_rlexer_obj, parle::lexer::rlexer>(ce, &parle_rlexer_handlers);
+	return php_parle_lexer_obj_ctor<ze_parle_rlexer_obj>(ce, &parle_rlexer_handlers);
 }/*}}}*/
 
 static zend_object *
 php_parle_lexer_object_init(zend_class_entry *ce) noexcept
 {/*{{{*/
-	return php_parle_lexer_obj_ctor<ze_parle_lexer_obj, parle::lexer::lexer>(ce, &parle_lexer_handlers);
+	return php_parle_lexer_obj_ctor<ze_parle_lexer_obj>(ce, &parle_lexer_handlers);
 }/*}}}*/
 
 template <typename lexer_obj_type> zval * 
@@ -1905,19 +1905,19 @@ php_parle_parser_obj_dtor(parser_type *zppo) noexcept
 	delete zppo->par;
 }/*}}}*/
 
-template<typename parser_obj_type, typename parser_type> zend_object *
+template<typename parser_obj_type> zend_object *
 php_parle_parser_obj_ctor(zend_class_entry *ce, zend_object_handlers *obj_handlers) noexcept
 {/*{{{*/
 	parser_obj_type *zppo;
 
-	zppo = static_cast<parser_obj_type *>(ecalloc(1, sizeof(parser_obj_type) + zend_object_properties_size(ce)));
+	typedef std::remove_pointer_t<typename decltype(zppo->par)> par_type;
+	zppo = static_cast<parser_obj_type *>(ecalloc(1, sizeof(par_type) + zend_object_properties_size(ce)));
 
 	zend_object_std_init(&zppo->zo, ce);
 	object_properties_init(&zppo->zo, ce);
 	zppo->zo.handlers = obj_handlers;
 
-	zppo->par = new parser_type;
-	zppo->par->lex = nullptr;
+	zppo->par = new par_type{};
 
 	return &zppo->zo;
 }/*}}}*/
@@ -1939,13 +1939,13 @@ php_parle_rparser_obj_destroy(zend_object *obj) noexcept
 static zend_object *
 php_parle_parser_object_init(zend_class_entry *ce) noexcept
 {/*{{{*/
-	return php_parle_parser_obj_ctor<ze_parle_parser_obj, parle::parser::parser>(ce, &parle_parser_handlers);
+	return php_parle_parser_obj_ctor<ze_parle_parser_obj>(ce, &parle_parser_handlers);
 }/*}}}*/
 
 static zend_object *
 php_parle_rparser_object_init(zend_class_entry *ce) noexcept
 {/*{{{*/
-	return php_parle_parser_obj_ctor<ze_parle_rparser_obj, parle::parser::rparser>(ce, &parle_rparser_handlers);
+	return php_parle_parser_obj_ctor<ze_parle_rparser_obj>(ce, &parle_rparser_handlers);
 }/*}}}*/
 
 template<typename parser_obj_type> static zval * 
