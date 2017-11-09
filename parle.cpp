@@ -1636,7 +1636,7 @@ php_parle_lexer_obj_ctor(zend_class_entry *ce, zend_object_handlers *obj_handler
 {/*{{{*/
 	lexer_obj_type *zplo;
 
-	typedef std::remove_pointer_t<typename decltype(zplo->lex)> lex_type;
+	typedef std::remove_pointer_t<decltype(zplo->lex)> lex_type;
 //	std::cout << typeid(lex_type).name() << std::endl;
 	zplo = static_cast<lexer_obj_type *>(ecalloc(1, sizeof(lex_type) + zend_object_properties_size(ce)));
 
@@ -1910,7 +1910,7 @@ php_parle_parser_obj_ctor(zend_class_entry *ce, zend_object_handlers *obj_handle
 {/*{{{*/
 	parser_obj_type *zppo;
 
-	typedef std::remove_pointer_t<typename decltype(zppo->par)> par_type;
+	typedef std::remove_pointer_t<decltype(zppo->par)> par_type;
 	zppo = static_cast<parser_obj_type *>(ecalloc(1, sizeof(par_type) + zend_object_properties_size(ce)));
 
 	zend_object_std_init(&zppo->zo, ce);
