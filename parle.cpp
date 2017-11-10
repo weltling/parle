@@ -58,6 +58,12 @@
 #include "zend_interfaces.h"
 #include "php_parle.h"
 
+#ifdef HAVE_PARLE_UTF32
+#define PARLE_U32 1
+#else
+#define PARLE_U32 0
+#endif
+
 /* {{{ Class entries and handlers declarations. */
 zend_object_handlers parle_lexer_handlers;
 zend_object_handlers parle_rlexer_handlers;
@@ -77,14 +83,52 @@ static zend_class_entry *ParleToken_ce;
 static zend_class_entry *ParleErrorInfo_ce;
 /* }}} */
 
+namespace parle {/*{{{*/
+	using id_type = uint16_t;
+#if PARLE_U32
+#if defined(_MSC_VER) && _MSC_VER < 1911
+	// dirty quirk
+	using char_type = uint32_t;
+	using string = std::basic_string<uint32_t>;
+#else
+	using char_type = char32_t;
+	using string = std::u32string;
+#endif
+#else
+	using char_type = char;
+	using string = std::string;
+#endif
+}/* }}} */
+
+/* {{{ Encoding conversion tools. */
+#if PARLE_U32
+#include <locale>
+#include <codecvt>
+
+ZEND_TLS std::wstring_convert<std::codecvt_utf8<parle::char_type>, parle::char_type> cvt;
+#define PARLE_CVT_U32(sptr) cvt.from_bytes(sptr).c_str()
+#define PARLE_SCVT_U32(s) cvt.from_bytes(s)
+#if defined(_MSC_VER) && _MSC_VER < 1911
+#define PARLE_PRE_U32(ca) PARLE_SCVT_U32(ca)
+#else
+#define PARLE_PRE_U32(ca) U ## ca
+#endif
+#define PARLE_CVT_U8(sptr) cvt.to_bytes(sptr).c_str()
+#define PARLE_SCVT_U8(s) cvt.to_bytes(s)
+#else
+#define PARLE_CVT_U32(sptr) sptr
+#define PARLE_SCVT_U32(s) s
+#define PARLE_PRE_U32(ca) ca
+#define PARLE_CVT_U8(sptr) sptr
+#define PARLE_SCVT_U8(s) s
+#endif
+/* }}} */
+
 #include "parle/lexer/iterator.hpp"
 
 #undef lookup
 
 namespace parle {/*{{{*/
-	using id_type = uint16_t;
-	using char_type = char;
-
 	namespace parser {
 		struct parser;
 		struct rparser;
@@ -106,17 +150,17 @@ namespace parle {/*{{{*/
 		using citerator = iterator<const char_type *, state_machine, cmatch, lexer, token_cb, id_type>;
 		using criterator = iterator<const char_type *, state_machine, crmatch, rlexer, token_cb, id_type>;
 
-		using smatch = lexertl::match_results<std::string::const_iterator, id_type>;
-		using srmatch = lexertl::recursive_match_results<std::string::const_iterator, id_type>;
-		using siterator = iterator<std::string::const_iterator, state_machine, smatch, lexer, token_cb, id_type>;
-		using sriterator = iterator<std::string::const_iterator, state_machine, srmatch, rlexer, token_cb, id_type>;
+		using smatch = lexertl::match_results<string::const_iterator, id_type>;
+		using srmatch = lexertl::recursive_match_results<string::const_iterator, id_type>;
+		using siterator = iterator<string::const_iterator, state_machine, smatch, lexer, token_cb, id_type>;
+		using sriterator = iterator<string::const_iterator, state_machine, srmatch, rlexer, token_cb, id_type>;
 
 		using generator = lexertl::basic_generator<parle_rules, state_machine>;
 		using debug = lexertl::basic_debug<state_machine, char_type, id_type>;
 
 		struct lexer {
-			lexer() : in(""), par(nullptr) {}
-			std::string in;
+			lexer() : in(PARLE_PRE_U32("")), par(nullptr) {}
+			string in;
 			parle_rules rules;
 			state_machine sm;
 			parle::parser::parser *par;
@@ -125,8 +169,8 @@ namespace parle {/*{{{*/
 		};
 
 		struct rlexer {
-			rlexer() : in(""), par(nullptr) {}
-			std::string in;
+			rlexer() : in(PARLE_PRE_U32("")), par(nullptr) {}
+			string in;
 			parle_rules rules;
 			state_machine sm;
 			parle::parser::rparser *par;
@@ -199,6 +243,7 @@ struct ze_parle_stack_obj {/*{{{*/
 	zend_object zo;
 };/*}}}*/
 
+
 template<typename lexer_obj_type> lexer_obj_type *
 _php_parle_lexer_fetch_zobj(zend_object *obj) noexcept
 {/*{{{*/
@@ -270,7 +315,7 @@ PHP_METHOD(ParleLexer, push)
 		// Rules for INITIAL
 		auto &lex = *zplo->lex;
 		if (user_id < 0) user_id = lex.iter->npos();
-		lex.rules.push(ZSTR_VAL(regex), static_cast<parle::id_type>(id), static_cast<parle::id_type>(user_id));
+		lex.rules.push(PARLE_CVT_U32(ZSTR_VAL(regex)), static_cast<parle::id_type>(id), static_cast<parle::id_type>(user_id));
 	} catch (const std::exception &e) {
 		php_parle_rethrow_from_cpp(ParleLexerException_ce, e.what(), 0);
 	}
@@ -294,15 +339,15 @@ PHP_METHOD(ParleRLexer, push)
 		// Rules for INITIAL
 		if(zend_parse_method_parameters_ex(ZEND_PARSE_PARAMS_QUIET, ZEND_NUM_ARGS(), getThis(), "OSl|l", &me, ParleRLexer_ce, &regex, &id, &user_id) == SUCCESS) {
 			PREPARE_PUSH()
-			lex.rules.push(ZSTR_VAL(regex), static_cast<parle::id_type>(id), static_cast<parle::id_type>(user_id));
+			lex.rules.push(PARLE_CVT_U32(ZSTR_VAL(regex)), static_cast<parle::id_type>(id), static_cast<parle::id_type>(user_id));
 		// Rules with id
 		} else if(zend_parse_method_parameters_ex(ZEND_PARSE_PARAMS_QUIET, ZEND_NUM_ARGS(), getThis(), "OSSlS|l", &me, ParleRLexer_ce, &dfa, &regex, &id, &new_dfa, &user_id) == SUCCESS) {
 			PREPARE_PUSH()
-			lex.rules.push(ZSTR_VAL(dfa), ZSTR_VAL(regex), static_cast<parle::id_type>(id), ZSTR_VAL(new_dfa), static_cast<parle::id_type>(user_id));
+			lex.rules.push(PARLE_CVT_U32(ZSTR_VAL(dfa)), PARLE_CVT_U32(ZSTR_VAL(regex)), static_cast<parle::id_type>(id), PARLE_CVT_U32(ZSTR_VAL(new_dfa)), static_cast<parle::id_type>(user_id));
 		// Rules without id
 		} else if(zend_parse_method_parameters_ex(ZEND_PARSE_PARAMS_QUIET, ZEND_NUM_ARGS(), getThis(), "OSSS", &me, ParleRLexer_ce, &dfa, &regex, &new_dfa) == SUCCESS) {
 			PREPARE_PUSH()
-			lex.rules.push(ZSTR_VAL(dfa), ZSTR_VAL(regex), ZSTR_VAL(new_dfa));
+			lex.rules.push(PARLE_CVT_U32(ZSTR_VAL(dfa)), PARLE_CVT_U32(ZSTR_VAL(regex)), PARLE_CVT_U32(ZSTR_VAL(new_dfa)));
 		} else {
 			zend_throw_exception(ParleLexerException_ce, "Couldn't match the method signature", 0);
 		}
@@ -408,7 +453,7 @@ _lexer_consume(INTERNAL_FUNCTION_PARAMETERS, zend_class_entry *ce) noexcept
 	auto &lex = *zplo->lex;
 
 	try {
-		lex.in = std::string{in};
+		lex.in = PARLE_CVT_U32(in);
 		lex.iter = {lex.in.begin(), lex.in.end(), lex};
 	} catch (const std::exception &e) {
 		php_parle_rethrow_from_cpp(ParleLexerException_ce, e.what(), 0);
@@ -445,7 +490,7 @@ PHP_METHOD(ParleRLexer, pushState)
 
 	try {
 		auto &rules = zplo->lex->rules;
-		RETURN_LONG(rules.push_state(state));
+		RETURN_LONG(rules.push_state(PARLE_CVT_U32(state)));
 	} catch (const std::exception &e) {
 		php_parle_rethrow_from_cpp(ParleLexerException_ce, e.what(), 0);
 	}
@@ -468,7 +513,7 @@ _lexer_token(INTERNAL_FUNCTION_PARAMETERS, zend_class_entry *ce) noexcept
 
 	try {
 		object_init_ex(return_value, ParleToken_ce);
-		std::string ret{lex.iter->str()};
+		std::string ret{PARLE_SCVT_U8(lex.iter->str())};
 		add_property_long_ex(return_value, "id", sizeof("id")-1, static_cast<zend_long>(lex.iter->id));
 #if PHP_MAJOR_VERSION > 7 || PHP_MAJOR_VERSION >= 7 && PHP_MINOR_VERSION >= 2
 		add_property_stringl_ex(return_value, "value", sizeof("value")-1, ret.c_str(), ret.size());
@@ -588,7 +633,7 @@ _lexer_macro(INTERNAL_FUNCTION_PARAMETERS, zend_class_entry *ce) noexcept
 
 	try {
 		auto &lex = *zplo->lex;
-		lex.rules.insert_macro(ZSTR_VAL(name), ZSTR_VAL(regex));
+		lex.rules.insert_macro(PARLE_CVT_U32(ZSTR_VAL(name)), PARLE_CVT_U32(ZSTR_VAL(regex)));
 	} catch (const std::exception &e) {
 		php_parle_rethrow_from_cpp(ParleLexerException_ce, e.what(), 0);
 	}
@@ -625,7 +670,12 @@ _lexer_dump(INTERNAL_FUNCTION_PARAMETERS, zend_class_entry *ce) noexcept
 	try {
 		/* XXX std::cout might be not thread safe, need to gather the right
 			descriptor from the SAPI and convert to a usable stream. */
+		// XXX need std::wcout dump!
+#if PARLE_U32
+		zend_throw_exception_ex(ParleLexerException_ce, 0, "Lexer dump is not supported with UTF-32");
+#else
 		parle::lexer::debug::dump(lex.sm, lex.rules, std::cout);
+#endif
 	} catch (const std::exception &e) {
 		php_parle_rethrow_from_cpp(ParleLexerException_ce, e.what(), 0);
 	}
@@ -662,7 +712,7 @@ _parser_token(INTERNAL_FUNCTION_PARAMETERS, zend_class_entry *ce) noexcept
 
 	try {
 		auto &rules = zppo->par->rules;
-		rules.token(ZSTR_VAL(tok));
+		rules.token(PARLE_CVT_U32(ZSTR_VAL(tok)));
 	} catch (const std::exception &e) {
 		php_parle_rethrow_from_cpp(ParleParserException_ce, e.what(), 0);
 	}
@@ -697,7 +747,7 @@ _parser_left(INTERNAL_FUNCTION_PARAMETERS, zend_class_entry *ce) noexcept
 
 	try {
 		auto &rules = zppo->par->rules;
-		rules.left(ZSTR_VAL(tok));
+		rules.left(PARLE_CVT_U32(ZSTR_VAL(tok)));
 	} catch (const std::exception &e) {
 		php_parle_rethrow_from_cpp(ParleParserException_ce, e.what(), 0);
 	}
@@ -733,7 +783,7 @@ _parser_right(INTERNAL_FUNCTION_PARAMETERS, zend_class_entry *ce) noexcept
 
 	try {
 		auto &rules = zppo->par->rules;
-		rules.right(ZSTR_VAL(tok));
+		rules.right(PARLE_CVT_U32(ZSTR_VAL(tok)));
 	} catch (const std::exception &e) {
 		php_parle_rethrow_from_cpp(ParleParserException_ce, e.what(), 0);
 	}
@@ -768,7 +818,7 @@ _parser_precedence(INTERNAL_FUNCTION_PARAMETERS, zend_class_entry *ce) noexcept
 
 	try {
 		auto &rules = zppo->par->rules;
-		rules.precedence(ZSTR_VAL(tok));
+		rules.precedence(PARLE_CVT_U32(ZSTR_VAL(tok)));
 	} catch (const std::exception &e) {
 		php_parle_rethrow_from_cpp(ParleParserException_ce, e.what(), 0);
 	}
@@ -803,7 +853,7 @@ _parser_nonassoc(INTERNAL_FUNCTION_PARAMETERS, zend_class_entry *ce) noexcept
 
 	try {
 		auto &rules = zppo->par->rules;
-		rules.nonassoc(ZSTR_VAL(tok));
+		rules.nonassoc(PARLE_CVT_U32(ZSTR_VAL(tok)));
 	} catch (const std::exception &e) {
 		php_parle_rethrow_from_cpp(ParleParserException_ce, e.what(), 0);
 	}
@@ -872,7 +922,7 @@ _parser_push(INTERNAL_FUNCTION_PARAMETERS, zend_class_entry *ce) noexcept
 
 	try {
 		auto &rules = zppo->par->rules;
-		RETURN_LONG(static_cast<zend_long>(rules.push(ZSTR_VAL(lhs), ZSTR_VAL(rhs))));
+		RETURN_LONG(static_cast<zend_long>(rules.push(PARLE_CVT_U32(ZSTR_VAL(lhs)), PARLE_CVT_U32(ZSTR_VAL(rhs)))));
 	} catch (const std::exception &e) {
 		php_parle_rethrow_from_cpp(ParleParserException_ce, e.what(), 0);
 	}
@@ -918,7 +968,7 @@ _parser_validate(INTERNAL_FUNCTION_PARAMETERS, zend_class_entry *par_ce, zend_cl
 			zend_throw_exception(ParleParserException_ce, "Parser state machine is empty", 0);
 			return;
 		}
-		lex.in = ZSTR_VAL(in);
+		lex.in = PARLE_SCVT_U32(ZSTR_VAL(in));
 		lex.iter = {lex.in.begin(), lex.in.end(), lex, true};
 		lex.par = zppo->par;
 		par.productions = {};
@@ -960,7 +1010,7 @@ _parser_tokenId(INTERNAL_FUNCTION_PARAMETERS, zend_class_entry *ce) noexcept
 
 	try {
 		auto &rules = zppo->par->rules;
-		RETURN_LONG(rules.token_id(ZSTR_VAL(nom)));
+		RETURN_LONG(rules.token_id(PARLE_CVT_U32(ZSTR_VAL(nom))));
 	} catch (const std::exception &e) {
 		php_parle_rethrow_from_cpp(ParleParserException_ce, e.what(), 0);
 	}
@@ -1007,8 +1057,9 @@ _parser_sigil(INTERNAL_FUNCTION_PARAMETERS, zend_class_entry *ce) noexcept
 		auto &lex = *par.lex;
 		auto ret = par.results.dollar(par.sm, static_cast<parle::id_type>(idx), par.productions);
 		size_t start_pos = ret.first - lex.in.begin();
-		const char *in = lex.in.c_str();
-		RETURN_STRINGL(in + start_pos, ret.second - ret.first);
+		parle::string r(lex.in, start_pos, ret.second - ret.first);
+		std::string r8 = PARLE_SCVT_U8(r);
+		RETURN_STRINGL(r8.c_str(), r8.size());
 	} catch (const std::exception &e) {
 		php_parle_rethrow_from_cpp(ParleParserException_ce, e.what(), 0);
 	}
@@ -1099,7 +1150,7 @@ _parser_consume(INTERNAL_FUNCTION_PARAMETERS, zend_class_entry *par_ce, zend_cla
 			zend_throw_exception(ParleParserException_ce, "Parser state machine is empty", 0);
 			return;
 		}
-		lex.in = ZSTR_VAL(in);
+		lex.in = PARLE_CVT_U32(ZSTR_VAL(in));
 		lex.iter = {lex.in.begin(), lex.in.end(), lex, true};
 		lex.par = zppo->par;
 		par.productions = {};
@@ -1138,7 +1189,12 @@ _parser_dump(INTERNAL_FUNCTION_PARAMETERS, zend_class_entry *ce) noexcept
 	try {
 		auto &par = *zppo->par;
 		/* XXX See comment in _lexer_dump(). */
+		// XXX need std:wcout dump!
+#if PARLE_U32
+		zend_throw_exception_ex(ParleParserException_ce, 0, "Parser dump is not supported with UTF-32");
+#else
 		parsertl::debug::dump(par.rules, std::cout);
+#endif
 	} catch (const std::exception &e) {
 		php_parle_rethrow_from_cpp(ParleLexerException_ce, e.what(), 0);
 	}
@@ -1172,40 +1228,46 @@ _parser_trace(INTERNAL_FUNCTION_PARAMETERS, zend_class_entry *ce) noexcept
 	auto &par = *zppo->par;
 
 	try {
-		std::string s;
+		//std::string s;
+		parle::string s;
+		std::string s8;
 		auto &results = par.results;
 		auto &entry = results.entry;
 		switch (entry.action) {
 			case parsertl::shift:
-				s = "shift " + std::to_string(entry.param);
-				RETURN_STRINGL(s.c_str(), s.size());
+				s = PARLE_PRE_U32("shift ") + PARLE_SCVT_U32(std::to_string(entry.param));
+				s8 = PARLE_SCVT_U8(s);
+				RETURN_STRINGL(s8.c_str(), s8.size());
 				break;
 			case parsertl::go_to:
-				s = "goto " + std::to_string(entry.param);
-				RETURN_STRINGL(s.c_str(), s.size());
+				s = PARLE_PRE_U32("goto ") + PARLE_SCVT_U32(std::to_string(entry.param));
+				s8 = PARLE_SCVT_U8(s);
+				RETURN_STRINGL(s8.c_str(), s8.size());
 				break;
 			case parsertl::accept:
 				RETURN_STRINGL("accept", sizeof("accept")-1);
 				break;
 			case parsertl::reduce: {
 				/* TODO symbols should be setup only once. */
-				parsertl::rules::string_vector symbols;
+				//parsertl::rules::string_vector symbols;
+				std::vector<parle::string> symbols;
 				par.rules.terminals(symbols);
 				par.rules.non_terminals(symbols);
 				parle::parser::state_machine::id_type_pair &pair_ = par.sm._rules[entry.param];
 
-				s = "reduce by " + symbols[pair_.first] + " ->";
+				s = PARLE_PRE_U32("reduce by ") + symbols[pair_.first] + PARLE_PRE_U32(" ->");
 
 				if (pair_.second.empty()) {
-					s += " %empty";
+					s += PARLE_PRE_U32(" %empty");
 				} else {
 					for (auto iter_ = pair_.second.cbegin(), end_ = pair_.second.cend(); iter_ != end_; ++iter_) {
-						s += ' ';
+						s += PARLE_PRE_U32(' ');
 						s += symbols[*iter_];
 					}
 				}
 
-				RETURN_STRINGL(s.c_str(), s.size());
+				s8 = PARLE_SCVT_U8(s);
+				RETURN_STRINGL(s8.c_str(), s8.size());
 				}
 				break;
 			case parsertl::error:
@@ -1259,7 +1321,7 @@ _parser_errorinfo(INTERNAL_FUNCTION_PARAMETERS, zend_class_entry *ce) noexcept
 		add_property_long_ex(return_value, "id", sizeof("id")-1, static_cast<zend_long>(par.results.entry.param));
 		add_property_long_ex(return_value, "position", sizeof("position")-1, static_cast<zend_long>(lex.iter->first - lex.in.begin()));
 		zval token;
-		std::string ret = lex.iter->str();
+		std::string ret = PARLE_SCVT_U8(lex.iter->str());
 		object_init_ex(&token, ParleToken_ce);
 		add_property_long_ex(&token, "id", sizeof("id")-1, lex.iter->id);
 #if PHP_MAJOR_VERSION > 7 || PHP_MAJOR_VERSION >= 7 && PHP_MINOR_VERSION >= 2

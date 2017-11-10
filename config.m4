@@ -3,6 +3,8 @@ dnl config.m4 for extension parle
 
 PHP_ARG_ENABLE(parle, whether to enable parle support,
 [  --enable-parle           Enable lexer/parser support])
+PHP_ARG_ENABLE(parle-utf32, whether to enable internal UTF-32 support in parle,
+[  --enable-parle           Enable internal UTF-32 support for lexer/parser], no, no)
 
 if test "$PHP_PARLE" != "no"; then
   PHP_REQUIRE_CXX()
@@ -20,5 +22,8 @@ if test "$PHP_PARLE" != "no"; then
   PHP_ADD_INCLUDE($ext_srcdir/lib)
   PHP_ADD_INCLUDE($ext_builddir/lib)
 
+  if test "$PHP_PARLE_UTF32" != "no"; then
+    AC_DEFINE(HAVE_PARLE_UTF32,1,[ ])
+  fi
   dnl PHP_INSTALL_HEADERS([ext/parle/php_parle.h])
 fi
