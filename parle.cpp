@@ -105,7 +105,11 @@ namespace parle {/*{{{*/
 #include <locale>
 #include <codecvt>
 
+#if defined(_MSC_VER)
 ZEND_TLS std::wstring_convert<std::codecvt_utf8<parle::char_type>, parle::char_type> cvt;
+#else
+static thread_local std::wstring_convert<std::codecvt_utf8<parle::char_type>, parle::char_type> cvt;
+#endif
 #define PARLE_CVT_U32(sptr) cvt.from_bytes(sptr).c_str()
 #define PARLE_SCVT_U32(s) cvt.from_bytes(s)
 #if defined(_MSC_VER)
