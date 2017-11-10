@@ -86,10 +86,10 @@ static zend_class_entry *ParleErrorInfo_ce;
 namespace parle {/*{{{*/
 	using id_type = uint16_t;
 #if PARLE_U32
-#if defined(_MSC_VER) && _MSC_VER < 1911
+#if defined(_MSC_VER)
 	// dirty quirk
 	using char_type = uint32_t;
-	using string = std::basic_string<uint32_t>;
+	using string = std::basic_string<char_type>;
 #else
 	using char_type = char32_t;
 	using string = std::u32string;
@@ -108,7 +108,7 @@ namespace parle {/*{{{*/
 ZEND_TLS std::wstring_convert<std::codecvt_utf8<parle::char_type>, parle::char_type> cvt;
 #define PARLE_CVT_U32(sptr) cvt.from_bytes(sptr).c_str()
 #define PARLE_SCVT_U32(s) cvt.from_bytes(s)
-#if defined(_MSC_VER) && _MSC_VER < 1911
+#if defined(_MSC_VER)
 #define PARLE_PRE_U32(ca) PARLE_SCVT_U32(ca)
 #else
 #define PARLE_PRE_U32(ca) U ## ca
@@ -2615,6 +2615,8 @@ PHP_MINIT_FUNCTION(parle)
 	ParleParserException_ce = zend_register_internal_class_ex(&ce, zend_exception_get_default());
 	INIT_CLASS_ENTRY(ce, "Parle\\StackException", NULL);
 	ParleStackException_ce = zend_register_internal_class_ex(&ce, zend_exception_get_default());
+
+	REGISTER_NS_BOOL_CONSTANT("Parle", "INTERNAL_UTF32", PARLE_U32, CONST_PERSISTENT | CONST_CS);
 
 	return SUCCESS;
 }

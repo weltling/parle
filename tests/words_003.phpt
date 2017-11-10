@@ -3,7 +3,7 @@ Parse words from a string, UTF-8 regex
 --SKIPIF--
 <?php
 if (!extension_loaded("parle")) print "skip";
-if (Parle\INTERNAL_UTF32) print "skip not for internal UTF-32";
+if (!Parle\INTERNAL_UTF32) print "skip reqire internal UTF-32";
 ?>
 --FILE--
 <?php 
@@ -21,8 +21,9 @@ $word_idx = $p->push("words", "WORD");
 $p->build();
 
 $lex = new Lexer;
-$lex->push("[ -\\x7f]{+}[\\x80-\\xbf]{+}[\\xc2-\\xdf]{+}[\\xe0-\\xef]{+}[\\xf0-\\xff]+", $p->tokenId("WORD"));
-$lex->push("\\s+", Token::SKIP);
+//$lex->push("[ -\\x10ffff]+", $p->tokenId("WORD"));
+$lex->push("[\p{L}\p{P}]+", $p->tokenId("WORD"));
+$lex->push("[\p{Z}\p{Zl}\p{Zp}\p{Zs}\s]+", Token::SKIP);
 $lex->build();
 
 /* UTF-8 */
@@ -56,7 +57,7 @@ foreach ($words as $in) {
 ?>
 ==DONE==
 --EXPECT--
-string(36) "füße абракадабра 芬蘭"
+string(37) "füße абракадабра 芬 蘭"
 string(32) "Sah ein Knab' ein Röslein stehn"
 string(79) "Но, чтобы стоять, я должен держаться корней."
 string(22) "Homines sumus nun dei."
