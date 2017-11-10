@@ -187,7 +187,7 @@ test_script:
                 cd c:\projects\parle
                 echo "" | Out-File -Encoding "ASCII" task.bat
                 if ('1' -eq $env:UTF32) { $utf32_part = '--enable-parle-utf32' }
-                $cmd = 'call configure --enable-parle " + $utf32_part + " --with-prefix=c:\build-cache\' + $dname + " 2>&1"
+                $cmd = 'call configure --enable-parle ' + $utf32_part + ' --with-prefix=c:\build-cache\' + $dname + " 2>&1"
                 echo $cmd | Out-File -Encoding "ASCII" -Append task.bat
                 echo "nmake /nologo test TESTS=-q 2>&1" | Out-File -Encoding "ASCII" -Append task.bat
                 $here = (Get-Item -Path ".\" -Verbose).FullName
