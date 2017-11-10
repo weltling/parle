@@ -34,41 +34,97 @@ environment:
                   VC: vc14
                   PHP_VER: 7.0.25
                   TS: 0
+                  UTF32: 0
+                - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2015
+                  ARCH: x64
+                  VC: vc14
+                  PHP_VER: 7.0.25
+                  TS: 0
+                  UTF32: 1 
                 - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2015
                   ARCH: x64
                   VC: vc14
                   PHP_VER: 7.0.25
                   TS: 1
+                  UTF32: 0
+                - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2015
+                  ARCH: x64
+                  VC: vc14
+                  PHP_VER: 7.0.25
+                  TS: 1
+                  UTF32: 1 
                 - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2015
                   ARCH: x86
                   VC: vc14
                   PHP_VER: 7.0.25
                   TS: 0
+                  UTF32: 0
+                - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2015
+                  ARCH: x86
+                  VC: vc14
+                  PHP_VER: 7.0.25
+                  TS: 0
+                  UTF32: 1
                 - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2015
                   ARCH: x86
                   VC: vc14
                   PHP_VER: 7.0.25
                   TS: 1
+                  UTF32: 0
+                - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2015
+                  ARCH: x86
+                  VC: vc14
+                  PHP_VER: 7.0.25
+                  TS: 1
+                  UTF32: 1
                 - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2015
                   ARCH: x64
                   VC: vc14
                   PHP_VER: 7.1.11
                   TS: 0
+                  UTF32: 0
+                - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2015
+                  ARCH: x64
+                  VC: vc14
+                  PHP_VER: 7.1.11
+                  TS: 0
+                  UTF32: 1
                 - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2015
                   ARCH: x64
                   VC: vc14
                   PHP_VER: 7.1.11
                   TS: 1
+                  UTF32: 0
+                - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2015
+                  ARCH: x64
+                  VC: vc14
+                  PHP_VER: 7.1.11
+                  TS: 1
+                  UTF32: 1
                 - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2015
                   ARCH: x86
                   VC: vc14
                   PHP_VER: 7.1.11
                   TS: 0
+                  UTF32: 0
+                - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2015
+                  ARCH: x86
+                  VC: vc14
+                  PHP_VER: 7.1.11
+                  TS: 0
+                  UTF32: 1
                 - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2015
                   ARCH: x86
                   VC: vc14
                   PHP_VER: 7.1.11
                   TS: 1
+                  UTF32: 0
+                - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2015
+                  ARCH: x86
+                  VC: vc14
+                  PHP_VER: 7.1.11
+                  TS: 1
+                  UTF32: 1
 
 build_script:
         ps: |
@@ -93,7 +149,8 @@ build_script:
                 #echo "" | Out-File -Encoding "ASCII" -Append task.bat
                 echo "" | Out-File -Encoding "ASCII" task.bat
                 echo "call phpize 2>&1" | Out-File -Encoding "ASCII" -Append task.bat
-                echo "call configure --enable-parle --enable-debug-pack 2>&1" | Out-File -Encoding "ASCII" -Append task.bat
+                if ('1' -eq $env:UTF32) { $utf32_part = '--enable-parle-utf32' }
+                echo "call configure --enable-parle " + $utf32_part + " --enable-debug-pack 2>&1" | Out-File -Encoding "ASCII" -Append task.bat
                 echo "nmake /nologo 2>&1" | Out-File -Encoding "ASCII" -Append task.bat
                 $here = (Get-Item -Path ".\" -Verbose).FullName
                 $runner = 'c:\build-cache\php-sdk-' + $env:BIN_SDK_VER + '\phpsdk' + '-' + $env:VC + '-' + $env:ARCH + '.bat'
@@ -129,7 +186,8 @@ test_script:
                 }
                 cd c:\projects\parle
                 echo "" | Out-File -Encoding "ASCII" task.bat
-                $cmd = 'call configure --enable-parle --with-prefix=c:\build-cache\' + $dname + " 2>&1"
+                if ('1' -eq $env:UTF32) { $utf32_part = '--enable-parle-utf32' }
+                $cmd = 'call configure --enable-parle " + $utf32_part + " --with-prefix=c:\build-cache\' + $dname + " 2>&1"
                 echo $cmd | Out-File -Encoding "ASCII" -Append task.bat
                 echo "nmake /nologo test TESTS=-q 2>&1" | Out-File -Encoding "ASCII" -Append task.bat
                 $here = (Get-Item -Path ".\" -Verbose).FullName
