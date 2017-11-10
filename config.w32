@@ -16,6 +16,7 @@ if (PHP_PARLE != "no") {
 		AC_DEFINE("HAVE_PARLE", 1, "Have parle extension");
 		if (PHP_PARLE_UTF32 != "no") {
 			AC_DEFINE("HAVE_PARLE_UTF32", 1, "Have internal UTF-32 support in parle");
+			ADD_FLAG("CFLAGS_PARLE", " /D HAVE_PARLE_UTF32=1");
 		}
 	} else {
 		WARNING("parle not enabled; libraries and headers not found");
