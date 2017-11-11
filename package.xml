@@ -12,8 +12,8 @@
 	</lead>
 	<date>2017-11-11</date>
 	<version>
-		<release>0.7.3</release>
-		<api>0.7.3</api>
+		<release>0.7.4</release>
+		<api>0.7.4</api>
 	</version>
 	<stability>
 		<release>beta</release>
@@ -147,6 +147,21 @@
 	<providesextension>parle</providesextension>
 	<extsrcrelease />
 	<changelog>
+		<release>
+			<date>2017-11-11</date>
+			<version>
+				<release>0.7.3</release>
+				<api>0.7.3</api>
+			</version>
+			<stability>
+				<release>beta</release>
+				<api>beta</api>
+			</stability>
+			<license uri="http://opensource.org/licenses/BSD-2-Clause">BSD 2-clause</license>
+			<notes>
+				- Fix broken package
+			</notes>
+		</release>
 		<release>
 			<date>2017-11-11</date>
 			<version>
