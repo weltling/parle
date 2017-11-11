@@ -12,8 +12,8 @@
 	</lead>
 	<date>2017-11-11</date>
 	<version>
-		<release>0.7.2</release>
-		<api>0.7.2</api>
+		<release>0.7.3</release>
+		<api>0.7.3</api>
 	</version>
 	<stability>
 		<release>beta</release>
@@ -21,8 +21,7 @@
 	</stability>
 	<license uri="http://opensource.org/licenses/BSD-2-Clause">BSD 2-clause</license>
 	<notes>
-		- Implemented token callbacks
-		- Implemented unicode character class support, available with --enable-parle-utf32
+		- some
 	</notes>
 	<contents>
 		<dir name="/">
@@ -143,6 +142,22 @@
 	<providesextension>parle</providesextension>
 	<extsrcrelease />
 	<changelog>
+		<release>
+			<date>2017-11-11</date>
+			<version>
+				<release>0.7.2</release>
+				<api>0.7.2</api>
+			</version>
+			<stability>
+				<release>beta</release>
+				<api>beta</api>
+			</stability>
+			<license uri="http://opensource.org/licenses/BSD-2-Clause">BSD 2-clause</license>
+			<notes>
+				- Implemented token callbacks
+				- Implemented unicode character class support, available with --enable-parle-utf32
+			</notes>
+		</release>
 		<release>
 			<date>2017-10-29</date>
 			<version>
