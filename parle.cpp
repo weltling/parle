@@ -1657,6 +1657,7 @@ const zend_function_entry ParleStack_methods[] = {
 };
 /* }}} */
 
+/* {{{ Prop handler macros */
 #define PARLE_IS_PROP(name) (zend_binary_strcmp(name, sizeof(name) - 1, Z_STRVAL_P(member), Z_STRLEN_P(member)) == 0)
 #define PARLE_CHECK_THROW_RO_PROP_EX(ex_ce, prop, action) \
 	if (PARLE_IS_PROP(prop)) { \
@@ -1672,6 +1673,7 @@ const zend_function_entry ParleStack_methods[] = {
 #define PARLE_PAR_CHECK_THROW_RO_PROP(prop) PARLE_CHECK_THROW_RO_PROP_EX(ParleParserException_ce, prop, return)
 #define PARLE_STACK_CHECK_THROW_RET_RO_PROP(prop) PARLE_CHECK_THROW_RO_PROP_EX(ParleStackException_ce, prop, return &EG(uninitialized_zval))
 #define PARLE_STACK_CHECK_THROW_RO_PROP(prop) PARLE_CHECK_THROW_RO_PROP_EX(ParleStackException_ce, prop, return)
+/* }}} */
 
 template<typename lexer_type> void
 php_parle_lexer_obj_dtor(lexer_type *zplo) noexcept
