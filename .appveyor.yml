@@ -190,7 +190,7 @@ test_script:
                 if ('1' -eq $env:UTF32) { $utf32_part = '--enable-parle-utf32' }
                 $cmd = 'call configure --enable-parle ' + $utf32_part + ' --with-prefix=c:\build-cache\' + $dname + " 2>&1"
                 echo $cmd | Out-File -Encoding "ASCII" -Append task.bat
-                echo "nmake /nologo test TESTS=\"-q --show-diff --set-timeout 120 -g FAIL,XFAIL,BORK,WARN,LEAK,SKIP\" 2>&1" | Out-File -Encoding "ASCII" -Append task.bat
+                echo 'nmake /nologo test TESTS="-q --show-diff --set-timeout 120 -g FAIL,XFAIL,BORK,WARN,LEAK,SKIP" 2>&1' | Out-File -Encoding "ASCII" -Append task.bat
                 $here = (Get-Item -Path ".\" -Verbose).FullName
                 $runner = 'c:\build-cache\php-sdk-' + $env:BIN_SDK_VER + '\phpsdk' + '-' + $env:VC + '-' + $env:ARCH + '.bat'
                 $task = $here + '\task.bat'
