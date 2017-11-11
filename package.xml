@@ -22,6 +22,7 @@
 	<license uri="http://opensource.org/licenses/BSD-2-Clause">BSD 2-clause</license>
 	<notes>
 		- Implemented token callbacks
+		- Implemented unicode character class support, available with --enable-parle-utf32
 	</notes>
 	<contents>
 		<dir name="/">
@@ -117,6 +118,7 @@
 				<file role="test" name="lexer_004.phpt"/>
 				<file role="test" name="lexer_005.phpt"/>
 				<file role="test" name="lexer_006.phpt"/>
+				<file role="test" name="lexer_007.phpt"/>
 				<file role="test" name="lexer_flags.phpt"/>
 				<file role="test" name="lexer_position_tracking.phpt"/>
 				<file role="test" name="reflection_001.phpt"/>
@@ -124,6 +126,7 @@
 				<file role="test" name="stack_001.phpt"/>
 				<file role="test" name="words_001.phpt"/>
 				<file role="test" name="words_002.phpt"/>
+				<file role="test" name="words_003.phpt"/>
 			</dir>
 		</dir>
 	</contents>
