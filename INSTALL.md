@@ -25,7 +25,7 @@ RPM for Fedora, RHEL and CentOS can be installed from the [Remi repository](http
 Released versions can be installed using the ```pecl``` command:
 
 ```
-pecl install parle-alpha
+pecl install parle-beta
 ```
 
 
