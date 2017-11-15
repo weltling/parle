@@ -11,7 +11,7 @@ The implementation bases on the work of [Ben Hanson](http://www.benhanson.net/)
 
 The lexer is based on the pattern matching similar to flex. The parser is LALR(1).
 
-Supported is PHP 7.0 and above. A [C++14](http://en.cppreference.com/w/cpp/compiler_support) capable compiler is required.
+Supported is PHP 7.0 and above. A [C++14](http://en.cppreference.com/w/cpp/compiler_support) capable compiler is required. As of version 0.7.3 parle can optionally be compiled with internal UTF-32 support, making it possible to use Unicode character classes in patterns.
 
 The full extension documentation is available in the [PHP Manual](http://php.net/parle).
 
