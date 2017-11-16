@@ -125,7 +125,6 @@ private:
 	{
 		if (_results.bol) {
 			line++;
-			std::cout << "line: " << line << std::endl;
 		}
 
 		lexertl::lookup(*_sm, _results);
