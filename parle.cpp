@@ -1748,6 +1748,7 @@ php_parle_lex_read_property(zval *object, zval *member, int type, void **cache_s
 		PARLE_LEX_CHECK_THROW_RET_RO_PROP("state")
 		PARLE_LEX_CHECK_THROW_RET_RO_PROP("marker")
 		PARLE_LEX_CHECK_THROW_RET_RO_PROP("cursor")
+		PARLE_LEX_CHECK_THROW_RET_RO_PROP("line")
 	}
 
 	zplo = _php_parle_lexer_fetch_zobj<lexer_obj_type>(Z_OBJ_P(object));
