@@ -114,6 +114,8 @@ public:
 		return !(*this == rhs_);
 	}
 
+public:
+	size_t line = 0;
 private:
 	value_type _results;
 	const sm_type *_sm;
@@ -121,6 +123,11 @@ private:
 
 	void lookup()
 	{
+		if (_results.bol) {
+			line++;
+			std::cout << "line: " << line << std::endl;
+		}
+
 		lexertl::lookup(*_sm, _results);
 
 		if (_lex->cb_map.size() > 0) {
