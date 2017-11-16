@@ -1764,6 +1764,8 @@ php_parle_lex_read_property(zval *object, zval *member, int type, void **cache_s
 		ZVAL_LONG(retval, lex.iter->first - lex.in.begin());
 	} else if (PARLE_IS_PROP("cursor")) {
 		ZVAL_LONG(retval, lex.iter->second - lex.in.begin());
+	} else if (PARLE_IS_PROP("line")) {
+		ZVAL_LONG(retval, lex.iter.line);
 	} else {
 		retval = (zend_get_std_object_handlers())->read_property(object, member, type, cache_slot, rv);
 	}
@@ -1815,6 +1817,7 @@ php_parle_lex_write_property(zval *object, zval *member, zval *value, void **cac
 	} else PARLE_LEX_CHECK_THROW_RO_PROP("state")
 	  else PARLE_LEX_CHECK_THROW_RO_PROP("cursor")
 	  else PARLE_LEX_CHECK_THROW_RO_PROP("marker")
+	  else PARLE_LEX_CHECK_THROW_RO_PROP("line")
 	else {
 		(zend_get_std_object_handlers())->write_property(object, member, value, cache_slot);
 	}
@@ -1857,6 +1860,8 @@ php_parle_lex_get_properties(zval *object) noexcept
 	zend_hash_str_update(props, "marker", sizeof("marker")-1, &zv);
 	ZVAL_LONG(&zv, lex.iter->second - lex.in.begin());
 	zend_hash_str_update(props, "cursor", sizeof("cursor")-1, &zv);
+	ZVAL_LONG(&zv, static_cast<zend_long>(lex.iter.line));
+	zend_hash_str_update(props, "line", sizeof("line")-1, &zv);
 
 	return props;
 }/*}}}*/
