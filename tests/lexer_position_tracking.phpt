@@ -96,6 +96,9 @@ object(Parle\Lexer)#%d (5) {
   int(15)
   ["cursor"]=>
   int(16)
+  ["line"]=>
+  int(3)
+}
 }
 object(Parle\Token)#%d (2) {
   ["id"]=>
