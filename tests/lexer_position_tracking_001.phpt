@@ -85,7 +85,7 @@ object(Parle\ErrorInfo)#%d (3) {
     string(1) "\"
   }
 }
-object(Parle\Lexer)#%d (5) {
+object(Parle\Lexer)#%d (6) {
   ["bol"]=>
   bool(false)
   ["flags"]=>
@@ -98,7 +98,6 @@ object(Parle\Lexer)#%d (5) {
   int(16)
   ["line"]=>
   int(3)
-}
 }
 object(Parle\Token)#%d (2) {
   ["id"]=>
