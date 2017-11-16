@@ -1749,6 +1749,7 @@ php_parle_lex_read_property(zval *object, zval *member, int type, void **cache_s
 		PARLE_LEX_CHECK_THROW_RET_RO_PROP("marker")
 		PARLE_LEX_CHECK_THROW_RET_RO_PROP("cursor")
 		PARLE_LEX_CHECK_THROW_RET_RO_PROP("line")
+		PARLE_LEX_CHECK_THROW_RET_RO_PROP("column")
 	}
 
 	zplo = _php_parle_lexer_fetch_zobj<lexer_obj_type>(Z_OBJ_P(object));
@@ -1767,6 +1768,8 @@ php_parle_lex_read_property(zval *object, zval *member, int type, void **cache_s
 		ZVAL_LONG(retval, lex.iter->second - lex.in.begin());
 	} else if (PARLE_IS_PROP("line")) {
 		ZVAL_LONG(retval, lex.iter.line);
+	} else if (PARLE_IS_PROP("column")) {
+		ZVAL_LONG(retval, lex.iter.column);
 	} else {
 		retval = (zend_get_std_object_handlers())->read_property(object, member, type, cache_slot, rv);
 	}
@@ -1819,6 +1822,7 @@ php_parle_lex_write_property(zval *object, zval *member, zval *value, void **cac
 	  else PARLE_LEX_CHECK_THROW_RO_PROP("cursor")
 	  else PARLE_LEX_CHECK_THROW_RO_PROP("marker")
 	  else PARLE_LEX_CHECK_THROW_RO_PROP("line")
+	  else PARLE_LEX_CHECK_THROW_RO_PROP("column")
 	else {
 		(zend_get_std_object_handlers())->write_property(object, member, value, cache_slot);
 	}
@@ -1863,6 +1867,8 @@ php_parle_lex_get_properties(zval *object) noexcept
 	zend_hash_str_update(props, "cursor", sizeof("cursor")-1, &zv);
 	ZVAL_LONG(&zv, static_cast<zend_long>(lex.iter.line));
 	zend_hash_str_update(props, "line", sizeof("line")-1, &zv);
+	ZVAL_LONG(&zv, static_cast<zend_long>(lex.iter.column));
+	zend_hash_str_update(props, "coulmn", sizeof("column")-1, &zv);
 
 	return props;
 }/*}}}*/
@@ -1945,7 +1951,7 @@ php_parle_lex_get_property_ptr_ptr(zval *object, zval *member, int type, void **
 		cache_slot = NULL;
 	}
 
-	if (PARLE_IS_PROP("state") || PARLE_IS_PROP("marker") || PARLE_IS_PROP("cursor") || PARLE_IS_PROP("bol") || PARLE_IS_PROP("flags") || PARLE_IS_PROP("line")) {
+	if (PARLE_IS_PROP("state") || PARLE_IS_PROP("marker") || PARLE_IS_PROP("cursor") || PARLE_IS_PROP("bol") || PARLE_IS_PROP("flags") || PARLE_IS_PROP("line") || PARLE_IS_PROP("column")) {
 		/* Fallback to read_property. */
 		return NULL;
 	}

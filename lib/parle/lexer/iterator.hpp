@@ -115,7 +115,8 @@ public:
 	}
 
 public:
-	size_t line = 0;
+	size_t line = SIZE_MAX;
+	size_t column = SIZE_MAX;
 private:
 	value_type _results;
 	const sm_type *_sm;
@@ -125,6 +126,9 @@ private:
 	{
 		if (_results.bol) {
 			line++;
+			column = 0;
+		} else {
+			column += _results.second - _results.first;
 		}
 
 		lexertl::lookup(*_sm, _results);
