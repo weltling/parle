@@ -1944,7 +1944,7 @@ php_parle_lex_get_property_ptr_ptr(zval *object, zval *member, int type, void **
 		cache_slot = NULL;
 	}
 
-	if (PARLE_IS_PROP("state") || PARLE_IS_PROP("marker") || PARLE_IS_PROP("cursor") || PARLE_IS_PROP("bol") || PARLE_IS_PROP("flags")) {
+	if (PARLE_IS_PROP("state") || PARLE_IS_PROP("marker") || PARLE_IS_PROP("cursor") || PARLE_IS_PROP("bol") || PARLE_IS_PROP("flags") || PARLE_IS_PROP("line")) {
 		/* Fallback to read_property. */
 		return NULL;
 	}
