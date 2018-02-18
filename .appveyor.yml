@@ -201,7 +201,8 @@ build_script:
                 $conf_cmd = "call configure --enable-parle " + $utf32_part + " --enable-debug-pack 2>&1"
                 echo $conf_cmd | Out-File -Encoding "ASCII" -Append task.bat
                 echo "nmake /nologo 2>&1" | Out-File -Encoding "ASCII" -Append task.bat
-                $here = (Get-Item -Path ".\" -Verbose).FullName
+                echo "exit %errorlevel%" | Out-File -Encoding "ASCII" -Append task.bat
+                $here = (Get-Item -Path "." -Verbose).FullName
                 $runner = 'c:\build-cache\php-sdk-' + $env:BIN_SDK_VER + '\phpsdk' + '-' + $env:VC + '-' + $env:ARCH + '.bat'
                 $task = $here + '\task.bat'
                 & $runner -t $task
@@ -235,12 +236,14 @@ test_script:
                 }
                 cd c:\projects\parle
                 echo "" | Out-File -Encoding "ASCII" task.bat
+                echo "set REPORT_EXIT_STATUS=1" | Out-File -Encoding "ASCII" -Append task.bat
                 echo "set TEST_PHP_JUNIT=c:\junit.out.xml" | Out-File -Encoding "ASCII" task.bat
                 if ('1' -eq $env:UTF32) { $utf32_part = '--enable-parle-utf32' }
                 $cmd = 'call configure --enable-parle ' + $utf32_part + ' --with-prefix=c:\build-cache\' + $dname + " 2>&1"
                 echo $cmd | Out-File -Encoding "ASCII" -Append task.bat
                 echo 'nmake /nologo test TESTS="-q --show-diff --set-timeout 120" 2>&1' | Out-File -Encoding "ASCII" -Append task.bat
-                $here = (Get-Item -Path ".\" -Verbose).FullName
+                echo "exit %errorlevel%" | Out-File -Encoding "ASCII" -Append task.bat
+                $here = (Get-Item -Path "." -Verbose).FullName
                 $runner = 'c:\build-cache\php-sdk-' + $env:BIN_SDK_VER + '\phpsdk' + '-' + $env:VC + '-' + $env:ARCH + '.bat'
                 $task = $here + '\task.bat'
                 & $runner -t $task
