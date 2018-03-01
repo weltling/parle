@@ -76,7 +76,6 @@ struct basic_re_tokeniser_state
         _paren_count = rhs_._paren_count;
         _in_string = rhs_._in_string;
         _nl_id = rhs_._nl_id;
-        return this;
     }
 
     inline bool next(char_type &ch_)
