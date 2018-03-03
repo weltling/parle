@@ -2548,7 +2548,7 @@ PHP_MINIT_FUNCTION(parle)
 		DECL_CONST("ACTION_ACCEPT", parsertl::accept)
 		DECL_CONST("ERROR_SYNTAX", parsertl::syntax_error)
 		DECL_CONST("ERROR_NON_ASSOCIATIVE", parsertl::non_associative)
-		DECL_CONST("ERROR_UNKOWN_TOKEN", parsertl::unknown_token)
+		DECL_CONST("ERROR_UNKNOWN_TOKEN", parsertl::unknown_token)
 #undef DECL_CONST
 		zend_declare_property_long(ce, "action", sizeof("action")-1, 0, ZEND_ACC_PUBLIC);
 		zend_declare_property_long(ce, "reduceId", sizeof("reduceId")-1, 0, ZEND_ACC_PUBLIC);
