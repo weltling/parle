@@ -24,7 +24,8 @@ template<typename id_type, typename iterator, typename token_vector>
 void next(const basic_state_machine<id_type> &sm_, iterator &iter_,
     basic_match_results<id_type> &results_,
     std::multimap<id_type, token_vector> *prod_map_, iterator &last_eoi_,
-    basic_match_results<id_type> &last_results_, token_vector &productions_);
+    basic_match_results<id_type> &last_results_,
+    token_vector &productions_, token_vector &last_productions_);
 template<typename id_type, typename iterator>
 bool parse(const basic_state_machine<id_type> &sm_, iterator &iter_,
     basic_match_results<id_type> &results_, std::set<id_type> *prod_set_);
@@ -99,8 +100,9 @@ bool search(const basic_state_machine<id_type> &sm_, iterator &iter_,
     iterator curr_ = iter_;
     iterator last_eoi_;
     basic_match_results<id_type> results_;
-    basic_match_results<id_type> last_results_;
     token_vector productions_;
+    basic_match_results<id_type> last_results_;
+    token_vector last_productions_;
 
     end_ = iterator();
 
@@ -117,7 +119,7 @@ bool search(const basic_state_machine<id_type> &sm_, iterator &iter_,
             results_.entry.action != error)
         {
             details::next(sm_, curr_, results_, prod_map_, last_eoi_,
-                last_results_, productions_);
+                last_results_, productions_, last_productions_);
         }
 
         hit_ = results_.entry.action == accept;
@@ -132,7 +134,7 @@ bool search(const basic_state_machine<id_type> &sm_, iterator &iter_,
             iterator eoi_;
 
             hit_ = details::parse(sm_, eoi_, last_results_, prod_map_,
-                productions_);
+                last_productions_);
 
             if (hit_)
             {
@@ -244,7 +246,7 @@ void next(const basic_state_machine<id_type> &sm_, iterator &iter_,
     basic_match_results<id_type> &results_,
     std::multimap<id_type, token_vector> *prod_map_,
     iterator &last_eoi_, basic_match_results<id_type> &last_results_,
-    token_vector &productions_)
+    token_vector &productions_, token_vector &last_productions_)
 {
     switch (results_.entry.action)
     {
@@ -281,6 +283,7 @@ void next(const basic_state_machine<id_type> &sm_, iterator &iter_,
             last_results_.stack = results_.stack;
             last_results_.token_id = 0;
             last_results_.entry = *ptr_;
+            last_productions_ = productions_;
         }
 
         break;
