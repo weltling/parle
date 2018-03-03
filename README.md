@@ -101,7 +101,7 @@ do {
 	switch ($p->action) {
 		case Parser::ACTION_ERROR:
 			$err = $p->errorInfo();
-			if (Parser::ERROR_UNKOWN_TOKEN == $err->id) {
+			if (Parser::ERROR_UNKNOWN_TOKEN == $err->id) {
 				$tok = $err->token;
 				$msg = "Unknown token '{$tok->value}' at offset {$err->position}";
 			} else if (Parser::ERROR_NON_ASSOCIATIVE == $err->id) {

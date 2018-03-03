@@ -148,7 +148,7 @@ class ParseStrParser extends Parser
 							throw new ParserException("Syntax error at " . $i->position);
 						case Parser::ERROR_NON_ASSOCIATIVE:
 							throw new ParserException("Token " . $this->tokenIdToName[$i->token->id] . "is not associative");
-						case Parser::ERROR_UNKOWN_TOKEN:
+						case Parser::ERROR_UNKNOWN_TOKEN:
 							throw new ParserException("Unknown token '" . $i->token->value . "' at " . $i->position);
 					}
 					break;
