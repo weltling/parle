@@ -10,10 +10,10 @@
 		<email>ab@php.net</email>
 		<active>yes</active>
 	</lead>
-	<date>2017-11-11</date>
+	<date>2018-03-03</date>
 	<version>
-		<release>0.7.4</release>
-		<api>0.7.4</api>
+		<release>0.8.0</release>
+		<api>0.8.0</api>
 	</version>
 	<stability>
 		<release>beta</release>
@@ -21,7 +21,8 @@
 	</stability>
 	<license uri="http://opensource.org/licenses/BSD-2-Clause">BSD 2-clause</license>
 	<notes>
-		- Fix broken package
+		- Synced bundled lexertl14 and parsertl14 with upstream
+		- Fixed github issue #12 (Build with GCC 8 is broken)
 	</notes>
 	<contents>
 		<dir name="/">
