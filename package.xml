@@ -23,6 +23,7 @@
 	<notes>
 		- Synced bundled lexertl14 and parsertl14 with upstream
 		- Fixed github issue #12 (Build with GCC 8 is broken)
+		- Fixed github issue #14 (Misspelled constant name)
 	</notes>
 	<contents>
 		<dir name="/">
