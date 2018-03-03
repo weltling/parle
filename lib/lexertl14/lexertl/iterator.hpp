@@ -9,6 +9,7 @@
 
 #include <iterator>
 #include "lookup.hpp"
+#include "state_machine.hpp"
 
 namespace lexertl
 {

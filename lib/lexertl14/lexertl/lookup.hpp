@@ -8,7 +8,6 @@
 
 #include <assert.h>
 #include "match_results.hpp"
-#include "state_machine.hpp"
 #include <type_traits>
 
 namespace lexertl
@@ -92,11 +91,10 @@ struct recursive_state<id_type, true>
     }
 };
 
-template<typename id_type, typename index_type, std::size_t flags>
+template<typename internals, typename id_type, typename index_type,
+    std::size_t flags>
 struct lookup_state
 {
-    using internals = basic_internals<id_type>;
-
     const id_type *_lookup;
     id_type _dfa_alphabet;
     const id_type *_dfa;
@@ -112,9 +110,9 @@ struct lookup_state
 
     lookup_state(const internals &internals_, const bool bol_,
         const id_type state_) :
-        _lookup(&internals_._lookup[state_].front()),
+        _lookup(&internals_._lookup[state_][0]),
         _dfa_alphabet(internals_._dfa_alphabet[state_]),
-        _dfa(&internals_._dfa[state_].front()),
+        _dfa(&internals_._dfa[state_][0]),
         _ptr(_dfa + _dfa_alphabet),
         _end_state(*_ptr != 0),
         _id(*(_ptr + id_index)),
@@ -366,14 +364,14 @@ void inc_end(results &results_, const std::true_type &)
     ++results_.second;
 }
 
-template<typename iter_type, std::size_t flags, typename id_type,
-    typename results, bool compressed, bool recursive>
-void next(const basic_state_machine<typename std::iterator_traits
-    <iter_type>::value_type, id_type> &sm_, results &results_,
+template<typename sm_type, std::size_t flags, typename results,
+    bool compressed, bool recursive>
+void next(const sm_type &sm_, results &results_,
     const std::integral_constant<bool, compressed> &compressed_,
     const std::integral_constant<bool, recursive> &recursive_,
     const std::forward_iterator_tag &)
 {
+    using id_type = typename sm_type::id_type;
     const auto &internals_ = sm_.data();
     auto end_token_ = results_.second;
 
@@ -390,7 +388,8 @@ again:
         return;
     }
 
-    lookup_state<id_type, typename results::index_type, flags> lu_state_
+    lookup_state<typename sm_type::internals, id_type,
+        typename results::index_type, flags> lu_state_
         (internals_, results_.bol, results_.state);
     lu_state_.bol_start_state
         (std::integral_constant<bool, (flags & bol_bit) != 0>());
@@ -458,10 +457,9 @@ again:
 }
 }
 
-template<typename iter_type, typename id_type, std::size_t flags>
-void lookup(const basic_state_machine<typename std::iterator_traits
-    <iter_type>::value_type, id_type> &sm_,
-    match_results<iter_type, id_type, flags> &results_)
+template<typename iter_type, typename sm_type, std::size_t flags>
+void lookup(const sm_type &sm_, match_results<iter_type,
+    typename sm_type::id_type, flags> &results_)
 {
     using value_type = typename std::iterator_traits<iter_type>::value_type;
     using cat = typename std::iterator_traits<iter_type>::iterator_category;
@@ -470,22 +468,21 @@ void lookup(const basic_state_machine<typename std::iterator_traits
     // flags, or you should be using recursive_match_results instead
     // of match_results.
     assert((sm_.data()._features & flags) == sm_.data()._features);
-    detail::next<iter_type, flags, id_type>(sm_, results_,
+    detail::next<sm_type, flags>(sm_, results_,
         std::integral_constant<bool, (sizeof(value_type) > 1)>(),
         std::false_type(), cat());
 }
 
-template<typename iter_type, typename id_type, std::size_t flags>
-void lookup(const basic_state_machine<typename std::iterator_traits
-    <iter_type>::value_type, id_type> &sm_,
-    recursive_match_results<iter_type, id_type, flags> &results_)
+template<typename iter_type, typename sm_type, std::size_t flags>
+void lookup(const sm_type &sm_, recursive_match_results<iter_type,
+    typename sm_type::id_type, flags> &results_)
 {
     using value_type = typename std::iterator_traits<iter_type>::value_type;
     using cat = typename std::iterator_traits<iter_type>::iterator_category;
 
     // If this asserts, you have not defined all the correct flags
     assert((sm_.data()._features & flags) == sm_.data()._features);
-    detail::next<iter_type, flags | recursive_bit, id_type>(sm_, results_,
+    detail::next<sm_type, flags | recursive_bit>(sm_, results_,
         std::integral_constant<bool, (sizeof(value_type) > 1)>(),
         std::true_type(), cat());
 }

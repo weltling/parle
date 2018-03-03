@@ -16,10 +16,11 @@
 
 namespace lexertl
 {
-template<typename char_type, typename id_type = uint16_t>
+template<typename char_type, typename id_ty = uint16_t>
 class basic_state_machine
 {
 public:
+    using id_type = id_ty;
     using traits =
         basic_sm_traits<char_type, id_type,
             (sizeof(char_type) > 1), true, true>;
@@ -196,10 +197,11 @@ using state_machine = basic_state_machine<char>;
 using wstate_machine = basic_state_machine<wchar_t>;
 using u32state_machine = basic_state_machine<char32_t>;
 
-template<typename char_type, typename id_type = uint16_t,
+template<typename char_type, typename id_ty = uint16_t,
     bool is_dfa = true>
 struct basic_char_state_machine
 {
+    using id_type = id_ty;
     using traits = basic_sm_traits<char_type, id_type, false, false, is_dfa>;
     using internals = detail::basic_internals<id_type>;
     using id_type_vector = typename internals::id_type_vector;

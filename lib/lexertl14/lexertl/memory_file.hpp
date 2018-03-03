@@ -27,15 +27,11 @@ template<typename char_type>
 class basic_memory_file
 {
 public:
-    basic_memory_file(const char *pathname_) :
-        _data(nullptr),
-        _size(0),
-#ifdef _WIN32
-        _fh(0),
-        _fmh(0)
-#else
-        _fh(0)
-#endif
+    basic_memory_file()
+    {
+    }
+
+    basic_memory_file(const char *pathname_)
     {
         open(pathname_);
     }
@@ -120,13 +116,13 @@ public:
     }
 
 private:
-    const char_type *_data;
-    std::size_t _size;
+    const char_type *_data = nullptr;
+    std::size_t _size = 0;
 #ifdef _WIN32
-    HANDLE _fh;
-    HANDLE _fmh;
+    HANDLE _fh = 0;
+    HANDLE _fmh = 0;
 #else
-    int _fh;
+    int _fh = 0;
 #endif
 
     // No copy construction.
