@@ -126,7 +126,7 @@
 				<file role="test" name="lexer_006.phpt"/>
 				<file role="test" name="lexer_007.phpt"/>
 				<file role="test" name="lexer_flags.phpt"/>
-				<file role="test" name="lexer_position_tracking.phpt"/>
+				<file role="test" name="lexer_position_tracking_001.phpt"/>
 				<file role="test" name="reflection_001.phpt"/>
 				<file role="test" name="reflection_002.phpt"/>
 				<file role="test" name="stack_001.phpt"/>
