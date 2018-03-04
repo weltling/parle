@@ -12,8 +12,8 @@
 	</lead>
 	<date>2018-03-04</date>
 	<version>
-		<release>0.8.0</release>
-		<api>0.8.0</api>
+		<release>0.8.1</release>
+		<api>0.8.1</api>
 	</version>
 	<stability>
 		<release>beta</release>
@@ -21,9 +21,7 @@
 	</stability>
 	<license uri="http://opensource.org/licenses/BSD-2-Clause">BSD 2-clause</license>
 	<notes>
-		- Synced bundled lexertl14 and parsertl14 with upstream
-		- Fixed github issue #12 (Build with GCC 8 is broken)
-		- Fixed github issue #14 (Misspelled constant name)
+		- todo
 	</notes>
 	<contents>
 		<dir name="/">
@@ -149,6 +147,23 @@
 	<providesextension>parle</providesextension>
 	<extsrcrelease />
 	<changelog>
+		<release>
+			<date>2018-03-04</date>
+			<version>
+				<release>0.8.0</release>
+				<api>0.8.0</api>
+			</version>
+			<stability>
+				<release>beta</release>
+				<api>beta</api>
+			</stability>
+			<license uri="http://opensource.org/licenses/BSD-2-Clause">BSD 2-clause</license>
+			<notes>
+				- Synced bundled lexertl14 and parsertl14 with upstream
+				- Fixed github issue #12 (Build with GCC 8 is broken)
+				- Fixed github issue #14 (Misspelled constant name)
+			</notes>
+		</release>
 		<release>
 			<date>2017-11-11</date>
 			<version>
