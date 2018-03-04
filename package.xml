@@ -35,9 +35,9 @@
 			<file role="src" name="config.m4"/>
 			<dir name="lib">
 				<dir name="parle">
+					<file role="src" name="cvt.hpp"/>
 					<dir name="lexer">
 						<file role="src" name="iterator.hpp"/>
-						<file role="src" name="cvt.hpp"/>
 					</dir>
 				</dir>
 				<dir name="parsertl14">
