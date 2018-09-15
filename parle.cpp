@@ -159,7 +159,7 @@ namespace parle {/*{{{*/
 	namespace parser {
 		using state_machine = parsertl::basic_state_machine<id_type>;
 		using match_results = parsertl::basic_match_results<state_machine>;
-		using parle_rules = parsertl::basic_rules<char_type>;
+		using parle_rules = parsertl::basic_rules<char_type, id_type>;
 		using generator = parsertl::basic_generator<parle_rules, id_type>;
 		using parle_productions = parsertl::token<parle::lexer::siterator>::token_vector;
 		using parle_rproductions = parsertl::token<parle::lexer::sriterator>::token_vector;

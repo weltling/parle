@@ -247,7 +247,7 @@ public:
                             _ebnf_tables.yyr2[results_.entry.param];
                         const std::size_t idx_ = productions_.size() - size_;
                         const token_t &token_ = productions_[idx_ + 1];
-                        const string r_ = token_.str() + ' ' +
+                        const string r_ = token_.str() + char_type(' ') +
                             rhs_stack_.top();
 
                         rhs_stack_.pop();
@@ -258,7 +258,7 @@ public:
                         }
                         else
                         {
-                            rhs_stack_.top() += ' ' + r_;
+                            rhs_stack_.top() += char_type(' ') + r_;
                         }
 
                         break;
@@ -277,7 +277,7 @@ public:
                             string r_ = rhs_stack_.top();
 
                             rhs_stack_.pop();
-                            rhs_stack_.top() += ' ' + r_;
+                            rhs_stack_.top() += char_type(' ') + r_;
                         }
 
                         break;
@@ -288,7 +288,7 @@ public:
                         string r_ = rhs_stack_.top();
 
                         rhs_stack_.pop();
-                        rhs_stack_.top() += ' ' + r_;
+                        rhs_stack_.top() += char_type(' ') + r_;
                         break;
                     }
                     case ebnf_indexes::identifier_idx:
@@ -315,7 +315,7 @@ public:
 
                         ++counter_;
                         ss_ << counter_;
-                        pair_.first = lhs_str_ + '_' + ss_.str();
+                        pair_.first = lhs_str_ + char_type('_') + ss_.str();
                         _generated_rules.insert(pair_.first);
                         pair_.second = empty_or_ + rhs_stack_.top();
                         rhs_stack_.top() = pair_.first;
@@ -333,9 +333,9 @@ public:
 
                         ++counter_;
                         ss_ << counter_;
-                        pair_.first = lhs_str_ + '_' + ss_.str();
+                        pair_.first = lhs_str_ + char_type('_') + ss_.str();
                         _generated_rules.insert(pair_.first);
-                        pair_.second = empty_or_ + pair_.first + ' ' +
+                        pair_.second = empty_or_ + pair_.first + char_type(' ') +
                             rhs_stack_.top();
                         rhs_stack_.top() = pair_.first;
                         new_rules_.push(pair_);
@@ -352,10 +352,10 @@ public:
 
                         ++counter_;
                         ss_ << counter_;
-                        pair_.first = lhs_str_ + '_' + ss_.str();
+                        pair_.first = lhs_str_ + char_type('_') + ss_.str();
                         _generated_rules.insert(pair_.first);
                         pair_.second = rhs_stack_.top() + or_ +
-                            pair_.first + ' ' + rhs_stack_.top();
+                            pair_.first + char_type(' ') + rhs_stack_.top();
                         rhs_stack_.top() = pair_.first;
                         new_rules_.push(pair_);
                         break;
@@ -369,13 +369,13 @@ public:
 
                         ++counter_;
                         ss_ << counter_;
-                        pair_.first = lhs_str_ + '_' + ss_.str();
+                        pair_.first = lhs_str_ + char_type('_') + ss_.str();
                         _generated_rules.insert(pair_.first);
                         pair_.second = rhs_stack_.top();
 
                         if (_flags & enable_captures)
                         {
-                            rhs_stack_.top() = '(' + pair_.first + ')';
+                            rhs_stack_.top() = char_type('(') + pair_.first + char_type(')');
                         }
                         else
                         {
@@ -395,7 +395,7 @@ public:
                         const std::size_t idx_ = productions_.size() - size_;
                         const token_t &token_ = productions_[idx_];
 
-                        rhs_stack_.push(token_.str() + ' ' +
+                        rhs_stack_.push(token_.str() + char_type(' ') +
                             productions_[idx_ + 1].str());
                         break;
                     }
