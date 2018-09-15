@@ -1,5 +1,5 @@
 // lookup.hpp
-// Copyright (c) 2017 Ben Hanson (http://www.benhanson.net/)
+// Copyright (c) 2017-2018 Ben Hanson (http://www.benhanson.net/)
 //
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file licence_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -12,15 +12,18 @@
 namespace parsertl
 {
 // parse sequence but do not keep track of productions
-template<typename id_type, typename iterator>
-void lookup(const basic_state_machine<id_type> &sm_, iterator &iter_,
-    basic_match_results<id_type> &results_)
+template<typename sm_type, typename iterator>
+void lookup(const sm_type &sm_, iterator &iter_,
+    basic_match_results<sm_type> &results_)
 {
     switch (results_.entry.action)
     {
     case error:
         break;
     case shift:
+    {
+        const auto *ptr_ = &sm_._table[results_.entry.param * sm_._columns];
+
         results_.stack.push_back(results_.entry.param);
 
         if (results_.token_id != 0)
@@ -37,11 +40,11 @@ void lookup(const basic_state_machine<id_type> &sm_, iterator &iter_,
         }
         else
         {
-            results_.entry = sm_._table[results_.stack.back() * sm_._columns +
-                results_.token_id];
+            results_.entry = ptr_[results_.token_id];
         }
 
         break;
+    }
     case reduce:
     {
         const std::size_t size_ =
@@ -79,15 +82,18 @@ void lookup(const basic_state_machine<id_type> &sm_, iterator &iter_,
 }
 
 // Parse sequence and maintain production vector
-template<typename id_type, typename iterator, typename token_vector>
-void lookup(const basic_state_machine<id_type> &sm_, iterator &iter_,
-    basic_match_results<id_type> &results_, token_vector &productions_)
+template<typename sm_type, typename iterator, typename token_vector>
+void lookup(const sm_type &sm_, iterator &iter_,
+    basic_match_results<sm_type> &results_, token_vector &productions_)
 {
     switch (results_.entry.action)
     {
     case error:
         break;
     case shift:
+    {
+        const auto *ptr_ = &sm_._table[results_.entry.param * sm_._columns];
+
         results_.stack.push_back(results_.entry.param);
         productions_.push_back(typename token_vector::value_type(iter_->id,
             iter_->first, iter_->second));
@@ -106,11 +112,11 @@ void lookup(const basic_state_machine<id_type> &sm_, iterator &iter_,
         }
         else
         {
-            results_.entry = sm_._table[results_.stack.back() *
-                sm_._columns + results_.token_id];
+            results_.entry = ptr_[results_.token_id];
         }
 
         break;
+    }
     case reduce:
     {
         const std::size_t size_ =
@@ -119,14 +125,21 @@ void lookup(const basic_state_machine<id_type> &sm_, iterator &iter_,
 
         if (size_)
         {
+            results_.stack.resize(results_.stack.size() - size_);
             token_.first = (productions_.end() - size_)->first;
             token_.second = productions_.back().second;
-            results_.stack.resize(results_.stack.size() - size_);
             productions_.resize(productions_.size() - size_);
         }
         else
         {
-            token_.first = token_.second = iter_->first;
+            if (productions_.empty())
+            {
+                token_.first = token_.second = iter_->first;
+            }
+            else
+            {
+                token_.first = token_.second = productions_.back().second;
+            }
         }
 
         results_.token_id = sm_._rules[results_.entry.param].first;

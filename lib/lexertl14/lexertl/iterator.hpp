@@ -1,5 +1,5 @@
 // iterator.hpp
-// Copyright (c) 2015-2017 Ben Hanson (http://www.benhanson.net/)
+// Copyright (c) 2015-2018 Ben Hanson (http://www.benhanson.net/)
 //
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file licence_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -88,6 +88,11 @@ public:
     bool operator !=(const iterator &rhs_) const
     {
         return !(*this == rhs_);
+    }
+
+    const sm_type &sm() const
+    {
+        return *_sm;
     }
 
 private:

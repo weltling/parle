@@ -1,15 +1,20 @@
 // rules.hpp
-// Copyright (c) 2014-2017 Ben Hanson (http://www.benhanson.net/)
+// Copyright (c) 2014-2018 Ben Hanson (http://www.benhanson.net/)
 //
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file licence_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 #ifndef PARSERTL_RULES_HPP
 #define PARSERTL_RULES_HPP
 
+#include "bison_lookup.hpp"
+#include "ebnf_tables.hpp"
+#include "enums.hpp"
 #include "../../lexertl14/lexertl/generator.hpp"
 #include "../../lexertl14/lexertl/iterator.hpp"
+#include "match_results.hpp"
 #include "narrow.hpp"
 #include "runtime_error.hpp"
+#include "token.hpp"
 
 namespace parsertl
 {
@@ -31,6 +36,10 @@ public:
         }
     };
 
+    using capture_vector = std::vector<std::pair<id_type, id_type>>;
+    // first is the starting index for each block of captures
+    using captures_vector =
+        std::vector<std::pair<std::size_t, capture_vector>>;
     using nt_location_vector = std::vector<nt_location>;
     using string = std::basic_string<char_type>;
     using string_id_type_map = std::map<string, id_type>;
@@ -115,39 +124,35 @@ public:
 
     using token_info_vector = std::vector<token_info>;
 
-    basic_rules() :
+    basic_rules(const std::size_t flags_ = 0) :
+        _flags(flags_),
         _next_precedence(1)
     {
         lexer_rules rules_;
 
-        rules_.insert_macro("LITERAL",
+        rules_.insert_macro("TERMINAL",
             "'(\\\\([^0-9cx]|[0-9]{1,3}|c[@a-zA-Z]|x\\d+)|[^'])+'|"
             "[\"](\\\\([^0-9cx]|[0-9]{1,3}|c[@a-zA-Z]|x\\d+)|[^\"])+[\"]");
-        rules_.insert_macro("SYMBOL", "[A-Za-z_.][-A-Za-z_.0-9]*");
-        rules_.push("{LITERAL}", LITERAL);
-        rules_.push("{SYMBOL}", SYMBOL);
+        rules_.insert_macro("IDENTIFIER", "[A-Za-z_.][-A-Za-z_.0-9]*");
+        rules_.push("{TERMINAL}", ebnf_tables::TERMINAL);
+        rules_.push("{IDENTIFIER}", ebnf_tables::IDENTIFIER);
         rules_.push("\\s+", rules_.skip());
         lexer_generator::build(rules_, _token_lexer);
 
-        rules_.push_state("CODE");
-        rules_.push_state("EMPTY");
-        rules_.push_state("PREC");
-
-        rules_.push("INITIAL,CODE", "[{]", ">CODE");
-        rules_.push("CODE", "'(\\\\.|[^'])*'", ".");
-        rules_.push("CODE", "[\"](\\\\.|[^\"])*[\"]", ".");
-        rules_.push("CODE", "<%", ">CODE");
-        rules_.push("CODE", "%>", "<");
-        rules_.push("CODE", "[^}]", ".");
-        rules_.push("CODE", "[}]", rules_.skip(), "<");
-
-        rules_.push("INITIAL", "%empty", rules_.skip(), "EMPTY");
-        rules_.push("INITIAL,EMPTY", "%prec", rules_.skip(), "PREC");
-        rules_.push("PREC", "{LITERAL}|{SYMBOL}", PREC, "INITIAL");
-        rules_.push("INITIAL,EMPTY", "[|]", OR, "INITIAL");
-        rules_.push("INITIAL,CODE,EMPTY,PREC", "[/][*](.|\n)*?[*][/]|[/][/].*",
-            rules_.skip(), ".");
-        rules_.push("EMPTY,PREC", "\\s+", rules_.skip(), ".");
+        rules_.push("[|]", '|');
+        rules_.push("\\[", '[');
+        rules_.push("\\]", ']');
+        rules_.push("[?]", '?');
+        rules_.push("[{]", '{');
+        rules_.push("[}]", '}');
+        rules_.push("[*]", '*');
+        rules_.push("-", '-');
+        rules_.push("[+]", '+');
+        rules_.push("[(]", '(');
+        rules_.push("[)]", ')');
+        rules_.push("%empty", ebnf_tables::EMPTY);
+        rules_.push("%prec", ebnf_tables::PREC);
+        rules_.push("[/][*].{+}[\r\n]*?[*][/]|[/][/].*", rules_.skip());
         lexer_generator::build(rules_, _rule_lexer);
 
         const std::size_t id_ = insert_terminal(string(1, '$'));
@@ -186,7 +191,11 @@ public:
 
     id_type push(const char_type *lhs_, const char_type *rhs_)
     {
+        // Return the first index of any EBNF/rule with ors.
+        id_type index_ = static_cast<id_type>(_grammar.size());
         const string lhs_str_ = lhs_;
+        const string rhs_str_ = rhs_;
+        const std::size_t old_size_ = _grammar.size();
 
         validate(lhs_);
 
@@ -200,8 +209,231 @@ public:
             throw runtime_error(ss_.str());
         }
 
-        push_production(lhs_str_, rhs_);
-        return static_cast<id_type>(_grammar.size() - 1);
+        if (_generated_rules.find(lhs_str_) != _generated_rules.end())
+        {
+            std::ostringstream ss_;
+
+            ss_ << "Rule ";
+            narrow(lhs_, ss_);
+            ss_ << " is already defined as a generated rules.";
+            throw runtime_error(ss_.str());
+        }
+
+        lexer_iterator iter_(rhs_str_.c_str(), rhs_str_.c_str() +
+            rhs_str_.size(), _rule_lexer);
+        basic_match_results<basic_state_machine<id_type>> results_;
+        // Qualify token to prevent arg dependant lookup
+        using token_t = parsertl::token<lexer_iterator>;
+        typename token_t::token_vector productions_;
+        std::stack<string> rhs_stack_;
+        std::stack<std::pair<string, string>> new_rules_;
+        char_type empty_or_[] =
+            { '%', 'e', 'm', 'p', 't', 'y', ' ', '|', ' ', 0 };
+        char_type or_[] = { ' ', '|', ' ', 0 };
+
+        bison_next(iter_, results_, _ebnf_tables);
+
+        while (results_.entry.action != error &&
+            results_.entry.action != accept)
+        {
+            if (results_.entry.action == reduce)
+            {
+                switch (static_cast<ebnf_indexes>(results_.entry.param))
+                {
+                    case ebnf_indexes::rhs_or_2_idx:
+                    {
+                        // rhs_or: rhs_or '|' opt_list;
+                        const std::size_t size_ =
+                            _ebnf_tables.yyr2[results_.entry.param];
+                        const std::size_t idx_ = productions_.size() - size_;
+                        const token_t &token_ = productions_[idx_ + 1];
+                        const string r_ = token_.str() + ' ' +
+                            rhs_stack_.top();
+
+                        rhs_stack_.pop();
+
+                        if (rhs_stack_.empty())
+                        {
+                            rhs_stack_.push(r_);
+                        }
+                        else
+                        {
+                            rhs_stack_.top() += ' ' + r_;
+                        }
+
+                        break;
+                    }
+                    case ebnf_indexes::opt_list_3_idx:
+                    {
+                        // opt_list: rhs_list opt_prec;
+                        const std::size_t size_ =
+                            _ebnf_tables.yyr2[results_.entry.param];
+                        const std::size_t idx_ = productions_.size() - size_;
+                        const token_t &token_ = productions_[idx_ + 1];
+
+                        // Check if %prec is present
+                        if (token_.first != token_.second)
+                        {
+                            string r_ = rhs_stack_.top();
+
+                            rhs_stack_.pop();
+                            rhs_stack_.top() += ' ' + r_;
+                        }
+
+                        break;
+                    }
+                    case ebnf_indexes::rhs_list_2_idx:
+                    {
+                        // rhs_list: rhs_list rhs;
+                        string r_ = rhs_stack_.top();
+
+                        rhs_stack_.pop();
+                        rhs_stack_.top() += ' ' + r_;
+                        break;
+                    }
+                    case ebnf_indexes::identifier_idx:
+                    case ebnf_indexes::terminal_idx:
+                    {
+                        // rhs: IDENTIFIER;
+                        // rhs: TERMINAL;
+                        const std::size_t size_ =
+                            _ebnf_tables.yyr2[results_.entry.param];
+                        const std::size_t idx_ = productions_.size() - size_;
+                        const token_t &token_ = productions_[idx_];
+
+                        rhs_stack_.push(token_.str());
+                        break;
+                    }
+                    case ebnf_indexes::optional_1_idx:
+                    case ebnf_indexes::optional_2_idx:
+                    {
+                        // rhs: '[' rhs_or ']';
+                        // rhs: rhs '?';
+                        std::size_t &counter_ = _new_rule_ids[lhs_];
+                        std::basic_ostringstream<char_type> ss_;
+                        std::pair<string, string> pair_;
+
+                        ++counter_;
+                        ss_ << counter_;
+                        pair_.first = lhs_str_ + '_' + ss_.str();
+                        _generated_rules.insert(pair_.first);
+                        pair_.second = empty_or_ + rhs_stack_.top();
+                        rhs_stack_.top() = pair_.first;
+                        new_rules_.push(pair_);
+                        break;
+                    }
+                    case ebnf_indexes::zom_1_idx:
+                    case ebnf_indexes::zom_2_idx:
+                    {
+                        // rhs: '{' rhs_or '}';
+                        // rhs: rhs '*';
+                        std::size_t &counter_ = _new_rule_ids[lhs_];
+                        std::basic_ostringstream<char_type> ss_;
+                        std::pair<string, string> pair_;
+
+                        ++counter_;
+                        ss_ << counter_;
+                        pair_.first = lhs_str_ + '_' + ss_.str();
+                        _generated_rules.insert(pair_.first);
+                        pair_.second = empty_or_ + pair_.first + ' ' +
+                            rhs_stack_.top();
+                        rhs_stack_.top() = pair_.first;
+                        new_rules_.push(pair_);
+                        break;
+                    }
+                    case ebnf_indexes::oom_1_idx:
+                    case ebnf_indexes::oom_2_idx:
+                    {
+                        // rhs: '{' rhs_or '}' '-';
+                        // rhs: rhs '+';
+                        std::size_t &counter_ = _new_rule_ids[lhs_];
+                        std::basic_ostringstream<char_type> ss_;
+                        std::pair<string, string> pair_;
+
+                        ++counter_;
+                        ss_ << counter_;
+                        pair_.first = lhs_str_ + '_' + ss_.str();
+                        _generated_rules.insert(pair_.first);
+                        pair_.second = rhs_stack_.top() + or_ +
+                            pair_.first + ' ' + rhs_stack_.top();
+                        rhs_stack_.top() = pair_.first;
+                        new_rules_.push(pair_);
+                        break;
+                    }
+                    case ebnf_indexes::bracketed_idx:
+                    {
+                        // rhs: '(' rhs_or ')';
+                        std::size_t &counter_ = _new_rule_ids[lhs_];
+                        std::basic_ostringstream<char_type> ss_;
+                        std::pair<string, string> pair_;
+
+                        ++counter_;
+                        ss_ << counter_;
+                        pair_.first = lhs_str_ + '_' + ss_.str();
+                        _generated_rules.insert(pair_.first);
+                        pair_.second = rhs_stack_.top();
+
+                        if (_flags & enable_captures)
+                        {
+                            rhs_stack_.top() = '(' + pair_.first + ')';
+                        }
+                        else
+                        {
+                            rhs_stack_.top() = pair_.first;
+                        }
+
+                        new_rules_.push(pair_);
+                        break;
+                    }
+                    case ebnf_indexes::prec_ident_idx:
+                    case ebnf_indexes::prec_term_idx:
+                    {
+                        // opt_prec: PREC IDENTIFIER;
+                        // opt_prec: PREC TERMINAL;
+                        const std::size_t size_ =
+                            _ebnf_tables.yyr2[results_.entry.param];
+                        const std::size_t idx_ = productions_.size() - size_;
+                        const token_t &token_ = productions_[idx_];
+
+                        rhs_stack_.push(token_.str() + ' ' +
+                            productions_[idx_ + 1].str());
+                        break;
+                    }
+                }
+            }
+
+            bison_lookup(iter_, results_, productions_, _ebnf_tables);
+            bison_next(iter_, results_, _ebnf_tables);
+        }
+
+        if (results_.entry.action == error)
+        {
+            std::ostringstream ss_;
+
+            ss_ << "Syntax error in rule '";
+            narrow(lhs_, ss_);
+            ss_ << "': '";
+            narrow(rhs_, ss_);
+            ss_ << "'.";
+            throw runtime_error(ss_.str());
+        }
+
+        assert(rhs_stack_.size() == 1);
+        push_production(lhs_str_, rhs_stack_.top());
+
+        while (!new_rules_.empty())
+        {
+            push_production(new_rules_.top().first,
+                new_rules_.top().second);
+            new_rules_.pop();
+        }
+
+        if (!_captures.empty() && old_size_ != _grammar.size())
+        {
+            resize_captures();
+        }
+
+        return index_;
     }
 
     id_type token_id(const char_type *name_) const
@@ -365,12 +597,41 @@ public:
         non_terminals(vec_);
     }
 
+    const captures_vector &captures() const
+    {
+        return _captures;
+    }
+
     std::size_t npos() const
     {
         return static_cast<std::size_t>(~0);
     }
 
 private:
+    enum class ebnf_indexes
+    {
+        rule_idx = 2,
+        rhs_or_1_idx,
+        rhs_or_2_idx,
+        opt_list_1_idx,
+        opt_list_2_idx,
+        opt_list_3_idx,
+        rhs_list_1_idx,
+        rhs_list_2_idx,
+        identifier_idx,
+        terminal_idx,
+        optional_1_idx,
+        optional_2_idx,
+        zom_1_idx,
+        zom_2_idx,
+        oom_1_idx,
+        oom_2_idx,
+        bracketed_idx,
+        prec_empty_idx,
+        prec_ident_idx,
+        prec_term_idx
+    };
+
     using lexer_rules = typename lexertl::basic_rules<char, char_type>;
     using lexer_state_machine =
         typename lexertl::basic_state_machine<char_type>;
@@ -380,8 +641,8 @@ private:
         typename lexertl::iterator<const char_type *, lexer_state_machine,
         typename lexertl::recursive_match_results<const char_type *>>;
 
-    enum type { LITERAL = 1, SYMBOL, PREC, OR };
-
+    std::size_t _flags;
+    ebnf_tables _ebnf_tables;
     std::size_t _next_precedence;
     lexer_state_machine _rule_lexer;
     lexer_state_machine _token_lexer;
@@ -389,8 +650,11 @@ private:
     token_info_vector _tokens_info;
     string_id_type_map _non_terminals;
     nt_location_vector _nt_locations;
+    std::map<string, std::size_t> _new_rule_ids;
+    std::set<string> _generated_rules;
     string _start;
     production_vector _grammar;
+    captures_vector _captures;
 
     token_info &info(const std::size_t id_)
     {
@@ -497,10 +761,16 @@ private:
     {
         const std::size_t lhs_id_ = nt_id(lhs_);
         nt_location &location_ = location(lhs_id_);
+        lexer_iterator iter_(rhs_.c_str(), rhs_.c_str() +
+            rhs_.size(), _rule_lexer);
+        basic_match_results<basic_state_machine<id_type>> results_;
+        // Qualify token to prevent arg dependant lookup
+        using token_t = parsertl::token<lexer_iterator>;
+        typename token_t::token_vector productions_;
         production production_(_grammar.size());
-        lexer_iterator iter_(rhs_.c_str(), rhs_.c_str() + rhs_.size(),
-            _rule_lexer);
-        lexer_iterator end_;
+        int brackets_ = 0;
+        int curr_bracket_ = 0;
+        std::stack<int> bracket_stack_;
 
         if (location_._first_production == npos())
         {
@@ -515,99 +785,165 @@ private:
 
         location_._last_production = production_._index;
         production_._lhs = lhs_id_;
+        bison_next(iter_, results_, _ebnf_tables);
 
-        for (; iter_ != end_; ++iter_)
+        while (results_.entry.action != error &&
+            results_.entry.action != accept)
         {
-            switch (iter_->id)
+            if (results_.entry.action == shift)
             {
-            case LITERAL:
-            {
-                string token_ = iter_->str();
-                const std::size_t id_ = insert_terminal(token_);
-                token_info &token_info_ = info(id_);
-
-                production_._precedence = token_info_._precedence;
-                production_._rhs.first.push_back(symbol(symbol::
-                    TERMINAL, id_));
-                break;
-            }
-            case SYMBOL:
-            {
-                string token_ = iter_->str();
-                typename string_id_type_map::const_iterator terminal_iter_ =
-                    _terminals.find(token_);
-
-                if (terminal_iter_ == _terminals.end())
+                switch (iter_->id)
                 {
-                    const std::size_t id_ = nt_id(token_);
+                    case '(':
+                        if (_captures.size() <= _grammar.size())
+                        {
+                            resize_captures();
+                            curr_bracket_ = 0;
+                        }
 
-                    // NON_TERMINAL
-                    location(id_);
-                    production_._rhs.first.push_back(symbol(symbol::
-                        NON_TERMINAL, id_));
+                        ++brackets_;
+                        ++curr_bracket_;
+                        bracket_stack_.push(curr_bracket_);
+                        _captures.back().second.push_back(std::
+                            make_pair(static_cast<id_type>(production_.
+                                _rhs.first.size()), 0));
+                        break;
+                    case ')':
+                        --brackets_;
+
+                        if (brackets_ < 0)
+                        {
+                            std::ostringstream ss_;
+
+                            ss_ <<
+                                "Close bracket without open bracket in rule '";
+                            narrow(lhs_.c_str(), ss_);
+                            ss_ << "'.";
+                            throw runtime_error(ss_.str());
+                        }
+
+                        _captures.back().second[bracket_stack_.top() - 1].
+                            second = static_cast<id_type>(production_.
+                                _rhs.first.size() - 1);
+                        bracket_stack_.pop();
+                        break;
+                    case '|':
+                    {
+                        std::size_t old_lhs_ = production_._lhs;
+                        std::size_t index_ = _grammar.size() + 1;
+                        nt_location &loc_ = location(old_lhs_);
+
+                        production_._next_lhs = loc_._last_production = index_;
+                        _grammar.push_back(production_);
+                        production_.clear();
+                        production_._lhs = old_lhs_;
+                        production_._index = index_;
+                        break;
+                    }
                 }
-                else
+            }
+            else if (results_.entry.action == reduce)
+            {
+                switch (static_cast<ebnf_indexes>(results_.entry.param))
                 {
-                    const std::size_t id_ = terminal_iter_->second;
-                    token_info &token_info_ = info(id_);
+                    case ebnf_indexes::identifier_idx:
+                    {
+                        // rhs: IDENTIFIER;
+                        const std::size_t size_ =
+                            _ebnf_tables.yyr2[results_.entry.param];
+                        const std::size_t idx_ = productions_.size() - size_;
+                        const string token_ = productions_[idx_].str();
+                        typename string_id_type_map::const_iterator
+                            terminal_iter_ = _terminals.find(token_);
 
-                    production_._precedence = token_info_._precedence;
-                    production_._rhs.first.push_back(symbol(symbol::
-                        TERMINAL, id_));
+                        if (terminal_iter_ == _terminals.end())
+                        {
+                            const std::size_t id_ = nt_id(token_);
+
+                            // NON_TERMINAL
+                            location(id_);
+                            production_._rhs.first.
+                                push_back(symbol(symbol::NON_TERMINAL, id_));
+                        }
+                        else
+                        {
+                            const std::size_t id_ = terminal_iter_->second;
+                            token_info &token_info_ = info(id_);
+
+                            production_._precedence = token_info_._precedence;
+                            production_._rhs.first.
+                                push_back(symbol(symbol::TERMINAL, id_));
+                        }
+
+                        break;
+                    }
+                    case ebnf_indexes::terminal_idx:
+                    {
+                        // rhs: TERMINAL;
+                        const std::size_t size_ =
+                            _ebnf_tables.yyr2[results_.entry.param];
+                        const std::size_t idx_ = productions_.size() - size_;
+                        const string token_ = productions_[idx_].str();
+                        const std::size_t id_ = insert_terminal(token_);
+                        token_info &token_info_ = info(id_);
+
+                        production_._precedence = token_info_._precedence;
+                        production_._rhs.first.push_back(symbol(symbol::
+                            TERMINAL, id_));
+                        break;
+                    }
+                    case ebnf_indexes::prec_ident_idx:
+                    case ebnf_indexes::prec_term_idx:
+                    {
+                        // opt_prec: PREC IDENTIFIER;
+                        // opt_prec: PREC TERMINAL;
+                        const std::size_t size_ =
+                            _ebnf_tables.yyr2[results_.entry.param];
+                        const std::size_t idx_ = productions_.size() - size_;
+                        const string token_ = productions_[idx_ + 1].str();
+                        const std::size_t id_ = insert_terminal(token_);
+
+                        if (id_ >= _tokens_info.size())
+                        {
+                            std::ostringstream ss_;
+
+                            ss_ << "Unknown token ";
+                            narrow(token_.c_str(), ss_);
+                            ss_ << '.';
+                            throw runtime_error(ss_.str());
+                        }
+
+                        production_._precedence = info(id_)._precedence;
+                        production_._rhs.second = token_;
+                        break;
+                    }
                 }
-
-                break;
             }
-            case PREC:
-            {
-                string token_ = iter_->str();
-                const std::size_t id_ = insert_terminal(token_);
 
-                if (id_ >= _tokens_info.size())
-                {
-                    std::ostringstream ss_;
-
-                    ss_ << "Unknown token ";
-                    narrow(token_.c_str(), ss_);
-                    ss_ << '.';
-                    throw runtime_error(ss_.str());
-                }
-
-                production_._precedence = info(id_)._precedence;
-                production_._rhs.second = token_;
-                break;
-            }
-            case OR:
-            {
-                std::size_t old_lhs_ = production_._lhs;
-                std::size_t index_ = _grammar.size() + 1;
-                nt_location &loc_ = location(old_lhs_);
-
-                production_._next_lhs = loc_._last_production = index_;
-                _grammar.push_back(production_);
-                production_.clear();
-                production_._lhs = old_lhs_;
-                production_._index = index_;
-                break;
-            }
-            default:
-            {
-                std::ostringstream ss_;
-                const char_type *l_ = lhs_.c_str();
-                const char_type *r_ = rhs_.c_str();
-
-                ss_ << "Syntax error in rule '";
-                narrow(l_, ss_);
-                ss_ << "': '";
-                narrow(r_, ss_);
-                ss_ << "'.";
-                throw runtime_error(ss_.str());
-                break;
-            }
-            }
+            bison_lookup(iter_, results_, productions_, _ebnf_tables);
+            bison_next(iter_, results_, _ebnf_tables);
         }
 
+        // As rules passed in are generated, they have already been validated.
+        assert(results_.entry.action == accept);
         _grammar.push_back(production_);
+    }
+
+    void resize_captures()
+    {
+        const std::size_t old_size_ = _captures.size();
+
+        _captures.resize(_grammar.size() + 1);
+
+        if (old_size_ > 0)
+        {
+            for (std::size_t i_ = old_size_ - 1, size_ = _captures.size() - 1;
+                i_ < size_; ++i_)
+            {
+                _captures[i_ + 1].first = _captures[i_].first +
+                    _captures[i_].second.size();
+            }
+        }
     }
 
     nt_location &location(const std::size_t id_)

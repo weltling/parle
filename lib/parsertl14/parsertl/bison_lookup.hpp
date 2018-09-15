@@ -1,89 +1,92 @@
 // bison_lookup.hpp
-// Copyright (c) 2017 Ben Hanson (http://www.benhanson.net/)
+// Copyright (c) 2017-2018 Ben Hanson (http://www.benhanson.net/)
 //
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file licence_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
-#ifndef PARSERTL_LOOKUP_HPP
-#define PARSERTL_LOOKUP_HPP
+#ifndef PARSERTL_BISON_LOOKUP_HPP
+#define PARSERTL_BISON_LOOKUP_HPP
 
 #include "match_results.hpp"
 
 namespace parsertl
 {
 // cut down yyparse():
-template<typename iterator>
-void bison_next(iterator &iter, parsertl::match_results &results)
+template<typename iterator, typename tables_struct>
+void bison_next(iterator &iter_, match_results &results_,
+    const tables_struct &tables_)
 {
-    if (iter->id == ~0)
+    if (iter_->id == ~0)
     {
-        results.entry.action = parsertl::error;
-        results.entry.param = parsertl::unknown_token;
+        results_.entry.action = error;
+        results_.entry.param = unknown_token;
         return;
     }
 
     // Refer to what yypact is saying about the current state
-    int yyn = yypact[results.stack.back()];
+    int yyn_ = tables_.yypact[results_.stack.back()];
 
-    if (yyn == YYPACT_NINF)
+    if (yyn_ == tables_struct::YYPACT_NINF)
         goto yydefault;
 
-    results.token_id = yytranslate[iter->id];
-    yyn += results.token_id;
+    results_.token_id = tables_.yytranslate[iter_->id];
+    yyn_ += results_.token_id;
 
-    if (yyn < 0 || YYLAST < yyn || yycheck[yyn] != results.token_id)
+    if (yyn_ < 0 || tables_struct::YYLAST < yyn_ ||
+        tables_.yycheck[yyn_] != results_.token_id)
         goto yydefault;
 
-    yyn = yytable[yyn];
+    yyn_ = tables_.yytable[yyn_];
 
-    if (yyn <= 0)
+    if (yyn_ <= 0)
     {
-        if (yyn == 0 || yyn == YYTABLE_NINF)
+        if (yyn_ == 0 || yyn_ == tables_struct::YYTABLE_NINF)
         {
-            results.entry.action = parsertl::error;
-            results.entry.param = parsertl::syntax_error;
+            results_.entry.action = error;
+            results_.entry.param = syntax_error;
             return;
         }
 
-        yyn *= -1;
+        yyn_ *= -1;
         goto yyreduce;
     }
 
     // ACCEPT
-    if (yyn == YYFINAL)
+    if (yyn_ == tables_struct::YYFINAL)
     {
-        results.entry.action = parsertl::accept;
-        results.entry.param = 0;
+        results_.entry.action = accept;
+        results_.entry.param = 0;
         return;
     }
 
     // SHIFT
-    results.entry.action = parsertl::shift;
-    results.entry.param = yyn;
+    results_.entry.action = shift;
+    results_.entry.param = yyn_;
     return;
 
 yydefault:
-    yyn = yydefact[results.stack.back()];
+    yyn_ = tables_.yydefact[results_.stack.back()];
 
-    if (yyn == 0)
+    if (yyn_ == 0)
     {
-        results.entry.action = parsertl::error;
-        results.entry.param = parsertl::syntax_error;
+        results_.entry.action = error;
+        results_.entry.param = syntax_error;
         return;
     }
 
 yyreduce:
-    results.entry.action = parsertl::reduce;
-    results.entry.param = yyn;
+    results_.entry.action = reduce;
+    results_.entry.param = yyn_;
 }
 
-template<typename iterator, typename token_vector>
-void bison_lookup(iterator &iter_, parsertl::match_results &results_)
+template<typename iterator, typename tables_struct>
+void bison_lookup(iterator &iter_, match_results &results_,
+    const tables_struct &tables_)
 {
     switch (results_.entry.action)
     {
-    case parsertl::error:
+    case error:
         break;
-    case parsertl::shift:
+    case shift:
         results_.stack.push_back(results_.entry.param);
 
         if (results_.token_id != 0)
@@ -95,53 +98,55 @@ void bison_lookup(iterator &iter_, parsertl::match_results &results_)
 
         if (results_.token_id == iterator::value_type::npos())
         {
-            results_.entry.action = parsertl::error;
-            results_.entry.param = parsertl::unknown_token;
+            results_.entry.action = error;
+            results_.entry.param = unknown_token;
         }
 
         break;
-    case parsertl::reduce:
+    case reduce:
     {
-        int size_ = yyr2[results_.entry.param];
+        int size_ = tables_.yyr2[results_.entry.param];
 
         if (size_)
         {
             results_.stack.resize(results_.stack.size() - size_);
         }
 
-        results_.token_id = yyr1[results_.entry.param];
-        results_.entry.action = parsertl::go_to;
-        results_.entry.param = yypgoto[results_.token_id - YYNTOKENS] +
-            results_.stack.back();
+        results_.token_id = tables_.yyr1[results_.entry.param];
+        results_.entry.action = go_to;
+        results_.entry.param = tables_.yypgoto[results_.token_id -
+            tables_struct::YYNTOKENS] + results_.stack.back();
         // Drop through to go_to:
     }
-    case parsertl::go_to:
-        if (0 <= results_.entry.param && results_.entry.param <= YYLAST &&
-            yycheck[results_.entry.param] == results_.stack.back())
+    case go_to:
+        if (0 <= results_.entry.param &&
+            results_.entry.param <= tables_struct::YYLAST &&
+            tables_.yycheck[results_.entry.param] == results_.stack.back())
         {
-            results_.entry.param = yytable[results_.entry.param];
+            results_.entry.param = tables_.yytable[results_.entry.param];
         }
         else
         {
-            results_.entry.param = yydefgoto[results_.token_id - YYNTOKENS];
+            results_.entry.param = tables_.yydefgoto[results_.token_id -
+                tables_struct::YYNTOKENS];
         }
 
         results_.stack.push_back(results_.entry.param);
         break;
-    case parsertl::accept:
+    case accept:
         return;
     }
 }
 
-template<typename iterator, typename token_vector>
-void bison_lookup(iterator &iter_, parsertl::match_results &results_,
-    token_vector &productions_)
+template<typename iterator, typename token_vector, typename tables_struct>
+void bison_lookup(iterator &iter_, match_results &results_,
+    token_vector &productions_, const tables_struct &tables_)
 {
     switch (results_.entry.action)
     {
-    case parsertl::error:
+    case error:
         break;
-    case parsertl::shift:
+    case shift:
         results_.stack.push_back(results_.entry.param);
         productions_.push_back(typename token_vector::value_type(iter_->id,
             iter_->first, iter_->second));
@@ -155,45 +160,58 @@ void bison_lookup(iterator &iter_, parsertl::match_results &results_,
 
         if (results_.token_id == iterator::value_type::npos())
         {
-            results_.entry.action = parsertl::error;
-            results_.entry.param = parsertl::unknown_token;
+            results_.entry.action = error;
+            results_.entry.param = unknown_token;
         }
 
         break;
-    case parsertl::reduce:
+    case reduce:
     {
-        int size_ = yyr2[results_.entry.param];
+        int size_ = tables_.yyr2[results_.entry.param];
         typename token_vector::value_type token_;
 
         if (size_)
         {
+            results_.stack.resize(results_.stack.size() - size_);
             token_.first = (productions_.end() - size_)->first;
             token_.second = productions_.back().second;
-            results_.stack.resize(results_.stack.size() - size_);
             productions_.resize(productions_.size() - size_);
-        }
-
-        results_.token_id = yyr1[results_.entry.param];
-        productions_.push_back(token_);
-        results_.entry.action = parsertl::go_to;
-        results_.entry.param = yypgoto[results_.token_id - YYNTOKENS] +
-            results_.stack.back();
-        // Drop through to go_to:
-    }
-    case parsertl::go_to:
-        if (0 <= results_.entry.param && results_.entry.param <= YYLAST &&
-            yycheck[results_.entry.param] == results_.stack.back())
-        {
-            results_.entry.param = yytable[results_.entry.param];
         }
         else
         {
-            results_.entry.param = yydefgoto[results_.token_id - YYNTOKENS];
+            if (productions_.empty())
+            {
+                token_.first = token_.second = iter_->first;
+            }
+            else
+            {
+                token_.first = token_.second = productions_.back().second;
+            }
+        }
+
+        results_.token_id = tables_.yyr1[results_.entry.param];
+        productions_.push_back(token_);
+        results_.entry.action = go_to;
+        results_.entry.param = tables_.yypgoto[results_.token_id -
+            tables_struct::YYNTOKENS] + results_.stack.back();
+        // Drop through to go_to:
+    }
+    case go_to:
+        if (0 <= results_.entry.param &&
+            results_.entry.param <= tables_struct::YYLAST &&
+            tables_.yycheck[results_.entry.param] == results_.stack.back())
+        {
+            results_.entry.param = tables_.yytable[results_.entry.param];
+        }
+        else
+        {
+            results_.entry.param = tables_.yydefgoto[results_.token_id -
+                tables_struct::YYNTOKENS];
         }
 
         results_.stack.push_back(results_.entry.param);
         break;
-    case parsertl::accept:
+    case accept:
         return;
     }
 }

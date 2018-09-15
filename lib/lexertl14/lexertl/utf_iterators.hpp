@@ -1,5 +1,5 @@
 // utf_iterators.hpp
-// Copyright (c) 2015-2017 Ben Hanson (http://www.benhanson.net/)
+// Copyright (c) 2015-2018 Ben Hanson (http://www.benhanson.net/)
 // Inspired by http://utfcpp.sourceforge.net/
 //
 // Distributed under the Boost Software License, Version 1.0. (See accompanying

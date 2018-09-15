@@ -60,6 +60,10 @@
 						<file role="src" name="search.hpp"/>
 						<file role="src" name="state_machine.hpp"/>
 						<file role="src" name="token.hpp"/>
+						<file role="src" name="ebnf.y"/>
+						<file role="src" name="ebnf_tables.hpp"/>
+						<file role="src" name="iterator.hpp"/>
+						<file role="src" name="match.hpp"/>
 					</dir>
 				</dir>
 				<dir name="lexertl14">

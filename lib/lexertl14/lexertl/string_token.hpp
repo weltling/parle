@@ -1,5 +1,5 @@
 // string_token.hpp
-// Copyright (c) 2005-2017 Ben Hanson (http://www.benhanson.net/)
+// Copyright (c) 2005-2018 Ben Hanson (http://www.benhanson.net/)
 //
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file licence_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -108,6 +108,7 @@ struct basic_string_token
         bool insert_ = true;
         auto iter_ = _ranges.begin();
         auto end_ = _ranges.end();
+        auto erase_iter_ = end_;
 
         while (iter_ != end_)
         {
@@ -169,11 +170,26 @@ struct basic_string_token
 
             // Code minimisation: this always applies unless we have already
             // exited the loop, or "continue" executed.
-            iter_ = _ranges.erase(iter_);
-            end_ = _ranges.end();
+            if (erase_iter_ == end_)
+            {
+                erase_iter_ = iter_;
+            }
+
+            ++iter_;
         }
 
-        if (insert_)
+        if (erase_iter_ != end_)
+        {
+            if (insert_)
+            {
+                // Re-use obsolete location
+                *erase_iter_ = rhs_;
+                ++erase_iter_;
+            }
+
+            iter_ = _ranges.erase(erase_iter_, iter_);
+        }
+        else if (insert_)
         {
             iter_ = _ranges.insert(iter_, rhs_);
         }

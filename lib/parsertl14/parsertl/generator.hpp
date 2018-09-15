@@ -1,5 +1,5 @@
 // generator.hpp
-// Copyright (c) 2014-2017 Ben Hanson (http://www.benhanson.net/)
+// Copyright (c) 2014-2018 Ben Hanson (http://www.benhanson.net/)
 //
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file licence_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -72,6 +72,7 @@ public:
         assert(static_cast<id_type>(sm_._columns - 1) == sm_._columns - 1);
         assert(static_cast<id_type>(sm_._rows - 1) == sm_._rows - 1);
         copy_rules(rules_, sm_);
+        sm_._captures = rules_.captures();
     }
 
     static void build_dfa(const rules &rules_, dfa &dfa_)

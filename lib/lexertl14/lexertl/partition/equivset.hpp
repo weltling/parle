@@ -1,5 +1,5 @@
 // equivset.hpp
-// Copyright (c) 2005-2017 Ben Hanson (http://www.benhanson.net/)
+// Copyright (c) 2005-2018 Ben Hanson (http://www.benhanson.net/)
 //
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file licence_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -90,33 +90,43 @@ struct basic_equivset
 private:
     void intersect_indexes(index_vector &rhs_, index_vector &overlap_)
     {
-        auto iter_ = _index_vector.begin();
-        auto end_ = _index_vector.end();
-        auto rhs_iter_ = rhs_.begin();
-        auto rhs_end_ = rhs_.end();
+        std::set_intersection(_index_vector.begin(), _index_vector.end(),
+            rhs_.begin(), rhs_.end(), std::back_inserter(overlap_));
 
-        while (iter_ != end_ && rhs_iter_ != rhs_end_)
+        if (!overlap_.empty())
         {
-            const id_type index_ = *iter_;
-            const id_type rhs_index_ = *rhs_iter_;
+            remove(overlap_, _index_vector);
+            remove(overlap_, rhs_);
+        }
+    }
 
-            if (index_ < rhs_index_)
+    void remove(const index_vector &source_, index_vector &dest_)
+    {
+        auto inter_ = source_.begin();
+        auto inter_end_ = source_.end();
+        auto reader_ = std::find(dest_.begin(), dest_.end(), *inter_);
+        auto writer_ = reader_;
+        auto dest_end_ = dest_.end();
+
+        while (writer_ != dest_end_ && inter_ != inter_end_)
+        {
+            if (*reader_ == *inter_)
             {
-                ++iter_;
-            }
-            else if (index_ > rhs_index_)
-            {
-                ++rhs_iter_;
+                ++inter_;
+                ++reader_;
             }
             else
             {
-                overlap_.push_back(index_);
-                iter_ = _index_vector.erase(iter_);
-                end_ = _index_vector.end();
-                rhs_iter_ = rhs_.erase(rhs_iter_);
-                rhs_end_ = rhs_.end();
+                *writer_++ = *reader_++;
             }
         }
+
+        while (reader_ != dest_end_)
+        {
+            *writer_++ = *reader_++;
+        }
+
+        dest_.resize(dest_.size() - source_.size());
     }
 };
 }

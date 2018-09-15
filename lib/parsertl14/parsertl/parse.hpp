@@ -1,5 +1,5 @@
 // parse.hpp
-// Copyright (c) 2017 Ben Hanson (http://www.benhanson.net/)
+// Copyright (c) 2017-2018 Ben Hanson (http://www.benhanson.net/)
 //
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file licence_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -7,15 +7,14 @@
 #define PARSERTL_PARSE_HPP
 
 #include "match_results.hpp"
-#include "state_machine.hpp"
 #include <vector>
 
 namespace parsertl
 {
 // Parse entire sequence and return boolean
-template<typename id_type, typename iterator>
-bool parse(const basic_state_machine<id_type> &sm_, iterator &iter_,
-    basic_match_results<id_type> &results_)
+template<typename sm_type, typename iterator>
+bool parse(const sm_type &sm_, iterator &iter_,
+    basic_match_results<sm_type> &results_)
 {
     while (results_.entry.action != error)
     {

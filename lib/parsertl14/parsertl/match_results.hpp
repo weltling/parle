@@ -1,5 +1,5 @@
 // match_results.hpp
-// Copyright (c) 2017 Ben Hanson (http://www.benhanson.net/)
+// Copyright (c) 2017-2018 Ben Hanson (http://www.benhanson.net/)
 //
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file licence_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -12,12 +12,13 @@
 
 namespace parsertl
 {
-template<typename id_type>
+template<typename sm_type>
 struct basic_match_results
 {
+    using id_type = typename sm_type::id_type;
     std::vector<id_type> stack;
     id_type token_id;
-    typename basic_state_machine<id_type>::entry entry;
+    typename sm_type::entry entry;
 
     basic_match_results() :
         token_id(static_cast<id_type>(~0))
@@ -27,8 +28,7 @@ struct basic_match_results
         entry.param = unknown_token;
     }
 
-    basic_match_results(const id_type token_id_,
-        const basic_state_machine<id_type> &sm_)
+    basic_match_results(const id_type token_id_, const sm_type &sm_)
     {
         reset(token_id_, sm_);
     }
@@ -41,8 +41,7 @@ struct basic_match_results
         entry.clear();
     }
 
-    void reset(const id_type token_id_,
-        const basic_state_machine<id_type> &sm_)
+    void reset(const id_type token_id_, const sm_type &sm_)
     {
         stack.clear();
         stack.push_back(0);
@@ -70,8 +69,7 @@ struct basic_match_results
     }
 
     template<typename token_vector>
-    typename token_vector::value_type &dollar
-        (const basic_state_machine<id_type> &sm_,
+    typename token_vector::value_type &dollar(const sm_type &sm_,
         const std::size_t index_, token_vector &productions) const
     {
         if (entry.action != reduce)
@@ -84,9 +82,8 @@ struct basic_match_results
     }
 
     template<typename token_vector>
-    const typename token_vector::value_type &dollar
-        (const basic_state_machine<id_type> &sm_, const std::size_t index_,
-        const token_vector &productions) const
+    const typename token_vector::value_type &dollar(const sm_type &sm_,
+        const std::size_t index_, const token_vector &productions) const
     {
         if (entry.action != reduce)
         {
@@ -97,14 +94,14 @@ struct basic_match_results
             production_size(sm_, entry.param) + index_];
     }
 
-    std::size_t production_size(const basic_state_machine<id_type> &sm,
+    std::size_t production_size(const sm_type &sm,
         const std::size_t index_) const
     {
         return sm._rules[index_].second.size();
     }
 };
 
-using match_results = basic_match_results<uint16_t>;
+using match_results = basic_match_results<state_machine>;
 }
 
 #endif
