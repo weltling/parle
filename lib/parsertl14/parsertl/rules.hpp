@@ -162,65 +162,117 @@ public:
 
     void token(const char_type *names_)
     {
-        token(names_, 0, token_info::token, "token");
+        lexer_iterator iter_(names_, str_end(names_), _token_lexer);
+
+        token(iter_, 0, token_info::token, "token");
+    }
+
+    void token(const string &names_)
+    {
+        lexer_iterator iter_(names_.c_str(), names_.c_str() + names_.size(),
+            _token_lexer);
+
+        token(iter_, 0, token_info::token, "token");
     }
 
     void left(const char_type *names_)
     {
-        token(names_, _next_precedence, token_info::left, "left");
+        lexer_iterator iter_(names_, str_end(names_), _token_lexer);
+        
+        token(iter_, _next_precedence, token_info::left, "left");
+        ++_next_precedence;
+    }
+
+    void left(const string &names_)
+    {
+        lexer_iterator iter_(names_.c_str(), names_.c_str() + names_.size(),
+            _token_lexer);
+
+        token(iter_, _next_precedence, token_info::left, "left");
         ++_next_precedence;
     }
 
     void right(const char_type *names_)
     {
-        token(names_, _next_precedence, token_info::right, "right");
+        lexer_iterator iter_(names_, str_end(names_), _token_lexer);
+
+        token(iter_, _next_precedence, token_info::right, "right");
+        ++_next_precedence;
+    }
+
+    void right(const string &names_)
+    {
+        lexer_iterator iter_(names_.c_str(), names_.c_str() + names_.size(),
+            _token_lexer);
+
+        token(iter_, _next_precedence, token_info::right, "right");
         ++_next_precedence;
     }
 
     void nonassoc(const char_type *names_)
     {
-        token(names_, _next_precedence, token_info::nonassoc, "nonassoc");
+        lexer_iterator iter_(names_, str_end(names_), _token_lexer);
+
+        token(iter_, _next_precedence, token_info::nonassoc, "nonassoc");
+        ++_next_precedence;
+    }
+
+    void nonassoc(const string &names_)
+    {
+        lexer_iterator iter_(names_.c_str(), names_.c_str() + names_.size(),
+            _token_lexer);
+
+        token(iter_, _next_precedence, token_info::nonassoc, "nonassoc");
         ++_next_precedence;
     }
 
     void precedence(const char_type *names_)
     {
-        token(names_, _next_precedence, token_info::precedence, "precedence");
+        lexer_iterator iter_(names_, str_end(names_), _token_lexer);
+
+        token(iter_, _next_precedence, token_info::precedence, "precedence");
         ++_next_precedence;
     }
 
-    id_type push(const char_type *lhs_, const char_type *rhs_)
+    void precedence(const string &names_)
+    {
+        lexer_iterator iter_(names_.c_str(), names_.c_str() + names_.size(),
+            _token_lexer);
+
+        token(iter_, _next_precedence, token_info::precedence, "precedence");
+        ++_next_precedence;
+    }
+
+    id_type push(const string &lhs_, const string &rhs_)
     {
         // Return the first index of any EBNF/rule with ors.
         id_type index_ = static_cast<id_type>(_grammar.size());
-        const string lhs_str_ = lhs_;
-        const string rhs_str_ = rhs_;
         const std::size_t old_size_ = _grammar.size();
 
-        validate(lhs_);
+        validate(lhs_.c_str());
 
-        if (_terminals.find(lhs_str_) != _terminals.end())
+        if (_terminals.find(lhs_) != _terminals.end())
         {
             std::ostringstream ss_;
 
             ss_ << "Rule ";
-            narrow(lhs_, ss_);
+            narrow(lhs_.c_str(), ss_);
             ss_ << " is already defined as a TERMINAL.";
             throw runtime_error(ss_.str());
         }
 
-        if (_generated_rules.find(lhs_str_) != _generated_rules.end())
+        if (_generated_rules.find(lhs_) != _generated_rules.end())
         {
             std::ostringstream ss_;
 
             ss_ << "Rule ";
-            narrow(lhs_, ss_);
-            ss_ << " is already defined as a generated rules.";
+            narrow(lhs_.c_str(), ss_);
+            ss_ << " is already defined as a generated rule.";
             throw runtime_error(ss_.str());
         }
 
-        lexer_iterator iter_(rhs_str_.c_str(), rhs_str_.c_str() +
-            rhs_str_.size(), _rule_lexer);
+        lexer_iterator iter_(rhs_.c_str(), rhs_.c_str() + rhs_.size(),
+            _rule_lexer);
         basic_match_results<basic_state_machine<id_type>> results_;
         // Qualify token to prevent arg dependant lookup
         using token_t = parsertl::token<lexer_iterator>;
@@ -231,7 +283,7 @@ public:
             { '%', 'e', 'm', 'p', 't', 'y', ' ', '|', ' ', 0 };
         char_type or_[] = { ' ', '|', ' ', 0 };
 
-        bison_next(iter_, results_, _ebnf_tables);
+        bison_next(_ebnf_tables, iter_, results_);
 
         while (results_.entry.action != error &&
             results_.entry.action != accept)
@@ -291,9 +343,15 @@ public:
                         rhs_stack_.top() += char_type(' ') + r_;
                         break;
                     }
+                    case ebnf_indexes::opt_list_1_idx:
+                        // opt_list: ;
+                        rhs_stack_.push(string());
+                        break;
+                    case ebnf_indexes::opt_list_2_idx:
                     case ebnf_indexes::identifier_idx:
                     case ebnf_indexes::terminal_idx:
                     {
+                        // opt_list: %empty;
                         // rhs: IDENTIFIER;
                         // rhs: TERMINAL;
                         const std::size_t size_ =
@@ -315,7 +373,7 @@ public:
 
                         ++counter_;
                         ss_ << counter_;
-                        pair_.first = lhs_str_ + char_type('_') + ss_.str();
+                        pair_.first = lhs_ + char_type('_') + ss_.str();
                         _generated_rules.insert(pair_.first);
                         pair_.second = empty_or_ + rhs_stack_.top();
                         rhs_stack_.top() = pair_.first;
@@ -333,10 +391,10 @@ public:
 
                         ++counter_;
                         ss_ << counter_;
-                        pair_.first = lhs_str_ + char_type('_') + ss_.str();
+                        pair_.first = lhs_ + char_type('_') + ss_.str();
                         _generated_rules.insert(pair_.first);
-                        pair_.second = empty_or_ + pair_.first + char_type(' ') +
-                            rhs_stack_.top();
+                        pair_.second = empty_or_ + pair_.first +
+                            char_type(' ') + rhs_stack_.top();
                         rhs_stack_.top() = pair_.first;
                         new_rules_.push(pair_);
                         break;
@@ -352,7 +410,7 @@ public:
 
                         ++counter_;
                         ss_ << counter_;
-                        pair_.first = lhs_str_ + char_type('_') + ss_.str();
+                        pair_.first = lhs_ + char_type('_') + ss_.str();
                         _generated_rules.insert(pair_.first);
                         pair_.second = rhs_stack_.top() + or_ +
                             pair_.first + char_type(' ') + rhs_stack_.top();
@@ -369,13 +427,13 @@ public:
 
                         ++counter_;
                         ss_ << counter_;
-                        pair_.first = lhs_str_ + char_type('_') + ss_.str();
+                        pair_.first = lhs_ + char_type('_') + ss_.str();
                         _generated_rules.insert(pair_.first);
                         pair_.second = rhs_stack_.top();
 
                         if (_flags & enable_captures)
                         {
-                            rhs_stack_.top() = char_type('(') + pair_.first + char_type(')');
+                            rhs_stack_.top() = '(' + pair_.first + ')';
                         }
                         else
                         {
@@ -402,8 +460,8 @@ public:
                 }
             }
 
-            bison_lookup(iter_, results_, productions_, _ebnf_tables);
-            bison_next(iter_, results_, _ebnf_tables);
+            bison_lookup(_ebnf_tables, iter_, results_, productions_);
+            bison_next(_ebnf_tables, iter_, results_);
         }
 
         if (results_.entry.action == error)
@@ -411,15 +469,15 @@ public:
             std::ostringstream ss_;
 
             ss_ << "Syntax error in rule '";
-            narrow(lhs_, ss_);
+            narrow(lhs_.c_str(), ss_);
             ss_ << "': '";
-            narrow(rhs_, ss_);
+            narrow(rhs_.c_str(), ss_);
             ss_ << "'.";
             throw runtime_error(ss_.str());
         }
 
         assert(rhs_stack_.size() == 1);
-        push_production(lhs_str_, rhs_stack_.top());
+        push_production(lhs_, rhs_stack_.top());
 
         while (!new_rules_.empty())
         {
@@ -436,7 +494,7 @@ public:
         return index_;
     }
 
-    id_type token_id(const char_type *name_) const
+    id_type token_id(const string &name_) const
     {
         typename string_id_type_map::const_iterator iter_ =
             _terminals.find(name_);
@@ -446,7 +504,7 @@ public:
             std::ostringstream ss_;
 
             ss_ << "Unknown token '";
-            narrow(name_, ss_);
+            narrow(name_.c_str(), ss_);
             ss_ << "'.";
             throw runtime_error(ss_.str());
         }
@@ -457,6 +515,12 @@ public:
     void start(const char_type *start_)
     {
         validate(start_);
+        _start = start_;
+    }
+
+    void start(const string &start_)
+    {
+        validate(start_.c_str());
         _start = start_;
     }
 
@@ -476,6 +540,7 @@ public:
 
         std::size_t start_ = npos();
 
+        // Determine id of start rule
         if (_start.empty())
         {
             const std::size_t id_ = _grammar[0]._lhs;
@@ -497,6 +562,41 @@ public:
         if (start_ == npos())
         {
             throw runtime_error("Specified start rule does not exist.");
+        }
+
+        // Look for unused rules
+        for (const auto &pair_ : _non_terminals)
+        {
+            bool found_ = false;
+
+            // Skip start_
+            if (pair_.second == start_) continue;
+
+            for (const auto &prod_ : _grammar)
+            {
+                for (const auto &symbol_ : prod_._rhs.first)
+                {
+                    if (symbol_._type == symbol::NON_TERMINAL &&
+                        symbol_._id == pair_.second)
+                    {
+                        found_ = true;
+                        break;
+                    }
+                }
+
+                if (found_) break;
+            }
+
+            if (!found_)
+            {
+                std::ostringstream ss_;
+                const string name_ = pair_.first;
+
+                ss_ << '\'';
+                narrow(name_.c_str(), ss_);
+                ss_ << "' is an unused rule.";
+                throw runtime_error(ss_.str());
+            }
         }
 
         // Validate start rule
@@ -639,7 +739,7 @@ private:
         typename lexertl::basic_generator<lexer_rules, lexer_state_machine>;
     using lexer_iterator =
         typename lexertl::iterator<const char_type *, lexer_state_machine,
-        typename lexertl::recursive_match_results<const char_type *>>;
+        typename lexertl::match_results<const char_type *>>;
 
     std::size_t _flags;
     ebnf_tables _ebnf_tables;
@@ -682,11 +782,10 @@ private:
         return name_;
     }
 
-    void token(const char_type *names_, const std::size_t precedence_,
+    void token(lexer_iterator &iter_, const std::size_t precedence_,
         const typename token_info::associativity associativity_,
         const char *func_)
     {
-        lexer_iterator iter_(names_, str_end(names_), _token_lexer);
         lexer_iterator end_;
         string token_;
         std::size_t id_ = static_cast<std::size_t>(~0);
@@ -715,7 +814,7 @@ private:
     {
         const char_type *start_ = name_;
 
-        do
+        while (*name_)
         {
             if (!(*name_ >= 'A' && *name_ <= 'Z') &&
                 !(*name_ >= 'a' && *name_ <= 'z') &&
@@ -733,7 +832,7 @@ private:
             }
 
             ++name_;
-        } while (*name_);
+        }
     }
 
     id_type insert_terminal(const string &str_)
@@ -743,7 +842,7 @@ private:
                 static_cast<id_type>(_terminals.size()))).first->second;
     }
 
-    id_type nt_id(const string &str_)
+    id_type insert_non_terminal(const string &str_)
     {
         return _non_terminals.insert
             (string_id_type_pair(str_,
@@ -759,7 +858,7 @@ private:
 
     void push_production(const string &lhs_, const string &rhs_)
     {
-        const std::size_t lhs_id_ = nt_id(lhs_);
+        const id_type lhs_id_ = insert_non_terminal(lhs_);
         nt_location &location_ = location(lhs_id_);
         lexer_iterator iter_(rhs_.c_str(), rhs_.c_str() +
             rhs_.size(), _rule_lexer);
@@ -785,7 +884,7 @@ private:
 
         location_._last_production = production_._index;
         production_._lhs = lhs_id_;
-        bison_next(iter_, results_, _ebnf_tables);
+        bison_next(_ebnf_tables, iter_, results_);
 
         while (results_.entry.action != error &&
             results_.entry.action != accept)
@@ -858,7 +957,7 @@ private:
 
                         if (terminal_iter_ == _terminals.end())
                         {
-                            const std::size_t id_ = nt_id(token_);
+                            const id_type id_ = insert_non_terminal(token_);
 
                             // NON_TERMINAL
                             location(id_);
@@ -901,17 +1000,7 @@ private:
                             _ebnf_tables.yyr2[results_.entry.param];
                         const std::size_t idx_ = productions_.size() - size_;
                         const string token_ = productions_[idx_ + 1].str();
-                        const std::size_t id_ = insert_terminal(token_);
-
-                        if (id_ >= _tokens_info.size())
-                        {
-                            std::ostringstream ss_;
-
-                            ss_ << "Unknown token ";
-                            narrow(token_.c_str(), ss_);
-                            ss_ << '.';
-                            throw runtime_error(ss_.str());
-                        }
+                        const id_type id_ = token_id(token_);
 
                         production_._precedence = info(id_)._precedence;
                         production_._rhs.second = token_;
@@ -920,8 +1009,8 @@ private:
                 }
             }
 
-            bison_lookup(iter_, results_, productions_, _ebnf_tables);
-            bison_next(iter_, results_, _ebnf_tables);
+            bison_lookup(_ebnf_tables, iter_, results_, productions_);
+            bison_next(_ebnf_tables, iter_, results_);
         }
 
         // As rules passed in are generated, they have already been validated.

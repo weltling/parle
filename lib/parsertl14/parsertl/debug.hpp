@@ -95,7 +95,7 @@ public:
                 stream_ << symbols_[terminals_ + lhs_iter_->_lhs];
                 stream_ << ':';
 
-                while (index_ != ~0)
+                while (index_ != static_cast<std::size_t>(~0))
                 {
                     if (lhs_iter_->_rhs.first.empty())
                     {
@@ -131,7 +131,7 @@ public:
 
                     index_ = lhs_iter_->_next_lhs;
 
-                    if (index_ != ~0)
+                    if (index_ != static_cast<std::size_t>(~0))
                     {
                         const string &lhs_ =
                             symbols_[terminals_ + lhs_iter_->_lhs];

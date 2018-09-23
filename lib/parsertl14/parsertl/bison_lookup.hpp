@@ -11,11 +11,11 @@
 namespace parsertl
 {
 // cut down yyparse():
-template<typename iterator, typename tables_struct>
-void bison_next(iterator &iter_, match_results &results_,
-    const tables_struct &tables_)
+template<typename tables_struct, typename iterator, typename results>
+void bison_next(const tables_struct &tables_, iterator &iter_,
+    results &results_)
 {
-    if (iter_->id == ~0)
+    if (iter_->id == iter_->npos())
     {
         results_.entry.action = error;
         results_.entry.param = unknown_token;
@@ -78,9 +78,9 @@ yyreduce:
     results_.entry.param = yyn_;
 }
 
-template<typename iterator, typename tables_struct>
-void bison_lookup(iterator &iter_, match_results &results_,
-    const tables_struct &tables_)
+template<typename tables_struct, typename iterator, typename results>
+void bison_lookup(const tables_struct &tables_, iterator &iter_,
+    results &results_)
 {
     switch (results_.entry.action)
     {
@@ -138,9 +138,10 @@ void bison_lookup(iterator &iter_, match_results &results_,
     }
 }
 
-template<typename iterator, typename token_vector, typename tables_struct>
-void bison_lookup(iterator &iter_, match_results &results_,
-    token_vector &productions_, const tables_struct &tables_)
+template<typename tables_struct, typename iterator, typename results,
+    typename token_vector>
+void bison_lookup(const tables_struct &tables_, iterator &iter_,
+    results &results_, token_vector &productions_)
 {
     switch (results_.entry.action)
     {
