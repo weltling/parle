@@ -960,7 +960,7 @@ _parser_validate(INTERNAL_FUNCTION_PARAMETERS, zend_class_entry *par_ce, zend_cl
 		php_parle_rethrow_from_cpp(ParleParserException_ce, e.what(), 0);
 	}
 
-	RETURN_FALSE
+	RETURN_FALSE;
 }/*}}}*/
 
 /* {{{ public boolean Parser::validate(void) */
@@ -1432,6 +1432,15 @@ ZEND_END_ARG_INFO();
 ZEND_BEGIN_ARG_INFO_EX(arginfo_parle_lexer_build, 0, 0, 0)
 ZEND_END_ARG_INFO();
 
+ZEND_BEGIN_ARG_INFO_EX(arginfo_parle_lexer_push, 0, 0, 0)
+	ZEND_ARG_VARIADIC_INFO(0, args)
+ZEND_END_ARG_INFO();
+
+ZEND_BEGIN_ARG_INFO_EX(arginfo_parle_lexer_insertmacro, 0, 0, 2)
+	ZEND_ARG_TYPE_INFO(0, name, IS_STRING, 0)
+	ZEND_ARG_TYPE_INFO(0, reg, IS_STRING, 0)
+ZEND_END_ARG_INFO();
+
 ZEND_BEGIN_ARG_INFO_EX(arginfo_parle_lexer_consume, 0, 0, 1)
 	ZEND_ARG_TYPE_INFO(0, data, IS_STRING, 0)
 ZEND_END_ARG_INFO();
@@ -1558,27 +1567,27 @@ const zend_function_entry ParleToken_methods[] = {
 };
 
 const zend_function_entry ParleLexer_methods[] = {
-	PHP_ME(ParleLexer, push, NULL, ZEND_ACC_PUBLIC)
+	PHP_ME(ParleLexer, push, arginfo_parle_lexer_push, ZEND_ACC_PUBLIC)
 	PHP_ME(ParleLexer, getToken, arginfo_parle_lexer_gettoken, ZEND_ACC_PUBLIC)
 	PHP_ME(ParleLexer, build, arginfo_parle_lexer_build, ZEND_ACC_PUBLIC)
 	PHP_ME(ParleLexer, consume, arginfo_parle_lexer_consume, ZEND_ACC_PUBLIC)
 	PHP_ME(ParleLexer, advance, arginfo_parle_lexer_advance, ZEND_ACC_PUBLIC)
 	PHP_ME(ParleLexer, reset, arginfo_parle_lexer_reset, ZEND_ACC_PUBLIC)
-	PHP_ME(ParleLexer, insertMacro, NULL, ZEND_ACC_PUBLIC)
+	PHP_ME(ParleLexer, insertMacro, arginfo_parle_lexer_insertmacro, ZEND_ACC_PUBLIC)
 	PHP_ME(ParleLexer, dump, arginfo_parle_lexer_dump, ZEND_ACC_PUBLIC)
 	PHP_ME(ParleLexer, callout, arginfo_parle_lexer_callout, ZEND_ACC_PUBLIC)
 	PHP_FE_END
 };
 
 const zend_function_entry ParleRLexer_methods[] = {
-	PHP_ME(ParleRLexer, push, NULL, ZEND_ACC_PUBLIC)
+	PHP_ME(ParleRLexer, push, arginfo_parle_lexer_push, ZEND_ACC_PUBLIC)
 	PHP_ME(ParleRLexer, getToken, arginfo_parle_lexer_gettoken, ZEND_ACC_PUBLIC)
 	PHP_ME(ParleRLexer, build, arginfo_parle_lexer_build, ZEND_ACC_PUBLIC)
 	PHP_ME(ParleRLexer, consume, arginfo_parle_lexer_consume, ZEND_ACC_PUBLIC)
 	PHP_ME(ParleRLexer, advance, arginfo_parle_lexer_advance, ZEND_ACC_PUBLIC)
 	PHP_ME(ParleRLexer, reset, arginfo_parle_lexer_reset, ZEND_ACC_PUBLIC)
 	PHP_ME(ParleRLexer, pushState, arginfo_parle_lexer_pushstate, ZEND_ACC_PUBLIC)
-	PHP_ME(ParleRLexer, insertMacro, NULL, ZEND_ACC_PUBLIC)
+	PHP_ME(ParleRLexer, insertMacro, arginfo_parle_lexer_insertmacro, ZEND_ACC_PUBLIC)
 	PHP_ME(ParleRLexer, dump, arginfo_parle_lexer_dump, ZEND_ACC_PUBLIC)
 	PHP_ME(ParleRLexer, callout, arginfo_parle_lexer_callout, ZEND_ACC_PUBLIC)
 	PHP_FE_END
@@ -1632,6 +1641,8 @@ const zend_function_entry ParleStack_methods[] = {
 /* }}} */
 
 /* {{{ Prop handler macros */
+#if PHP_VERSION_ID < 80000
+
 #define PARLE_IS_PROP(name) (zend_binary_strcmp(name, sizeof(name) - 1, Z_STRVAL_P(member), Z_STRLEN_P(member)) == 0)
 #define PARLE_CHECK_THROW_RO_PROP_EX(ex_ce, prop, action) \
 	if (PARLE_IS_PROP(prop)) { \
@@ -1641,6 +1652,17 @@ const zend_function_entry ParleStack_methods[] = {
 		} \
 		action; \
 	}
+#else
+
+#define PARLE_IS_PROP(name) (zend_binary_strcmp(name, sizeof(name) - 1, ZSTR_VAL(member), ZSTR_LEN(member)) == 0)
+#define PARLE_CHECK_THROW_RO_PROP_EX(ex_ce, prop, action) \
+	if (PARLE_IS_PROP(prop)) { \
+		zend_throw_exception_ex(ex_ce, 0, "Cannot set readonly property $%s of class %s", prop, ZSTR_VAL(object->ce->name)); \
+		action; \
+	}
+
+#endif
+
 #define PARLE_LEX_CHECK_THROW_RET_RO_PROP(prop) PARLE_CHECK_THROW_RO_PROP_EX(ParleLexerException_ce, prop, return &EG(uninitialized_zval))
 #define PARLE_LEX_CHECK_THROW_RO_PROP(prop) PARLE_CHECK_THROW_RO_PROP_EX(ParleLexerException_ce, prop, return)
 #define PARLE_PAR_CHECK_THROW_RET_RO_PROP(prop) PARLE_CHECK_THROW_RO_PROP_EX(ParleParserException_ce, prop, return &EG(uninitialized_zval))
@@ -1709,6 +1731,7 @@ php_parle_lexer_object_init(zend_class_entry *ce) noexcept
 }/*}}}*/
 
 template <typename lexer_obj_type> zval * 
+#if PHP_VERSION_ID < 80000
 php_parle_lex_read_property(zval *object, zval *member, int type, void **cache_slot, zval *rv) noexcept
 {/*{{{*/
 	lexer_obj_type *zplo;
@@ -1722,6 +1745,16 @@ php_parle_lex_read_property(zval *object, zval *member, int type, void **cache_s
 		cache_slot = NULL;
 	}
 
+	zplo = _php_parle_lexer_fetch_zobj<lexer_obj_type>(Z_OBJ_P(object));
+#else
+php_parle_lex_read_property(zend_object *object, zend_string *member, int type, void **cache_slot, zval *rv) noexcept
+{/*{{{*/
+	lexer_obj_type *zplo;
+	zval *retval = NULL;
+
+	zplo = _php_parle_lexer_fetch_zobj<lexer_obj_type>(object);
+#endif
+
 	if (type != BP_VAR_R && type != BP_VAR_IS) {
 		PARLE_LEX_CHECK_THROW_RET_RO_PROP("state")
 		PARLE_LEX_CHECK_THROW_RET_RO_PROP("marker")
@@ -1729,8 +1762,6 @@ php_parle_lex_read_property(zval *object, zval *member, int type, void **cache_s
 		PARLE_LEX_CHECK_THROW_RET_RO_PROP("line")
 		PARLE_LEX_CHECK_THROW_RET_RO_PROP("column")
 	}
-
-	zplo = _php_parle_lexer_fetch_zobj<lexer_obj_type>(Z_OBJ_P(object));
 
 	auto &lex = *zplo->lex;
 	retval = rv;
@@ -1752,21 +1783,31 @@ php_parle_lex_read_property(zval *object, zval *member, int type, void **cache_s
 		retval = (zend_get_std_object_handlers())->read_property(object, member, type, cache_slot, rv);
 	}
 
+#if PHP_VERSION_ID < 80000
 	if (member == &tmp_member) {
 		zval_dtor(member);
 	}
+#endif
 
 	return retval;
 }/*}}}*/
 
 static zval * 
+#if PHP_VERSION_ID < 80000
 php_parle_lexer_read_property(zval *object, zval *member, int type, void **cache_slot, zval *rv) noexcept
+#else
+php_parle_lexer_read_property(zend_object *object, zend_string *member, int type, void **cache_slot, zval *rv) noexcept
+#endif
 {/*{{{*/
 	return php_parle_lex_read_property<ze_parle_lexer_obj>(object, member, type, cache_slot, rv);
 }/*}}}*/
 
 static zval * 
+#if PHP_VERSION_ID < 80000
 php_parle_rlexer_read_property(zval *object, zval *member, int type, void **cache_slot, zval *rv) noexcept
+#else
+php_parle_rlexer_read_property(zend_object *object, zend_string *member, int type, void **cache_slot, zval *rv) noexcept
+#endif
 {/*{{{*/
 	return php_parle_lex_read_property<ze_parle_rlexer_obj>(object, member, type, cache_slot, rv);
 }/*}}}*/
@@ -1777,6 +1818,7 @@ zval *
 #else
 void
 #endif
+#if PHP_VERSION_ID < 80000
 php_parle_lex_write_property(zval *object, zval *member, zval *value, void **cache_slot) noexcept
 {/*{{{*/
 	lexer_obj_type *zplo;
@@ -1790,12 +1832,21 @@ php_parle_lex_write_property(zval *object, zval *member, zval *value, void **cac
 	}
 
 	zplo = _php_parle_lexer_fetch_zobj<lexer_obj_type>(Z_OBJ_P(object));
+#else
+php_parle_lex_write_property(zend_object *object, zend_string *member, zval *value, void **cache_slot) noexcept
+{/*{{{*/
+	lexer_obj_type *zplo = _php_parle_lexer_fetch_zobj<lexer_obj_type>(object);
+#endif
 
 	auto &lex = *zplo->lex;
 	if (PARLE_IS_PROP("bol")) {
 		if (lex.par) {
 			/* Iterator has it const. */
+#if PHP_VERSION_ID < 80000
 			zend_throw_exception_ex(ParleLexerException_ce, 0, "Cannot set readonly property $bol of class %s", ZSTR_VAL(Z_OBJ_P(object)->ce->name));
+#else
+			zend_throw_exception_ex(ParleLexerException_ce, 0, "Cannot set readonly property $bol of class %s", ZSTR_VAL(object->ce->name));
+#endif
 		} else {
 			lex.iter.set_bol(static_cast<bool>(zval_is_true(value) == 1));
 		}
@@ -1819,9 +1870,11 @@ php_parle_lex_write_property(zval *object, zval *member, zval *value, void **cac
 		(zend_get_std_object_handlers())->write_property(object, member, value, cache_slot);
 	}
 
+#if PHP_VERSION_ID < 80000
 	if (member == &tmp_member) {
 		zval_dtor(member);
 	}
+#endif
 
 #if PHP_VERSION_ID >= 70400
 	return value;
@@ -1833,7 +1886,11 @@ static zval *
 #else
 static void
 #endif
+#if PHP_VERSION_ID < 80000
 php_parle_lexer_write_property(zval *object, zval *member, zval *value, void **cache_slot) noexcept
+#else
+php_parle_lexer_write_property(zend_object *object, zend_string *member, zval *value, void **cache_slot) noexcept
+#endif
 {/*{{{*/
 #if PHP_VERSION_ID >= 70400
 	return
@@ -1846,7 +1903,11 @@ static zval *
 #else
 static void
 #endif
+#if PHP_VERSION_ID < 80000
 php_parle_rlexer_write_property(zval *object, zval *member, zval *value, void **cache_slot) noexcept
+#else
+php_parle_rlexer_write_property(zend_object *object, zend_string *member, zval *value, void **cache_slot) noexcept
+#endif
 {/*{{{*/
 #if PHP_VERSION_ID >= 70400
 	return
@@ -1855,14 +1916,19 @@ php_parle_rlexer_write_property(zval *object, zval *member, zval *value, void **
 }/*}}}*/
 
 template <typename lexer_obj_type> HashTable * 
+#if PHP_VERSION_ID < 80000
 php_parle_lex_get_properties(zval *object) noexcept
 {/*{{{*/
-	lexer_obj_type *zplo;
+	lexer_obj_type *zplo = _php_parle_lexer_fetch_zobj<lexer_obj_type>(Z_OBJ_P(object));
+#else
+php_parle_lex_get_properties(zend_object *object) noexcept
+{/*{{{*/
+	lexer_obj_type *zplo = _php_parle_lexer_fetch_zobj<lexer_obj_type>(object);
+#endif
 	HashTable *props;
 	zval zv;
 
 	props = zend_std_get_properties(object);
-	zplo = _php_parle_lexer_fetch_zobj<lexer_obj_type>(Z_OBJ_P(object));
 
 	auto &lex = *zplo->lex;
 	ZVAL_LONG(&zv, lex.rules.flags());
@@ -1884,18 +1950,27 @@ php_parle_lex_get_properties(zval *object) noexcept
 }/*}}}*/
 
 static HashTable * 
+#if PHP_VERSION_ID < 80000
 php_parle_lexer_get_properties(zval *object) noexcept
+#else
+php_parle_lexer_get_properties(zend_object *object) noexcept
+#endif
 {/*{{{*/
 	return php_parle_lex_get_properties<ze_parle_lexer_obj>(object);
 }/*}}}*/
 
 static HashTable * 
+#if PHP_VERSION_ID < 80000
 php_parle_rlexer_get_properties(zval *object) noexcept
+#else
+php_parle_rlexer_get_properties(zend_object *object) noexcept
+#endif
 {/*{{{*/
 	return php_parle_lex_get_properties<ze_parle_rlexer_obj>(object);
 }/*}}}*/
 
 template <typename lexer_obj_type> static int
+#if PHP_VERSION_ID < 80000
 php_parle_lex_has_property(zval *object, zval *member, int type, void **cache_slot) noexcept
 {/*{{{*/
 	zval tmp_member, rv, *prop;
@@ -1907,6 +1982,12 @@ php_parle_lex_has_property(zval *object, zval *member, int type, void **cache_sl
 		member = &tmp_member;
 		cache_slot = NULL;
 	}
+#else
+php_parle_lex_has_property(zend_object *object, zend_string *member, int type, void **cache_slot) noexcept
+{/*{{{*/
+	zval rv, *prop;
+	int retval = 0;
+#endif
 
     prop = php_parle_lex_read_property<lexer_obj_type>(object, member, BP_VAR_IS, cache_slot, &rv);
 
@@ -1922,27 +2003,41 @@ php_parle_lex_has_property(zval *object, zval *member, int type, void **cache_sl
 		retval = (zend_get_std_object_handlers())->has_property(object, member, type, cache_slot);
 	}
 
+#if PHP_VERSION_ID < 80000
 	if (member == &tmp_member) {
 		zval_dtor(member);
 	}
+#endif
 
 	return retval;
 }/*}}}*/
 
 static int
+#if PHP_VERSION_ID < 80000
 php_parle_lexer_has_property(zval *object, zval *member, int type, void **cache_slot) noexcept
+#else
+php_parle_lexer_has_property(zend_object *object, zend_string *member, int type, void **cache_slot) noexcept
+#endif
 {/*{{{*/
 	return php_parle_lex_has_property<ze_parle_lexer_obj>(object, member, type, cache_slot);
 }/*}}}*/
 
 static int
+#if PHP_VERSION_ID < 80000
 php_parle_rlexer_has_property(zval *object, zval *member, int type, void **cache_slot) noexcept
+#else
+php_parle_rlexer_has_property(zend_object *object, zend_string *member, int type, void **cache_slot) noexcept
+#endif
 {/*{{{*/
 	return php_parle_lex_has_property<ze_parle_rlexer_obj>(object, member, type, cache_slot);
 }/*}}}*/
 
 static HashTable *
+#if PHP_VERSION_ID < 80000
 php_parle_lex_get_gc(zval *object, zval **gc_data, int *gc_data_count) noexcept
+#else
+php_parle_lex_get_gc(zend_object *object, zval **gc_data, int *gc_data_count) noexcept
+#endif
 {/*{{{*/
 	*gc_data = NULL;
 	*gc_data_count = 0;
@@ -1950,6 +2045,7 @@ php_parle_lex_get_gc(zval *object, zval **gc_data, int *gc_data_count) noexcept
 }/*}}}*/
 
 template <typename lexer_obj_type> static zval *
+#if PHP_VERSION_ID < 80000
 php_parle_lex_get_property_ptr_ptr(zval *object, zval *member, int type, void **cache_slot) noexcept
 {/*{{{*/
 	zval tmp_member, *prop;
@@ -1960,6 +2056,11 @@ php_parle_lex_get_property_ptr_ptr(zval *object, zval *member, int type, void **
 		member = &tmp_member;
 		cache_slot = NULL;
 	}
+#else
+php_parle_lex_get_property_ptr_ptr(zend_object *object, zend_string *member, int type, void **cache_slot) noexcept
+{/*{{{*/
+	zval *prop;
+#endif
 
 	if (PARLE_IS_PROP("state") || PARLE_IS_PROP("marker") || PARLE_IS_PROP("cursor") || PARLE_IS_PROP("bol") || PARLE_IS_PROP("flags") || PARLE_IS_PROP("line") || PARLE_IS_PROP("column")) {
 		/* Fallback to read_property. */
@@ -1968,21 +2069,30 @@ php_parle_lex_get_property_ptr_ptr(zval *object, zval *member, int type, void **
 
 	prop = (zend_get_std_object_handlers())->get_property_ptr_ptr(object, member, type, cache_slot);
 
+#if PHP_VERSION_ID < 80000
 	if (member == &tmp_member) {
 		zval_dtor(member);
 	}
-
+#endif
 	return prop;
 }/*}}}*/
 
 static zval *
+#if PHP_VERSION_ID < 80000
 php_parle_lexer_get_property_ptr_ptr(zval *object, zval *member, int type, void **cache_slot) noexcept
+#else
+php_parle_lexer_get_property_ptr_ptr(zend_object *object, zend_string *member, int type, void **cache_slot) noexcept
+#endif
 {/*{{{*/
 	return php_parle_lex_get_property_ptr_ptr<ze_parle_lexer_obj>(object, member, type, cache_slot);
 }/*}}}*/
 
 static zval *
+#if PHP_VERSION_ID < 80000
 php_parle_rlexer_get_property_ptr_ptr(zval *object, zval *member, int type, void **cache_slot) noexcept
+#else
+php_parle_rlexer_get_property_ptr_ptr(zend_object *object, zend_string *member, int type, void **cache_slot) noexcept
+#endif
 {/*{{{*/
 	return php_parle_lex_get_property_ptr_ptr<ze_parle_rlexer_obj>(object, member, type, cache_slot);
 }/*}}}*/
@@ -2039,6 +2149,7 @@ php_parle_rparser_object_init(zend_class_entry *ce) noexcept
 }/*}}}*/
 
 template<typename parser_obj_type> static zval * 
+#if PHP_VERSION_ID < 80000
 php_parle_par_read_property(zval *object, zval *member, int type, void **cache_slot, zval *rv) noexcept
 {/*{{{*/
 	parser_obj_type *zppo;
@@ -2052,12 +2163,20 @@ php_parle_par_read_property(zval *object, zval *member, int type, void **cache_s
 		cache_slot = NULL;
 	}
 
+	zppo = _php_parle_parser_fetch_zobj<parser_obj_type>(Z_OBJ_P(object));
+#else
+php_parle_par_read_property(zend_object *object, zend_string *member, int type, void **cache_slot, zval *rv) noexcept
+{/*{{{*/
+	parser_obj_type *zppo;
+	zval *retval = NULL;
+
+	zppo = _php_parle_parser_fetch_zobj<parser_obj_type>(object);
+#endif
+
 	if (type != BP_VAR_R && type != BP_VAR_IS) {
 		PARLE_PAR_CHECK_THROW_RET_RO_PROP("action")
 		PARLE_PAR_CHECK_THROW_RET_RO_PROP("reduceId")
 	}
-
-	zppo = _php_parle_parser_fetch_zobj<parser_obj_type>(Z_OBJ_P(object));
 
 	auto &par = *zppo->par;
 
@@ -2074,21 +2193,31 @@ php_parle_par_read_property(zval *object, zval *member, int type, void **cache_s
 		retval = (zend_get_std_object_handlers())->read_property(object, member, type, cache_slot, rv);
 	}
 
+#if PHP_VERSION_ID < 80000
 	if (member == &tmp_member) {
 		zval_dtor(member);
 	}
+#endif
 
 	return retval;
 }/*}}}*/
 
 static zval * 
+#if PHP_VERSION_ID < 80000
 php_parle_parser_read_property(zval *object, zval *member, int type, void **cache_slot, zval *rv) noexcept
+#else
+php_parle_parser_read_property(zend_object *object, zend_string *member, int type, void **cache_slot, zval *rv) noexcept
+#endif
 {/*{{{*/
 	return php_parle_par_read_property<ze_parle_parser_obj>(object, member, type, cache_slot, rv);
 }/*}}}*/
 
 static zval * 
+#if PHP_VERSION_ID < 80000
 php_parle_rparser_read_property(zval *object, zval *member, int type, void **cache_slot, zval *rv) noexcept
+#else
+php_parle_rparser_read_property(zend_object *object, zend_string *member, int type, void **cache_slot, zval *rv) noexcept
+#endif
 {/*{{{*/
 	return php_parle_par_read_property<ze_parle_parser_obj>(object, member, type, cache_slot, rv);
 }/*}}}*/
@@ -2099,6 +2228,7 @@ zval *
 #else
 void
 #endif
+#if PHP_VERSION_ID < 80000
 php_parle_par_write_property(zval *object, zval *member, zval *value, void **cache_slot) noexcept
 {/*{{{*/
 	zval tmp_member;
@@ -2109,6 +2239,10 @@ php_parle_par_write_property(zval *object, zval *member, zval *value, void **cac
 		member = &tmp_member;
 		cache_slot = NULL;
 	}
+#else
+php_parle_par_write_property(zend_object *object, zend_string *member, zval *value, void **cache_slot) noexcept
+{/*{{{*/
+#endif
 
 #if PHP_VERSION_ID >= 70400
 	PARLE_PAR_CHECK_THROW_RET_RO_PROP("action")
@@ -2121,10 +2255,11 @@ php_parle_par_write_property(zval *object, zval *member, zval *value, void **cac
 		(zend_get_std_object_handlers())->write_property(object, member, value, cache_slot);
 	}
 
+#if PHP_VERSION_ID < 80000
 	if (member == &tmp_member) {
 		zval_dtor(member);
 	}
-
+#endif
 #if PHP_VERSION_ID >= 70400
 	return value;
 #endif
@@ -2135,7 +2270,11 @@ static zval *
 #else
 static void
 #endif
+#if PHP_VERSION_ID < 80000
 php_parle_parser_write_property(zval *object, zval *member, zval *value, void **cache_slot) noexcept
+#else
+php_parle_parser_write_property(zend_object *object, zend_string *member, zval *value, void **cache_slot) noexcept
+#endif
 {/*{{{*/
 #if PHP_VERSION_ID >= 70400
 	return
@@ -2148,7 +2287,11 @@ static zval *
 #else
 static void
 #endif
+#if PHP_VERSION_ID < 80000
 php_parle_rparser_write_property(zval *object, zval *member, zval *value, void **cache_slot) noexcept
+#else
+php_parle_rparser_write_property(zend_object *object, zend_string *member, zval *value, void **cache_slot) noexcept
+#endif
 {/*{{{*/
 #if PHP_VERSION_ID >= 70400
 	return
@@ -2157,14 +2300,19 @@ php_parle_rparser_write_property(zval *object, zval *member, zval *value, void *
 }/*}}}*/
 
 template <typename parser_obj_type> HashTable *
+#if PHP_VERSION_ID < 80000
 php_parle_par_get_properties(zval *object) noexcept
 {/*{{{*/
-	parser_obj_type *zppo;
+	parser_obj_type *zppo = _php_parle_parser_fetch_zobj<parser_obj_type>(Z_OBJ_P(object));
+#else
+php_parle_par_get_properties(zend_object *object) noexcept
+{/*{{{*/
+	parser_obj_type *zppo = _php_parle_parser_fetch_zobj<parser_obj_type>(object);
+#endif
 	HashTable *props;
 	zval zv;
 
 	props = zend_std_get_properties(object);
-	zppo = _php_parle_parser_fetch_zobj<parser_obj_type>(Z_OBJ_P(object));
 
 	auto &par = *zppo->par;
 
@@ -2181,18 +2329,27 @@ php_parle_par_get_properties(zval *object) noexcept
 }/*}}}*//*}}}*/
 
 static HashTable * 
+#if PHP_VERSION_ID < 80000
 php_parle_parser_get_properties(zval *object) noexcept
+#else
+php_parle_parser_get_properties(zend_object *object) noexcept
+#endif
 {/*{{{*/
 	return php_parle_par_get_properties<ze_parle_parser_obj>(object);
 }/*}}}*/
 
 static HashTable * 
+#if PHP_VERSION_ID < 80000
 php_parle_rparser_get_properties(zval *object) noexcept
+#else
+php_parle_rparser_get_properties(zend_object *object) noexcept
+#endif
 {/*{{{*/
 	return php_parle_par_get_properties<ze_parle_rparser_obj>(object);
 }/*}}}*/
 
 template <typename parser_obj_type> static int
+#if PHP_VERSION_ID < 80000
 php_parle_par_has_property(zval *object, zval *member, int type, void **cache_slot) noexcept
 {/*{{{*/
 	zval tmp_member, rv, *prop;
@@ -2204,6 +2361,12 @@ php_parle_par_has_property(zval *object, zval *member, int type, void **cache_sl
 		member = &tmp_member;
 		cache_slot = NULL;
 	}
+#else
+php_parle_par_has_property(zend_object *object, zend_string *member, int type, void **cache_slot) noexcept
+{/*{{{*/
+	zval rv, *prop;
+	int retval = 0;
+#endif
 
     prop = php_parle_par_read_property<parser_obj_type>(object, member, BP_VAR_IS, cache_slot, &rv);
 
@@ -2219,27 +2382,41 @@ php_parle_par_has_property(zval *object, zval *member, int type, void **cache_sl
 		retval = (zend_get_std_object_handlers())->has_property(object, member, type, cache_slot);
 	}
 
+#if PHP_VERSION_ID < 80000
 	if (member == &tmp_member) {
 		zval_dtor(member);
 	}
+#endif
 
 	return retval;
 }/*}}}*/
 
 static int
+#if PHP_VERSION_ID < 80000
 php_parle_parser_has_property(zval *object, zval *member, int type, void **cache_slot) noexcept
+#else
+php_parle_parser_has_property(zend_object *object, zend_string *member, int type, void **cache_slot) noexcept
+#endif
 {/*{{{*/
 	return php_parle_par_has_property<ze_parle_parser_obj>(object, member, type, cache_slot);
 }/*}}}*/
 
 static int
+#if PHP_VERSION_ID < 80000
 php_parle_rparser_has_property(zval *object, zval *member, int type, void **cache_slot) noexcept
+#else
+php_parle_rparser_has_property(zend_object *object, zend_string *member, int type, void **cache_slot) noexcept
+#endif
 {/*{{{*/
 	return php_parle_par_has_property<ze_parle_rparser_obj>(object, member, type, cache_slot);
 }/*}}}*/
 
 static HashTable *
+#if PHP_VERSION_ID < 80000
 php_parle_par_get_gc(zval *object, zval **gc_data, int *gc_data_count) noexcept
+#else
+php_parle_par_get_gc(zend_object *object, zval **gc_data, int *gc_data_count) noexcept
+#endif
 {/*{{{*/
 	*gc_data = NULL;
 	*gc_data_count = 0;
@@ -2247,6 +2424,7 @@ php_parle_par_get_gc(zval *object, zval **gc_data, int *gc_data_count) noexcept
 }/*}}}*/
 
 template <typename parser_obj_type> static zval *
+#if PHP_VERSION_ID < 80000
 php_parle_par_get_property_ptr_ptr(zval *object, zval *member, int type, void **cache_slot) noexcept
 {/*{{{*/
 	zval tmp_member, *prop;
@@ -2257,6 +2435,11 @@ php_parle_par_get_property_ptr_ptr(zval *object, zval *member, int type, void **
 		member = &tmp_member;
 		cache_slot = NULL;
 	}
+#else
+php_parle_par_get_property_ptr_ptr(zend_object *object, zend_string *member, int type, void **cache_slot) noexcept
+{/*{{{*/
+	zval *prop;
+#endif
 
 	if (PARLE_IS_PROP("action") || PARLE_IS_PROP("reduceId")) {
 		/* Fallback to read_property. */
@@ -2265,21 +2448,31 @@ php_parle_par_get_property_ptr_ptr(zval *object, zval *member, int type, void **
 
 	prop = (zend_get_std_object_handlers())->get_property_ptr_ptr(object, member, type, cache_slot);
 
+#if PHP_VERSION_ID < 80000
 	if (member == &tmp_member) {
 		zval_dtor(member);
 	}
+#endif
 
 	return prop;
 }/*}}}*/
 
 static zval *
+#if PHP_VERSION_ID < 80000
 php_parle_parser_get_property_ptr_ptr(zval *object, zval *member, int type, void **cache_slot) noexcept
+#else
+php_parle_parser_get_property_ptr_ptr(zend_object *object, zend_string *member, int type, void **cache_slot) noexcept
+#endif
 {/*{{{*/
 	return php_parle_par_get_property_ptr_ptr<ze_parle_parser_obj>(object, member, type, cache_slot);
 }/*}}}*/
 
 static zval *
+#if PHP_VERSION_ID < 80000
 php_parle_rparser_get_property_ptr_ptr(zval *object, zval *member, int type, void **cache_slot) noexcept
+#else
+php_parle_rparser_get_property_ptr_ptr(zend_object *object, zend_string *member, int type, void **cache_slot) noexcept
+#endif
 {/*{{{*/
 	return php_parle_par_get_property_ptr_ptr<ze_parle_rparser_obj>(object, member, type, cache_slot);
 }/*}}}*/
@@ -2321,6 +2514,7 @@ php_parle_stack_object_init(zend_class_entry *ce) noexcept
 }/*}}}*/
 
 static zval * 
+#if PHP_VERSION_ID < 80000
 php_parle_stack_read_property(zval *object, zval *member, int type, void **cache_slot, zval *rv) noexcept
 {/*{{{*/
 	ze_parle_stack_obj *zpso;
@@ -2334,12 +2528,20 @@ php_parle_stack_read_property(zval *object, zval *member, int type, void **cache
 		cache_slot = NULL;
 	}
 
+	zpso = php_parle_stack_fetch_obj(Z_OBJ_P(object));
+#else
+php_parle_stack_read_property(zend_object *object, zend_string *member, int type, void **cache_slot, zval *rv) noexcept
+{/*{{{*/
+	ze_parle_stack_obj *zpso;
+	zval *retval = NULL;
+
+	zpso = php_parle_stack_fetch_obj(object);
+#endif
+
 	if (type != BP_VAR_R && type != BP_VAR_IS) {
 		PARLE_STACK_CHECK_THROW_RET_RO_PROP("empty")
 		PARLE_STACK_CHECK_THROW_RET_RO_PROP("size")
 	}
-
-	zpso = php_parle_stack_fetch_obj(Z_OBJ_P(object));
 
 	retval = rv;
 	if (PARLE_IS_PROP("top")) {
@@ -2356,9 +2558,11 @@ php_parle_stack_read_property(zval *object, zval *member, int type, void **cache
 		retval = (zend_get_std_object_handlers())->read_property(object, member, type, cache_slot, rv);
 	}
 
+#if PHP_VERSION_ID < 80000
 	if (member == &tmp_member) {
 		zval_dtor(member);
 	}
+#endif
 
 	return retval;
 }/*}}}*/
@@ -2368,6 +2572,7 @@ static zval *
 #else
 static void
 #endif
+#if PHP_VERSION_ID < 80000
 php_parle_stack_write_property(zval *object, zval *member, zval *value, void **cache_slot) noexcept
 {/*{{{*/
 	ze_parle_stack_obj *zpso;
@@ -2381,6 +2586,13 @@ php_parle_stack_write_property(zval *object, zval *member, zval *value, void **c
 	}
 
 	zpso = php_parle_stack_fetch_obj(Z_OBJ_P(object));
+#else
+php_parle_stack_write_property(zend_object *object, zend_string *member, zval *value, void **cache_slot) noexcept
+{/*{{{*/
+	ze_parle_stack_obj *zpso;
+
+	zpso = php_parle_stack_fetch_obj(object);
+#endif
 
 	if (PARLE_IS_PROP("top")) {
 		if (zpso->stack->empty()) {
@@ -2412,23 +2624,30 @@ php_parle_stack_write_property(zval *object, zval *member, zval *value, void **c
 		(zend_get_std_object_handlers())->write_property(object, member, value, cache_slot);
 	}
 
+#if PHP_VERSION_ID < 80000
 	if (member == &tmp_member) {
 		zval_dtor(member);
 	}
+#endif
 #if PHP_VERSION_ID >= 70400
 	return value;
 #endif
 }/*}}}*/
 
 static HashTable * 
+#if PHP_VERSION_ID < 80000
 php_parle_stack_get_properties(zval *object) noexcept
 {/*{{{*/
-	ze_parle_stack_obj *zpso;
+	ze_parle_stack_obj *zpso = php_parle_stack_fetch_obj(Z_OBJ_P(object));
+#else
+php_parle_stack_get_properties(zend_object *object) noexcept
+{/*{{{*/
+	ze_parle_stack_obj *zpso = php_parle_stack_fetch_obj(object);
+#endif
 	HashTable *props;
 	zval zv;
 
 	props = zend_std_get_properties(object);
-	zpso = php_parle_stack_fetch_obj(Z_OBJ_P(object));
 
 	ZVAL_BOOL(&zv, zpso->stack->empty());
 	zend_hash_str_update(props, "empty", sizeof("empty")-1, &zv);
@@ -2451,6 +2670,7 @@ php_parle_stack_get_properties(zval *object) noexcept
 }/*}}}*/
 
 static int
+#if PHP_VERSION_ID < 80000
 php_parle_stack_has_property(zval *object, zval *member, int type, void **cache_slot) noexcept
 {/*{{{*/
 	zval tmp_member, rv, *prop;
@@ -2462,6 +2682,12 @@ php_parle_stack_has_property(zval *object, zval *member, int type, void **cache_
 		member = &tmp_member;
 		cache_slot = NULL;
 	}
+#else
+php_parle_stack_has_property(zend_object *object, zend_string *member, int type, void **cache_slot) noexcept
+{/*{{{*/
+	zval rv, *prop;
+	int retval = 0;
+#endif
 
     prop = php_parle_stack_read_property(object, member, BP_VAR_IS, cache_slot, &rv);
 
@@ -2477,15 +2703,21 @@ php_parle_stack_has_property(zval *object, zval *member, int type, void **cache_
 		retval = (zend_get_std_object_handlers())->has_property(object, member, type, cache_slot);
 	}
 
+#if PHP_VERSION_ID < 80000
 	if (member == &tmp_member) {
 		zval_dtor(member);
 	}
+#endif
 
 	return retval;
 }/*}}}*/
 
 static HashTable *
+#if PHP_VERSION_ID < 80000
 php_parle_stack_get_gc(zval *object, zval **gc_data, int *gc_data_count) noexcept
+#else
+php_parle_stack_get_gc(zend_object *object, zval **gc_data, int *gc_data_count) noexcept
+#endif
 {/*{{{*/
 	*gc_data = NULL;
 	*gc_data_count = 0;
@@ -2493,6 +2725,7 @@ php_parle_stack_get_gc(zval *object, zval **gc_data, int *gc_data_count) noexcep
 }/*}}}*/
 
 static zval *
+#if PHP_VERSION_ID < 80000
 php_parle_stack_get_property_ptr_ptr(zval *object, zval *member, int type, void **cache_slot) noexcept
 {/*{{{*/
 	zval tmp_member, *prop;
@@ -2503,6 +2736,11 @@ php_parle_stack_get_property_ptr_ptr(zval *object, zval *member, int type, void 
 		member = &tmp_member;
 		cache_slot = NULL;
 	}
+#else
+php_parle_stack_get_property_ptr_ptr(zend_object *object, zend_string *member, int type, void **cache_slot) noexcept
+{/*{{{*/
+	zval *prop;
+#endif
 
 	if (PARLE_IS_PROP("top") || PARLE_IS_PROP("empty") || PARLE_IS_PROP("size")) {
 		/* Fallback to read_property. */
@@ -2511,9 +2749,11 @@ php_parle_stack_get_property_ptr_ptr(zval *object, zval *member, int type, void 
 
 	prop = (zend_get_std_object_handlers())->get_property_ptr_ptr(object, member, type, cache_slot);
 
+#if PHP_VERSION_ID < 80000
 	if (member == &tmp_member) {
 		zval_dtor(member);
 	}
+#endif
 
 	return prop;
 }/*}}}*/

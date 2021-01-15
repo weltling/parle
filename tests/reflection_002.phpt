@@ -74,9 +74,9 @@ try {
 
 ?>
 ==DONE==
---EXPECT--
-Argument 2 passed to Parle\Parser::validate() must be an instance of Parle\Lexer, instance of Parle\RLexer given
-Argument 2 passed to Parle\Parser::consume() must be an instance of Parle\Lexer, instance of Parle\RLexer given
-Argument 2 passed to Parle\RParser::validate() must be an instance of Parle\RLexer, instance of Parle\Lexer given
-Argument 2 passed to Parle\RParser::consume() must be an instance of Parle\RLexer, instance of Parle\Lexer given
+--EXPECTF--
+%s\Parser::validate()%s Parle\RLexer given
+%s\Parser::consume()%s Parle\RLexer given
+%s\RParser::validate()%s Parle\Lexer given
+%s\RParser::consume()%s Parle\Lexer given
 ==DONE==
