@@ -8,7 +8,6 @@ PHP_ARG_ENABLE(parle-utf32, whether to enable internal UTF-32 support in parle,
 
 if test "$PHP_PARLE" != "no"; then
   PHP_REQUIRE_CXX()
-  PHP_ADD_LIBRARY(stdc++,,PARLE_SHARED_LIBADD)
 
   AC_DEFINE(HAVE_PARLE,1,[ ])
   PHP_SUBST(PARLE_SHARED_LIBADD)
