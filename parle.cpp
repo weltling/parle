@@ -2818,8 +2818,12 @@ PHP_MINIT_FUNCTION(parle)
 		zend_declare_property_long(ce, "state", sizeof("state")-1, 0, ZEND_ACC_PUBLIC);
 		zend_declare_property_long(ce, "marker", sizeof("marker")-1, Z_L(-1), ZEND_ACC_PUBLIC);
 		zend_declare_property_long(ce, "cursor", sizeof("cursor")-1, Z_L(-1), ZEND_ACC_PUBLIC);
+#if PHP_VERSION_ID < 80100
 		ce->serialize = zend_class_serialize_deny;
 		ce->unserialize = zend_class_unserialize_deny;
+#else
+		ce->ce_flags |= ZEND_ACC_NOT_SERIALIZABLE;
+#endif
 	};
 
 	memcpy(&parle_lexer_handlers, zend_get_std_object_handlers(), sizeof(zend_object_handlers));
@@ -2865,8 +2869,12 @@ PHP_MINIT_FUNCTION(parle)
 #undef DECL_CONST
 		zend_declare_property_long(ce, "action", sizeof("action")-1, 0, ZEND_ACC_PUBLIC);
 		zend_declare_property_long(ce, "reduceId", sizeof("reduceId")-1, 0, ZEND_ACC_PUBLIC);
+#if PHP_VERSION_ID < 80100
 		ce->serialize = zend_class_serialize_deny;
 		ce->unserialize = zend_class_unserialize_deny;
+#else
+		ce->ce_flags |= ZEND_ACC_NOT_SERIALIZABLE;
+#endif
 	};
 
 	memcpy(&parle_parser_handlers, zend_get_std_object_handlers(), sizeof(zend_object_handlers));
@@ -2915,8 +2923,12 @@ PHP_MINIT_FUNCTION(parle)
 	zend_declare_property_bool(ParleStack_ce, "empty", sizeof("empty")-1, 0, ZEND_ACC_PUBLIC);
 	zend_declare_property_long(ParleStack_ce, "size", sizeof("size")-1, 0, ZEND_ACC_PUBLIC);
 	zend_declare_property_long(ParleStack_ce, "top", sizeof("top")-1, 0, ZEND_ACC_PUBLIC);
+#if PHP_VERSION_ID < 80100
 	ParleStack_ce->serialize = zend_class_serialize_deny;
 	ParleStack_ce->unserialize = zend_class_unserialize_deny;
+#else
+	ParleStack_ce->ce_flags |= ZEND_ACC_NOT_SERIALIZABLE;
+#endif
 
 	INIT_CLASS_ENTRY(ce, "Parle\\LexerException", NULL);
 	ParleLexerException_ce = zend_register_internal_class_ex(&ce, zend_exception_get_default());
