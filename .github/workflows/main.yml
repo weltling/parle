@@ -14,7 +14,7 @@ jobs:
       matrix:
         operating-system: ['ubuntu-18.04']
         php-versions: ['7.4', '8.0', '8.1']
-        utf32-opt: ['--enable-parle-utf32', '']
+        utf32: [1, 0]
         gcc-versions: ['5']
     runs-on: ${{ matrix.operating-system }}
     steps:
@@ -29,8 +29,9 @@ jobs:
           php-version: ${{ matrix.php-versions }}
       - name: Build parle
         run: |
+          if test ${{ matrix.utf32 }} = 1; then UTF32_OPT=--enable-parle-utf32; fi
           phpize
-          CC=gcc-${{ matrix.gcc-versions }} CXX=g++-${{ matrix.gcc-versions }} ./configure ${{ matrix.utf32-opt }}
+          CC=gcc-${{ matrix.gcc-versions }} CXX=g++-${{ matrix.gcc-versions }} ./configure $UTF32_OPT
           make
 
       - name: Test
