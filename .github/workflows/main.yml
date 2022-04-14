@@ -17,20 +17,21 @@ jobs:
         utf32: [0, 1]
     runs-on: ${{ matrix.operating-system }}
     steps:
-    - name: Setup GCC
-      uses: egor-tensin/setup-gcc@v1
-      with:
-        version: 5
-    - name: Setup PHP
-      uses: shivammathur/setup-php@v2
-      with:
-        php-version: ${{ matrix.php-versions }}
-    - name: Build parle
-      run: |
-        phpize
-        if test ${{ matrix.utf32 }} = 1; then CC=gcc-5 CXX=g++-5 ./configure --enable-parle-utf32; else CC=gcc-5 CXX=g++-5 ./configure; fi
-        make
-        make install
+      - uses: actions/checkout@v2
+      - name: Setup GCC
+        uses: egor-tensin/setup-gcc@v1
+        with:
+          version: 5
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php-versions }}
+      - name: Build parle
+        run: |
+          phpize
+          if test ${{ matrix.utf32 }} = 1; then CC=gcc-5 CXX=g++-5 ./configure --enable-parle-utf32; else CC=gcc-5 CXX=g++-5 ./configure; fi
+          make
+          make install
 
-    - name: Test
-      run: make test TESTS="-P -q --show-diff"
+      - name: Test
+        run: make test TESTS="-P -q --show-diff"
