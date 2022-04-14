@@ -31,7 +31,6 @@ jobs:
           phpize
           if test ${{ matrix.utf32 }} = 1; then CC=gcc-5 CXX=g++-5 ./configure --enable-parle-utf32; else CC=gcc-5 CXX=g++-5 ./configure; fi
           make
-          make install
 
       - name: Test
         run: make test TESTS="-P -q --show-diff"
