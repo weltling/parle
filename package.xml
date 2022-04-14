@@ -12,8 +12,8 @@
 	</lead>
 	<date>2022-04-14</date>
 	<version>
-		<release>0.8.3</release>
-		<api>0.8.3</api>
+		<release>0.8.4</release>
+		<api>0.8.4</api>
 	</version>
 	<stability>
 		<release>beta</release>
@@ -21,7 +21,7 @@
 	</stability>
 	<license uri="http://opensource.org/licenses/BSD-2-Clause">BSD 2-clause</license>
 	<notes>
-		- Fixed PHP 8.1 compatibility (Remi Collet)
+		- TODO
 	</notes>
 	<contents>
 		<dir name="/">
@@ -152,6 +152,21 @@
 	<providesextension>parle</providesextension>
 	<extsrcrelease />
 	<changelog>
+		<release>
+			<date>2022-04-14</date>
+			<version>
+				<release>0.8.3</release>
+				<api>0.8.3</api>
+			</version>
+			<stability>
+				<release>beta</release>
+				<api>beta</api>
+			</stability>
+			<license uri="http://opensource.org/licenses/BSD-2-Clause">BSD 2-clause</license>
+			<notes>
+				- Fixed PHP 8.1 compatibility (Remi Collet)
+			</notes>
+		</release>
 		<release>
 			<date>2021-01-17</date>
 			<version>
