@@ -19,20 +19,16 @@ jobs:
     runs-on: ${{ matrix.operating-system }}
     steps:
       - uses: actions/checkout@v2
-      - name: Setup GCC
-        uses: egor-tensin/setup-gcc@v1
+      - uses: egor-tensin/setup-gcc@v1
         with:
           version: ${{ matrix.gcc-versions }}
-      - name: Setup PHP
-        uses: shivammathur/setup-php@v2
+      - uses: shivammathur/setup-php@v2
         with:
           php-version: ${{ matrix.php-versions }}
-      - name: Build parle
-        run: |
+      - run: phpize
+      - run: |
           if test ${{ matrix.utf32 }} = 1; then UTF32_OPT=--enable-parle-utf32; fi
-          phpize
           CC=gcc-${{ matrix.gcc-versions }} CXX=g++-${{ matrix.gcc-versions }} ./configure $UTF32_OPT
-          make
+      - run: make
+      - run: make test TESTS="-P -q --show-diff"
 
-      - name: Test
-        run: make test TESTS="-P -q --show-diff"
