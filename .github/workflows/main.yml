@@ -24,7 +24,7 @@ jobs:
     - name: Setup PHP
       uses: shivammathur/setup-php@v2
       with:
-      php-version: ${{ matrix.php-versions }}
+        php-version: ${{ matrix.php-versions }}
     - name: Build parle
       run: |
         phpize
@@ -32,5 +32,5 @@ jobs:
         make
         make install
 
-    - Name: Test
+    - name: Test
       run: make test TESTS="-P -q --show-diff"
