@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017 Anatol Belski
+ * Copyright (c) 2022 Anatol Belski
  * All rights reserved.
  *
  * Author: Anatol Belski <ab@php.net>
