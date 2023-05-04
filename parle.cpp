@@ -160,7 +160,7 @@ namespace parle {/*{{{*/
 		using state_machine = parsertl::basic_state_machine<id_type>;
 		using match_results = parsertl::basic_match_results<state_machine>;
 		using parle_rules = parsertl::basic_rules<char_type, id_type>;
-		using generator = parsertl::basic_generator<parle_rules, id_type>;
+		using generator = parsertl::basic_generator<parle_rules, state_machine, id_type>;
 		using parle_productions = parsertl::token<parle::lexer::siterator>::token_vector;
 		using parle_rproductions = parsertl::token<parle::lexer::sriterator>::token_vector;
 
@@ -955,7 +955,7 @@ _parser_validate(INTERNAL_FUNCTION_PARAMETERS, zend_class_entry *par_ce, zend_cl
 		lex.par = zppo->par;
 		par.productions = {};
 		par.results = {lex.iter->id, par.sm};
-		RETURN_BOOL(parsertl::parse(par.sm, lex.iter, par.results));
+		RETURN_BOOL(parsertl::parse(lex.iter, par.sm, par.results));
 	} catch (const std::exception &e) {
 		php_parle_rethrow_from_cpp(ParleParserException_ce, e.what(), 0);
 	}
@@ -1037,7 +1037,7 @@ _parser_sigil(INTERNAL_FUNCTION_PARAMETERS, zend_class_entry *ce) noexcept
 
 	try {
 		auto &lex = *par.lex;
-		auto ret = par.results.dollar(par.sm, static_cast<parle::id_type>(idx), par.productions);
+		auto ret = par.results.dollar(static_cast<parle::id_type>(idx), par.sm, par.productions);
 		size_t start_pos = ret.first - lex.in.begin();
 		parle::string r(lex.in, start_pos, ret.second - ret.first);
 		std::string r8 = PARLE_SCVT_U8(r);
@@ -1086,7 +1086,7 @@ _parser_advance(INTERNAL_FUNCTION_PARAMETERS, zend_class_entry *ce) noexcept
 			zend_throw_exception(ParleParserException_ce, "Parser state machine is empty", 0);
 			return;
 		}
-		parsertl::lookup(par.sm, lex.iter, par.results, par.productions);
+		parsertl::lookup(lex.iter, par.sm, par.results, par.productions);
 	} catch (const std::exception &e) {
 		php_parle_rethrow_from_cpp(ParleParserException_ce, e.what(), 0);
 	}
@@ -1216,20 +1216,20 @@ _parser_trace(INTERNAL_FUNCTION_PARAMETERS, zend_class_entry *ce) noexcept
 		auto &results = par.results;
 		auto &entry = results.entry;
 		switch (entry.action) {
-			case parsertl::shift:
+			case parsertl::action::shift:
 				s = PARLE_PRE_U32("shift ") + PARLE_SCVT_U32(std::to_string(entry.param));
 				s8 = PARLE_SCVT_U8(s);
 				RETURN_STRINGL(s8.c_str(), s8.size());
 				break;
-			case parsertl::go_to:
+			case parsertl::action::go_to:
 				s = PARLE_PRE_U32("goto ") + PARLE_SCVT_U32(std::to_string(entry.param));
 				s8 = PARLE_SCVT_U8(s);
 				RETURN_STRINGL(s8.c_str(), s8.size());
 				break;
-			case parsertl::accept:
+			case parsertl::action::accept:
 				RETURN_STRINGL("accept", sizeof("accept")-1);
 				break;
-			case parsertl::reduce: {
+			case parsertl::action::reduce: {
 				/* TODO symbols should be setup only once. */
 				//parsertl::rules::string_vector symbols;
 				std::vector<parle::string> symbols;
@@ -1252,7 +1252,7 @@ _parser_trace(INTERNAL_FUNCTION_PARAMETERS, zend_class_entry *ce) noexcept
 				RETURN_STRINGL(s8.c_str(), s8.size());
 				}
 				break;
-			case parsertl::error:
+			case parsertl::action::error:
 				// pass
 				break;
 		}
@@ -1292,7 +1292,7 @@ _parser_errorinfo(INTERNAL_FUNCTION_PARAMETERS, zend_class_entry *ce) noexcept
 
 	object_init_ex(return_value, ParleErrorInfo_ce);
 
-	if (par.results.entry.action != parsertl::error) {
+	if (par.results.entry.action != parsertl::action::error) {
 		return;
 	} else if (nullptr == par.lex) {
 		zend_throw_exception(ParleParserException_ce, "No lexer supplied", 0);
@@ -2182,7 +2182,7 @@ php_parle_par_read_property(zend_object *object, zend_string *member, int type, 
 
 	retval = rv;
 	if (PARLE_IS_PROP("action")) {
-		ZVAL_LONG(retval, par.results.entry.action);
+		ZVAL_LONG(retval, static_cast<long>(par.results.entry.action));
 	} else if (PARLE_IS_PROP("reduceId")) {
 		try {
 			ZVAL_LONG(retval, par.results.reduce_id());
@@ -2316,9 +2316,9 @@ php_parle_par_get_properties(zend_object *object) noexcept
 
 	auto &par = *zppo->par;
 
-	ZVAL_LONG(&zv, par.results.entry.action);
+	ZVAL_LONG(&zv, static_cast<long>(par.results.entry.action));
 	zend_hash_str_update(props, "action", sizeof("action")-1, &zv);
-	if (par.results.entry.action == parsertl::reduce) {
+	if (par.results.entry.action == parsertl::action::reduce) {
 		ZVAL_LONG(&zv, par.results.reduce_id());
 	} else {
 		ZVAL_LONG(&zv, Z_L(-1));
@@ -2858,14 +2858,14 @@ PHP_MINIT_FUNCTION(parle)
 
 	auto init_parser_consts_and_props = [](zend_class_entry *ce) {
 #define DECL_CONST(name, val) zend_declare_class_constant_long(ce, name, sizeof(name) - 1, val);
-		DECL_CONST("ACTION_ERROR", parsertl::error)
-		DECL_CONST("ACTION_SHIFT", parsertl::shift)
-		DECL_CONST("ACTION_REDUCE", parsertl::reduce)
-		DECL_CONST("ACTION_GOTO", parsertl::go_to)
-		DECL_CONST("ACTION_ACCEPT", parsertl::accept)
-		DECL_CONST("ERROR_SYNTAX", parsertl::syntax_error)
-		DECL_CONST("ERROR_NON_ASSOCIATIVE", parsertl::non_associative)
-		DECL_CONST("ERROR_UNKNOWN_TOKEN", parsertl::unknown_token)
+		DECL_CONST("ACTION_ERROR", (zend_long)parsertl::action::error)
+		DECL_CONST("ACTION_SHIFT", (zend_long)parsertl::action::shift)
+		DECL_CONST("ACTION_REDUCE", (zend_long)parsertl::action::reduce)
+		DECL_CONST("ACTION_GOTO", (zend_long)parsertl::action::go_to)
+		DECL_CONST("ACTION_ACCEPT", (zend_long)parsertl::action::accept)
+		DECL_CONST("ERROR_SYNTAX", (zend_long)parsertl::error_type::syntax_error)
+		DECL_CONST("ERROR_NON_ASSOCIATIVE", (zend_long)parsertl::error_type::non_associative)
+		DECL_CONST("ERROR_UNKNOWN_TOKEN", (zend_long)parsertl::error_type::unknown_token)
 #undef DECL_CONST
 		zend_declare_property_long(ce, "action", sizeof("action")-1, 0, ZEND_ACC_PUBLIC);
 		zend_declare_property_long(ce, "reduceId", sizeof("reduceId")-1, 0, ZEND_ACC_PUBLIC);

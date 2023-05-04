@@ -1,5 +1,5 @@
 // node.hpp
-// Copyright (c) 2005-2018 Ben Hanson (http://www.benhanson.net/)
+// Copyright (c) 2005-2023 Ben Hanson (http://www.benhanson.net/)
 //
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file licence_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -15,228 +15,225 @@
 
 namespace lexertl
 {
-namespace detail
-{
-template<typename id_type>
-class basic_node
-{
-public:
-    enum node_type {LEAF, SEQUENCE, SELECTION, ITERATION, END};
-
-    using bool_stack = std::stack<bool>;
-    using node_stack = std::stack<observer_ptr<basic_node>>;
-    using const_node_stack = std::stack<observer_ptr<const basic_node>>;
-    using node_vector = std::vector<observer_ptr<basic_node>>;
-    using node_ptr_vector = std::vector<std::unique_ptr<basic_node>>;
-
-    basic_node() :
-        _nullable(false),
-        _firstpos(),
-        _lastpos()
+    namespace detail
     {
-    }
-
-    basic_node(const bool nullable_) :
-        _nullable(nullable_),
-        _firstpos(),
-        _lastpos()
-    {
-    }
-
-    virtual ~basic_node()
-    {
-    }
-
-    static id_type null_token()
-    {
-        return static_cast<id_type>(~0);
-    }
-
-    bool nullable() const
-    {
-        return _nullable;
-    }
-
-    void append_firstpos(node_vector &firstpos_) const
-    {
-        firstpos_.insert(firstpos_.end(),
-            _firstpos.begin(), _firstpos.end());
-    }
-
-    void append_lastpos(node_vector &lastpos_) const
-    {
-        lastpos_.insert(lastpos_.end(),
-            _lastpos.begin(), _lastpos.end());
-    }
-
-    virtual void append_followpos(const node_vector &/*followpos_*/)
-    {
-        throw runtime_error("Internal error node::append_followpos().");
-    }
-
-    observer_ptr<basic_node> copy(node_ptr_vector &node_ptr_vector_) const
-    {
-        observer_ptr<basic_node> new_root_ = nullptr;
-        const_node_stack node_stack_;
-        bool_stack perform_op_stack_;
-        bool down_ = true;
-        node_stack new_node_stack_;
-
-        node_stack_.push(this);
-
-        while (!node_stack_.empty())
+        template<typename id_type>
+        class basic_node
         {
-            while (down_)
+        public:
+            enum class node_type { LEAF, SEQUENCE, SELECTION, ITERATION, END };
+
+            using bool_stack = std::stack<bool>;
+            using node_stack = std::stack<observer_ptr<basic_node>>;
+            using const_node_stack = std::stack<observer_ptr<const basic_node>>;
+            using node_vector = std::vector<observer_ptr<basic_node>>;
+            using node_ptr_vector = std::vector<std::unique_ptr<basic_node>>;
+
+            basic_node() = default;
+
+            explicit basic_node(const bool nullable_) :
+                _nullable(nullable_)
             {
-                down_ = node_stack_.top()->traverse(node_stack_,
-                    perform_op_stack_);
             }
 
-            while (!down_ && !node_stack_.empty())
+            virtual ~basic_node() = default;
+
+            static id_type null_token()
             {
-                observer_ptr<const basic_node> top_ = node_stack_.top();
-
-                top_->copy_node(node_ptr_vector_, new_node_stack_,
-                    perform_op_stack_, down_);
-
-                if (!down_) node_stack_.pop();
+                return static_cast<id_type>(~0);
             }
-        }
 
-        assert(new_node_stack_.size() == 1);
-        new_root_ = new_node_stack_.top();
-        new_node_stack_.pop();
-        return new_root_;
-    }
+            bool nullable() const
+            {
+                return _nullable;
+            }
 
-    virtual node_type what_type() const = 0;
+            void append_firstpos(node_vector& firstpos_) const
+            {
+                firstpos_.insert(firstpos_.end(),
+                    _firstpos.begin(), _firstpos.end());
+            }
 
-    virtual bool traverse(const_node_stack &node_stack_,
-        bool_stack &perform_op_stack_) const = 0;
+            void append_lastpos(node_vector& lastpos_) const
+            {
+                lastpos_.insert(lastpos_.end(),
+                    _lastpos.begin(), _lastpos.end());
+            }
 
-    node_vector &firstpos()
-    {
-        return _firstpos;
-    }
+            virtual void append_followpos(const node_vector&/*followpos_*/)
+            {
+                throw runtime_error("Internal error node::append_followpos().");
+            }
 
-    const node_vector &firstpos() const
-    {
-        return _firstpos;
-    }
+            observer_ptr<basic_node> copy
+                (node_ptr_vector& node_ptr_vector_) const
+            {
+                observer_ptr<basic_node> new_root_ = nullptr;
+                const_node_stack node_stack_;
+                bool_stack perform_op_stack_;
+                bool down_ = true;
+                node_stack new_node_stack_;
 
-    // _lastpos modified externally, so not const &
-    node_vector &lastpos()
-    {
-        return _lastpos;
-    }
+                node_stack_.push(this);
 
-    virtual bool end_state() const
-    {
-        return false;
-    }
+                while (!node_stack_.empty())
+                {
+                    while (down_)
+                    {
+                        down_ = node_stack_.top()->traverse(node_stack_,
+                            perform_op_stack_);
+                    }
 
-    virtual id_type id() const
-    {
-        throw runtime_error("Internal error node::id().");
+                    while (!down_ && !node_stack_.empty())
+                    {
+                        observer_ptr<const basic_node> top_ = node_stack_.top();
+
+                        top_->copy_node(node_ptr_vector_, new_node_stack_,
+                            perform_op_stack_, down_);
+
+                        if (!down_) node_stack_.pop();
+                    }
+                }
+
+                assert(new_node_stack_.size() == 1);
+                new_root_ = new_node_stack_.top();
+                new_node_stack_.pop();
+                return new_root_;
+            }
+
+            virtual node_type what_type() const = 0;
+
+            virtual bool traverse(const_node_stack& node_stack_,
+                bool_stack& perform_op_stack_) const = 0;
+
+            node_vector& firstpos()
+            {
+                return _firstpos;
+            }
+
+            const node_vector& firstpos() const
+            {
+                return _firstpos;
+            }
+
+            // _lastpos modified externally, so not const &
+            node_vector& lastpos()
+            {
+                return _lastpos;
+            }
+
+            virtual bool end_state() const
+            {
+                return false;
+            }
+
+            virtual id_type id() const
+            {
+                throw runtime_error("Internal error node::id().");
 #ifdef __SUNPRO_CC
-        // Stop bogus Solaris compiler warning
-        return id_type();
+                // Stop bogus Solaris compiler warning
+                return id_type();
 #endif
-    }
+            }
 
-    virtual id_type user_id() const
-    {
-        throw runtime_error("Internal error node::user_id().");
+            virtual id_type user_id() const
+            {
+                throw runtime_error("Internal error node::user_id().");
 #ifdef __SUNPRO_CC
-        // Stop bogus Solaris compiler warning
-        return id_type();
+                // Stop bogus Solaris compiler warning
+                return id_type();
 #endif
-    }
+            }
 
-    virtual id_type next_dfa() const
-    {
-        throw runtime_error("Internal error node::next_dfa().");
+            virtual id_type next_dfa() const
+            {
+                throw runtime_error("Internal error node::next_dfa().");
 #ifdef __SUNPRO_CC
-        // Stop bogus Solaris compiler warning
-        return id_type();
+                // Stop bogus Solaris compiler warning
+                return id_type();
 #endif
-    }
+            }
 
-    virtual id_type push_dfa() const
-    {
-        throw runtime_error("Internal error node::push_dfa().");
+            virtual id_type push_dfa() const
+            {
+                throw runtime_error("Internal error node::push_dfa().");
 #ifdef __SUNPRO_CC
-        // Stop bogus Solaris compiler warning
-        return id_type();
+                // Stop bogus Solaris compiler warning
+                return id_type();
 #endif
-    }
+            }
 
-    virtual bool pop_dfa() const
-    {
-        throw runtime_error("Internal error node::pop_dfa().");
+            virtual bool pop_dfa() const
+            {
+                throw runtime_error("Internal error node::pop_dfa().");
 #ifdef __SUNPRO_CC
-        // Stop bogus Solaris compiler warning
-        return false;
+                // Stop bogus Solaris compiler warning
+                return false;
 #endif
-    }
+            }
 
-    virtual id_type token() const
-    {
-        throw runtime_error("Internal error node::token().");
+            virtual id_type token() const
+            {
+                throw runtime_error("Internal error node::token().");
 #ifdef __SUNPRO_CC
-        // Stop bogus Solaris compiler warning
-        return id_type();
+                // Stop bogus Solaris compiler warning
+                return id_type();
 #endif
-    }
+            }
 
-    virtual void greedy(const bool /*greedy_*/)
-    {
-        throw runtime_error("Internal error node::greedy(bool).");
-    }
+            virtual bool set_greedy() const
+            {
+                throw runtime_error("Internal error node::set_greedy().");
+            }
 
-    virtual bool greedy() const
-    {
-        throw runtime_error("Internal error node::greedy().");
+            virtual void greedy(const bool /*greedy_*/)
+            {
+                throw runtime_error("Internal error node::greedy(bool).");
+            }
+
+            virtual bool greedy() const
+            {
+                throw runtime_error("Internal error node::greedy().");
 #ifdef __SUNPRO_CC
-        // Stop bogus Solaris compiler warning
-        return false;
+                // Stop bogus Solaris compiler warning
+                return false;
 #endif
-    }
+            }
 
-    virtual const node_vector &followpos() const
-    {
-        throw runtime_error("Internal error node::followpos().");
+            virtual const node_vector& followpos() const
+            {
+                throw runtime_error("Internal error node::followpos().");
 #ifdef __SUNPRO_CC
-        // Stop bogus Solaris compiler warning
-        return firstpos;
+                // Stop bogus Solaris compiler warning
+                return firstpos;
 #endif
-    }
+            }
 
-    virtual node_vector &followpos()
-    {
-        throw runtime_error("Internal error node::followpos().");
+            virtual node_vector& followpos()
+            {
+                throw runtime_error("Internal error node::followpos().");
 #ifdef __SUNPRO_CC
-        // Stop bogus Solaris compiler warning
-        return firstpos;
+                // Stop bogus Solaris compiler warning
+                return firstpos;
 #endif
+            }
+
+        protected:
+            const bool _nullable = false;
+            node_vector _firstpos;
+            node_vector _lastpos;
+
+            virtual void copy_node(node_ptr_vector& node_ptr_vector_,
+                node_stack& new_node_stack_, bool_stack& perform_op_stack_,
+                bool& down_) const = 0;
+
+        private:
+            // No copy construction.
+            basic_node(const basic_node&) = delete;
+            // No assignment.
+            const basic_node& operator =(const basic_node&) = delete;
+        };
     }
-
-protected:
-    const bool _nullable;
-    node_vector _firstpos;
-    node_vector _lastpos;
-
-    virtual void copy_node(node_ptr_vector &node_ptr_vector_,
-        node_stack &new_node_stack_, bool_stack &perform_op_stack_,
-        bool &down_) const = 0;
-
-private:
-    // No copy construction.
-    basic_node(const basic_node &) = delete;
-    // No assignment.
-    const basic_node &operator =(const basic_node &) = delete;
-};
-}
 }
 
 #endif

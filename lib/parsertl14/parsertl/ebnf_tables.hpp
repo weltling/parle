@@ -1,11 +1,12 @@
 // ebnf_tables.hpp
-// Copyright (c) 2018 Ben Hanson (http://www.benhanson.net/)
+// Copyright (c) 2018-2023 Ben Hanson (http://www.benhanson.net/)
 //
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file licence_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 #ifndef PARSERTL_EBNF_TABLES_HPP
 #define PARSERTL_EBNF_TABLES_HPP
 
+#include <cstdint>
 #include <vector>
 
 namespace parsertl
@@ -29,7 +30,7 @@ namespace parsertl
             TERMINAL = 261
         };
 
-        const std::vector<unsigned char> yytranslate =
+        const std::vector<uint8_t> yytranslate =
         {
                0,     2,     2,     2,     2,     2,     2,     2,     2,     2,
                2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
@@ -59,46 +60,46 @@ namespace parsertl
                2,     2,     2,     2,     2,     2,     1,     2,     3,     4,
                5,     6
         };
-        const std::vector<unsigned char> yyr1 =
+        const std::vector<uint8_t> yyr1 =
         {
                0,    18,    19,    20,    20,    21,    21,    21,    22,    22,
               23,    23,    23,    23,    23,    23,    23,    23,    23,    24,
               24,    24
         };
-        const std::vector<unsigned char> yyr2
+        const std::vector<uint8_t> yyr2
         {
                0,     2,     1,     1,     3,     0,     1,     2,     1,     2,
                1,     1,     3,     2,     3,     2,     4,     2,     3,     0,
                2,     2
         };
-        const std::vector<unsigned char> yydefact =
+        const std::vector<uint8_t> yydefact =
         {
                5,     6,    10,    11,     5,     5,     5,     0,     2,     3,
               19,     8,     0,     0,     0,     1,     5,     0,     9,     7,
               13,    15,    17,    12,    14,    18,     4,    20,    21,    16
         };
-        const std::vector<char> yydefgoto =
+        const std::vector<int8_t> yydefgoto =
         {
               -1,     7,     8,     9,    10,    11,    19
         };
-        const std::vector<char> yypact =
+        const std::vector<int8_t> yypact =
         {
               -3,    -7,    -7,    -7,    -3,    -3,    -3,     2,    11,    -7,
                6,    -6,    12,     8,    -1,    -7,    -3,    22,    -6,    -7,
               -7,    -7,    -7,    -7,    13,    -7,    -7,    -7,    -7,    -7
         };
-        const std::vector<char> yypgoto =
+        const std::vector<int8_t> yypgoto =
         {
               -7,    -7,    19,    14,    -7,    21,    -7
         };
-        const std::vector<unsigned char> yytable =
+        const std::vector<uint8_t> yytable =
         {
                1,     2,    15,     3,    20,     4,    16,    21,     5,    22,
                2,    17,     3,     6,     4,    16,    25,     5,    16,    16,
               24,    23,     6,    12,    13,    14,    27,    29,    28,     0,
               26,    18
         };
-        const std::vector<char> yycheck =
+        const std::vector<int8_t> yycheck =
         {
                3,     4,     0,     6,    10,     8,     7,    13,    11,    15,
                4,     5,     6,    16,     8,     7,    17,    11,     7,     7,

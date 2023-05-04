@@ -1,4 +1,4 @@
-%token EMPTY IDENTIFIER PREC TERMINAL '|' '[' ']' '?' '{' '}' '*' '-' '+' '(' ')'
+%token EMPTY IDENTIFIER PREC TERMINAL
 %%
 
 rule: rhs_or;

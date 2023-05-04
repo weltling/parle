@@ -1,5 +1,5 @@
 // match_results.hpp
-// Copyright (c) 2015-2018 Ben Hanson (http://www.benhanson.net/)
+// Copyright (c) 2015-2023 Ben Hanson (http://www.benhanson.net/)
 //
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file licence_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -14,158 +14,158 @@
 
 namespace lexertl
 {
-template<typename iter, typename id_type = uint16_t,
-    std::size_t flags = bol_bit | eol_bit | skip_bit | again_bit |
+    template<typename iter, typename id_t = uint16_t,
+        std::size_t flags = bol_bit | eol_bit | skip_bit | again_bit |
         multi_state_bit | advance_bit>
-struct match_results
-{
-    using iter_type = iter;
-    using char_type = typename std::iterator_traits<iter_type>::value_type;
-    using index_type = typename basic_char_traits<char_type>::index_type;
-    using string = std::basic_string<char_type>;
-
-    id_type id;
-    id_type user_id;
-    iter_type first;
-    iter_type second;
-    iter_type eoi;
-    bool bol;
-    id_type state;
-
-    match_results() :
-        id(0),
-        user_id(npos()),
-        first(iter_type()),
-        second(iter_type()),
-        eoi(iter_type()),
-        bol(true),
-        state(0)
+    struct match_results
     {
-    }
+        using id_type = id_t;
+        using iter_type = iter;
+        using char_type = typename std::iterator_traits<iter_type>::value_type;
+        using index_type = typename basic_char_traits<char_type>::index_type;
+        using string = std::basic_string<char_type>;
 
-    match_results(const iter_type &start_, const iter_type &end_) :
-        id(0),
-        user_id(npos()),
-        first(start_),
-        second(start_),
-        eoi(end_),
-        bol(true),
-        state(0)
-    {
-    }
+        id_type id = 0;
+        id_type user_id = npos();
+        iter_type first;
+        iter_type second;
+        iter_type eoi;
+        bool bol = true;
+        id_type state = 0;
 
-    virtual ~match_results()
-    {
-    }
+        match_results() :
+            first(iter_type()),
+            second(iter_type()),
+            eoi(iter_type())
+        {
+        }
 
-    string str() const
-    {
-        return string(first, second);
-    }
+        match_results(const iter_type& start_, const iter_type& end_,
+            const bool bol_ = true, const id_type state_ = 0) :
+            first(start_),
+            second(start_),
+            eoi(end_),
+            bol(bol_),
+            state(state_)
+        {
+        }
 
-    string substr(const std::size_t soffset_, const std::size_t eoffset_) const
-    {
-        return string(first + soffset_, second - eoffset_);
-    }
+        virtual ~match_results() = default;
 
-    virtual void clear()
-    {
-        id  = 0;
-        user_id = npos();
-        first = eoi;
-        second = eoi;
-        bol = true;
-        state = 0;
-    }
+        string str() const
+        {
+            return string(first, second);
+        }
 
-    virtual void reset(const iter_type &start_, const iter_type &end_)
-    {
-        id  = 0;
-        user_id = npos();
-        first = start_;
-        second  = start_;
-        eoi = end_;
-        bol = true;
-        state = 0;
-    }
+        string substr(const std::size_t soffset_,
+            const std::size_t eoffset_) const
+        {
+            return string(first + soffset_, second - eoffset_);
+        }
 
-    static id_type npos()
-    {
-        return static_cast<id_type>(~0);
-    }
+        virtual void clear()
+        {
+            id = 0;
+            user_id = npos();
+            first = eoi;
+            second = eoi;
+            bol = true;
+            state = 0;
+        }
 
-    static id_type skip()
-    {
-        return static_cast<id_type>(~1);
-    }
+        virtual void reset(const iter_type& start_, const iter_type& end_)
+        {
+            id = 0;
+            user_id = npos();
+            first = start_;
+            second = start_;
+            eoi = end_;
+            bol = true;
+            state = 0;
+        }
 
-    bool operator ==(const match_results &rhs_) const
-    {
-        return id == rhs_.id &&
-            user_id == rhs_.user_id &&
-            first == rhs_.first &&
-            second == rhs_.second &&
-            eoi == rhs_.eoi &&
-            bol == rhs_.bol &&
-            state == rhs_.state;
-    }
-};
+        std::size_t length() const
+        {
+            return second - first;
+        }
 
-template<typename iter, typename id_type = uint16_t,
-    std::size_t flags = bol_bit | eol_bit | skip_bit | again_bit |
+        static id_type npos()
+        {
+            return static_cast<id_type>(~0);
+        }
+
+        static id_type skip()
+        {
+            return static_cast<id_type>(~1);
+        }
+
+        bool operator ==(const match_results& rhs_) const
+        {
+            return id == rhs_.id &&
+                user_id == rhs_.user_id &&
+                first == rhs_.first &&
+                second == rhs_.second &&
+                eoi == rhs_.eoi &&
+                bol == rhs_.bol &&
+                state == rhs_.state;
+        }
+    };
+
+    template<typename iter, typename id_type = uint16_t,
+        std::size_t flags = bol_bit | eol_bit | skip_bit | again_bit |
         multi_state_bit | recursive_bit | advance_bit>
-struct recursive_match_results : public match_results<iter, id_type, flags>
-{
-    using id_type_pair = std::pair<id_type, id_type>;
-    std::stack<id_type_pair> stack;
-
-    recursive_match_results() :
-        match_results<iter, id_type, flags>(),
-        stack()
+    struct recursive_match_results :
+        public match_results<iter, id_type, flags>
     {
-    }
+        using id_type_pair = std::pair<id_type, id_type>;
+        std::stack<id_type_pair> stack;
 
-    recursive_match_results(const iter &start_, const iter &end_) :
-        match_results<iter, id_type, flags>(start_, end_),
-        stack()
-    {
-    }
+        recursive_match_results() :
+            match_results<iter, id_type, flags>(),
+            stack()
+        {
+        }
 
-    virtual ~recursive_match_results() override
-    {
-    }
+        recursive_match_results(const iter& start_, const iter& end_,
+            const bool bol_ = true, const id_type state_ = 0) :
+            match_results<iter, id_type, flags>(start_, end_, bol_, state_),
+            stack()
+        {
+        }
 
-    virtual void clear() override
-    {
-        match_results<iter, id_type, flags>::clear();
+        ~recursive_match_results() override = default;
 
-        while (!stack.empty()) stack.pop();
-    }
+        void clear() override
+        {
+            match_results<iter, id_type, flags>::clear();
 
-    virtual void reset(const iter &start_, const iter &end_) override
-    {
-        match_results<iter, id_type, flags>::reset(start_, end_);
+            while (!stack.empty()) stack.pop();
+        }
 
-        while (!stack.empty()) stack.pop();
-    }
-};
+        void reset(const iter& start_, const iter& end_) override
+        {
+            match_results<iter, id_type, flags>::reset(start_, end_);
 
-using smatch = match_results<std::string::const_iterator>;
-using cmatch = match_results<const char *>;
-using wsmatch = match_results<std::wstring::const_iterator>;
-using wcmatch = match_results<const wchar_t *>;
-using u32smatch = match_results<std::u32string::const_iterator>;
-using u32cmatch = match_results<const char32_t *>;
+            while (!stack.empty()) stack.pop();
+        }
+    };
 
-using srmatch =
-    recursive_match_results<std::string::const_iterator>;
-using crmatch = recursive_match_results<const char *>;
-using wsrmatch =
-    recursive_match_results<std::wstring::const_iterator>;
-using wcrmatch = recursive_match_results<const wchar_t *>;
-using u32srmatch =
-    recursive_match_results<std::u32string::const_iterator>;
-using u32crmatch = recursive_match_results<const char32_t *>;
+    using smatch = match_results<std::string::const_iterator>;
+    using cmatch = match_results<const char*>;
+    using wsmatch = match_results<std::wstring::const_iterator>;
+    using wcmatch = match_results<const wchar_t*>;
+    using u32smatch = match_results<std::u32string::const_iterator>;
+    using u32cmatch = match_results<const char32_t*>;
+
+    using srmatch =
+        recursive_match_results<std::string::const_iterator>;
+    using crmatch = recursive_match_results<const char*>;
+    using wsrmatch =
+        recursive_match_results<std::wstring::const_iterator>;
+    using wcrmatch = recursive_match_results<const wchar_t*>;
+    using u32srmatch =
+        recursive_match_results<std::u32string::const_iterator>;
+    using u32crmatch = recursive_match_results<const char32_t*>;
 }
 
 #endif

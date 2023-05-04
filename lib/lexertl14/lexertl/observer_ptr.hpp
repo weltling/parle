@@ -1,5 +1,5 @@
 // observer_ptr.hpp
-// Copyright (c) 2017-2018 Ben Hanson (http://www.benhanson.net/)
+// Copyright (c) 2017-2023 Ben Hanson (http://www.benhanson.net/)
 //
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file licence_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -10,7 +10,7 @@
 namespace lexertl
 {
     template<typename T>
-    using observer_ptr = T *;
+    using observer_ptr = T*;
 }
 
 #endif
