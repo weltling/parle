@@ -5,8 +5,8 @@
 
 #include <iterator>
 #include <unordered_map>
-#include "lexertl/lookup.hpp"
-#include "lexertl/runtime_error.hpp"
+#include "include/lexertl/lookup.hpp"
+#include "include/lexertl/runtime_error.hpp"
 
 #undef lookup
 
