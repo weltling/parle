@@ -6,8 +6,8 @@ ARG_ENABLE("parle-utf32", "Enable internal UTF-32 support for lexer/parser", "no
 
 if (PHP_PARLE != "no") {
 	var parle_lib_path = configure_module_dirname + "\\lib";
-	if (CHECK_HEADER_ADD_INCLUDE("lexertl/generator.hpp", "CFLAGS_PARLE", PHP_PARLE + ";" + parle_lib_path + "\\lexertl14") &&
-		CHECK_HEADER_ADD_INCLUDE("parsertl/generator.hpp", "CFLAGS_PARLE", PHP_PARLE + ";" + parle_lib_path + "\\parsertl14") &&
+	if (CHECK_HEADER_ADD_INCLUDE("include/lexertl/generator.hpp", "CFLAGS_PARLE", PHP_PARLE + ";" + parle_lib_path + "\\lexertl14") &&
+		CHECK_HEADER_ADD_INCLUDE("include/parsertl/generator.hpp", "CFLAGS_PARLE", PHP_PARLE + ";" + parle_lib_path + "\\parsertl14") &&
 		CHECK_HEADER_ADD_INCLUDE("parle/lexer/iterator.hpp", "CFLAGS_PARLE", PHP_PARLE + ";" + parle_lib_path)) {
 		EXTENSION("parle", "parle.cpp", PHP_PARLE_SHARED, "/DZEND_ENABLE_STATIC_TSRMLS_CACHE=1");
 		ADD_FLAG("CFLAGS_PARLE", " /I " + parle_lib_path + "\\lexertl14 /I " + parle_lib_path + "\\parsertl14 /EHsc -std:c++14");
