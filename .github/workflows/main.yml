@@ -12,10 +12,10 @@ jobs:
   build:
     strategy:
       matrix:
-        operating-system: ['ubuntu-18.04']
-        php-versions: ['7.4', '8.0', '8.1']
+        operating-system: ['ubuntu-22.04']
+        php-versions: ['7.4', '8.0', '8.1', '8.2']
         utf32: [1, 0]
-        gcc-versions: ['5', '9', '11']
+        gcc-versions: ['9', '11', '12']
     runs-on: ${{ matrix.operating-system }}
     steps:
       - uses: actions/checkout@v2
