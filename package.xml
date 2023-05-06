@@ -42,76 +42,88 @@
 				</dir>
 				<dir name="parsertl14">
 					<file role="doc" name="README.md"/>
-					<dir name="parsertl">
-						<file role="doc" name="licence_1_0.txt"/>
-						<file role="src" name="bison_lookup.hpp"/>
-						<file role="src" name="debug.hpp"/>
-						<file role="src" name="dfa.hpp"/>
-						<file role="src" name="enums.hpp"/>
-						<file role="src" name="generator.hpp"/>
-						<file role="src" name="lookup.hpp"/>
-						<file role="src" name="match_results.hpp"/>
-						<file role="src" name="narrow.hpp"/>
-						<file role="src" name="nt_info.hpp"/>
-						<file role="src" name="parse.hpp"/>
-						<file role="src" name="read_bison.hpp"/>
-						<file role="src" name="rules.hpp"/>
-						<file role="src" name="runtime_error.hpp"/>
-						<file role="src" name="search.hpp"/>
-						<file role="src" name="state_machine.hpp"/>
-						<file role="src" name="token.hpp"/>
-						<file role="src" name="ebnf.y"/>
-						<file role="src" name="ebnf_tables.hpp"/>
-						<file role="src" name="iterator.hpp"/>
-						<file role="src" name="match.hpp"/>
+					<dir name="include>
+						<dir name="parsertl">
+							<file role="src" name="bison_lookup.hpp"/>
+							<file role="src" name="debug.hpp"/>
+							<file role="src" name="dfa.hpp"/>
+							<file role="src" name="ebnf.y"/>
+							<file role="src" name="ebnf_tables.hpp"/>
+							<file role="src" name="enums.hpp"/>
+							<file role="src" name="generator.hpp"/>
+							<file role="src" name="iterator.hpp"/>
+							<file role="doc" name="licence_1_0.txt"/>
+							<file role="src" name="lookup.hpp"/>
+							<file role="src" name="match.hpp"/>
+							<file role="src" name="match_results.hpp"/>
+							<file role="src" name="narrow.hpp"/>
+							<file role="src" name="nt_info.hpp"/>
+							<file role="src" name="parse.hpp"/>
+							<file role="src" name="read_bison.hpp"/>
+							<file role="src" name="rules.hpp"/>
+							<file role="src" name="runtime_error.hpp"/>
+							<file role="src" name="search.hpp"/>
+							<file role="src" name="search_iterator.hpp"/>
+							<file role="src" name="state_machine.hpp"/>
+							<file role="src" name="token.hpp"/>
+						</dir>
 					</dir>
 				</dir>
 				<dir name="lexertl14">
 					<file role="doc" name="README.md"/>
-					<dir name="lexertl">
-						<file role="doc" name="licence_1_0.txt"/>
-						<file role="src" name="char_traits.hpp"/>
-						<file role="src" name="debug.hpp"/>
-						<file role="src" name="dot.hpp"/>
-						<file role="src" name="enums.hpp"/>
-						<file role="src" name="generate_cpp.hpp"/>
-						<file role="src" name="generator.hpp"/>
-						<file role="src" name="internals.hpp"/>
-						<file role="src" name="iterator.hpp"/>
-						<file role="src" name="lookup.hpp"/>
-						<file role="src" name="match_results.hpp"/>
-						<file role="src" name="memory_file.hpp"/>
-						<file role="src" name="narrow.hpp"/>
-						<file role="src" name="observer_ptr.hpp"/>
-						<file role="src" name="rules.hpp"/>
-						<file role="src" name="runtime_error.hpp"/>
-						<file role="src" name="serialise.hpp"/>
-						<file role="src" name="sm_to_csm.hpp"/>
-						<file role="src" name="sm_traits.hpp"/>
-						<file role="src" name="state_machine.hpp"/>
-						<file role="src" name="stream_shared_iterator.hpp"/>
-						<file role="src" name="string_token.hpp"/>
-						<file role="src" name="utf_iterators.hpp"/>
-						<dir name="partition">
-							<file role="src" name="charset.hpp"/>
-							<file role="src" name="equivset.hpp"/>
-						</dir>
-						<dir name="parser">
-							<file role="src" name="parser.hpp"/>
-							<dir name="tokeniser">
-								<file role="src" name="re_token.hpp"/>
-								<file role="src" name="re_tokeniser_helper.hpp"/>
-								<file role="src" name="re_tokeniser.hpp"/>
-								<file role="src" name="re_tokeniser_state.hpp"/>
+					<dir name="include">
+						<dir name="lexertl">
+							<dir name="parser">
+								<dir name="tokeniser">
+									<file role="src" name="blocks.hpp"/>
+									<file role="src" name="fold2.inc"/>
+									<file role="src" name="fold4.inc"/>
+									<file role="src" name="re_token.hpp"/>
+									<file role="src" name="re_tokeniser.hpp"/>
+									<file role="src" name="re_tokeniser_helper.hpp"/>
+									<file role="src" name="re_tokeniser_state.hpp"/>
+									<file role="src" name="scripts.hpp"/>
+									<file role="src" name="table.inc"/>
+									<file role="src" name="unicode.hpp"/>
+								</dir>
+								<dir name="tree">
+									<file role="src" name="end_node.hpp"/>
+									<file role="src" name="iteration_node.hpp"/>
+									<file role="src" name="leaf_node.hpp"/>
+									<file role="src" name="node.hpp"/>
+									<file role="src" name="selection_node.hpp"/>
+									<file role="src" name="sequence_node.hpp"/>
+								</dir>
+								<file role="src" name="parser.hpp"/>
 							</dir>
-							<dir name="tree">
-								<file role="src" name="end_node.hpp"/>
-								<file role="src" name="iteration_node.hpp"/>
-								<file role="src" name="leaf_node.hpp"/>
-								<file role="src" name="node.hpp"/>
-								<file role="src" name="selection_node.hpp"/>
-								<file role="src" name="sequence_node.hpp"/>
+							<dir name="partition">
+								<file role="src" name="charset.hpp"/>
+								<file role="src" name="equivset.hpp"/>
 							</dir>
+							<file role="src" name="char_traits.hpp"/>
+							<file role="src" name="debug.hpp"/>
+							<file role="src" name="dot.hpp"/>
+							<file role="src" name="enums.hpp"/>
+							<file role="src" name="generate_cpp.hpp"/>
+							<file role="src" name="generator.hpp"/>
+							<file role="src" name="internals.hpp"/>
+							<file role="src" name="iterator.hpp"/>
+							<file role="doc" name="licence_1_0.txt"/>
+							<file role="src" name="lookup.hpp"/>
+							<file role="src" name="match_results.hpp"/>
+							<file role="src" name="memory_file.hpp"/>
+							<file role="src" name="narrow.hpp"/>
+							<file role="src" name="observer_ptr.hpp"/>
+							<file role="src" name="replace.hpp"/>
+							<file role="src" name="rules.hpp"/>
+							<file role="src" name="runtime_error.hpp"/>
+							<file role="src" name="serialise.hpp"/>
+							<file role="src" name="sm_to_csm.hpp"/>
+							<file role="src" name="sm_traits.hpp"/>
+							<file role="src" name="state_machine.hpp"/>
+							<file role="src" name="stream_shared_iterator.hpp"/>
+							<file role="src" name="string_token.hpp"/>
+							<file role="src" name="utf_iterators.hpp"/>
 						</dir>
 					</dir>
 				</dir>
