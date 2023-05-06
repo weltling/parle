@@ -2,8 +2,6 @@
 Lexer functionality while it's used by parser
 --SKIPIF--
 <?php if (!extension_loaded("parle")) print "skip"; ?>
---XFAIL--
-Different exception text depending on PHP version. Need to fix the test.
 --FILE--
 <?php
 
@@ -14,9 +12,8 @@ $par->token("NEWLINE");
 $par->token("LETTER");
 $par->token("' '");
 $par->push("START", "LETTERS");
-$prod_0 = $par->push("LETTERS", "LETTER");
+$prod_0 = $par->push("LETTERS", "LETTER | NEWLINE");
 $prod_1 = $par->push("LETTERS", "LETTERS LETTER");
-$par->push("LETTERS", "LETTERS NEWLINE LETTERS");
 $par->push("LETTERS", "LETTERS NEWLINE");
 $par->build();
 
