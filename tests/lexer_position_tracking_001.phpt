@@ -12,9 +12,8 @@ $par->token("NEWLINE");
 $par->token("LETTER");
 $par->token("' '");
 $par->push("START", "LETTERS");
-$prod_0 = $par->push("LETTERS", "LETTER");
+$prod_0 = $par->push("LETTERS", "LETTER | NEWLINE");
 $prod_1 = $par->push("LETTERS", "LETTERS LETTER");
-$par->push("LETTERS", "LETTERS NEWLINE LETTER");
 $par->build();
 
 
