@@ -1350,6 +1350,33 @@ _parser_reset(INTERNAL_FUNCTION_PARAMETERS, zend_class_entry *ce) noexcept
 }
 /* }}} */
 
+template <typename parser_obj_type> long
+_parser_rule_rhs_count(INTERNAL_FUNCTION_PARAMETERS, zend_class_entry *ce) noexcept
+{/*{{{*/
+	parser_obj_type *zppo;
+	zval *me;
+	zend_long idx;
+
+	if(zend_parse_method_parameters(ZEND_NUM_ARGS(), getThis(), "Ol", &me, ce, &idx) == FAILURE) {
+		return 0;
+	}
+
+	zppo = _php_parle_parser_fetch_zobj<parser_obj_type>(Z_OBJ_P(me));
+	auto &par = *zppo->par;
+
+	try
+	{
+		return par.sm._rules.at(idx).second.size();
+	}
+	catch (const std::exception &e)
+	{
+		php_parle_rethrow_from_cpp(ParleParserException_ce, e.what(), 0);
+	}
+
+	return 0;
+}
+/* }}} */
+
 /* {{{ public void Parser::reset(int $tokenId) */
 PHP_METHOD(ParleParser, reset)
 {
@@ -1361,6 +1388,20 @@ PHP_METHOD(ParleParser, reset)
 PHP_METHOD(ParleRParser, reset)
 {
 	_parser_reset<ze_parle_rparser_obj>(INTERNAL_FUNCTION_PARAM_PASSTHRU, ParleRParser_ce);
+}
+/* }}} */
+
+/* {{{ public int Parser::rule_rhs_count(int $idx) */
+PHP_METHOD(ParleParser, rule_rhs_count)
+{
+	RETURN_LONG(_parser_rule_rhs_count<ze_parle_parser_obj>(INTERNAL_FUNCTION_PARAM_PASSTHRU, ParleParser_ce));
+}
+/* }}} */
+
+/* {{{ public int RParser::rule_rhs_count(int $idx) */
+PHP_METHOD(ParleRParser, rule_rhs_count)
+{
+	RETURN_LONG(_parser_rule_rhs_count<ze_parle_rparser_obj>(INTERNAL_FUNCTION_PARAM_PASSTHRU, ParleParser_ce));
 }
 /* }}} */
 
@@ -1549,6 +1590,10 @@ ZEND_END_ARG_INFO();
 PARLE_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(arginfo_parle_stack_size, 0, 0, IS_LONG, 0)
 ZEND_END_ARG_INFO();
 
+PARLE_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(arginfo_parle_parser_rule_rhs_count, 0, 1, IS_LONG, 0)
+	ZEND_ARG_TYPE_INFO(0, idx, IS_LONG, 0)
+ZEND_END_ARG_INFO();
+
 #undef PARLE_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX
 /* }}} */
 
@@ -1630,6 +1675,7 @@ const zend_function_entry ParleRParser_methods[] = {
 	PHP_ME(ParleRParser, trace, arginfo_parle_parser_trace, ZEND_ACC_PUBLIC)
 	PHP_ME(ParleRParser, errorInfo, arginfo_parle_parser_errorinfo, ZEND_ACC_PUBLIC)
 	PHP_ME(ParleRParser, reset, arginfo_parle_parser_reset, ZEND_ACC_PUBLIC)
+	PHP_ME(ParleRParser, rule_rhs_count, arginfo_parle_parser_rule_rhs_count, ZEND_ACC_PUBLIC)
 	PHP_FE_END
 };
 
