@@ -22,6 +22,7 @@
 	<license uri="http://opensource.org/licenses/BSD-2-Clause">BSD 2-clause</license>
 	<notes>
 		- Update the bundled parsertl/lexertl libraries (Ben Hanson)
+		- If the grammar ambiquity is detected, parser will now throw an exception
 	</notes>
 	<contents>
 		<dir name="/">
