@@ -1359,7 +1359,8 @@ _parser_sigil_count(INTERNAL_FUNCTION_PARAMETERS, zend_class_entry *ce) noexcept
 
 	try
 	{
-		return par.sm._rules.at(par.results.entry.param).second.size();
+		return static_cast<long>(par.sm._rules.
+			at(par.results.entry.param).second.size());
 	}
 	catch (const std::exception &e)
 	{
@@ -1384,15 +1385,15 @@ PHP_METHOD(ParleRParser, reset)
 }
 /* }}} */
 
-/* {{{ public int Parser::sigil_count() */
-PHP_METHOD(ParleParser, sigil_count)
+/* {{{ public int Parser::sigilCount() */
+PHP_METHOD(ParleParser, sigilCount)
 {
 	RETURN_LONG(_parser_sigil_count<ze_parle_parser_obj>(INTERNAL_FUNCTION_PARAM_PASSTHRU, ParleParser_ce));
 }
 /* }}} */
 
-/* {{{ public int RParser::sigil_count() */
-PHP_METHOD(ParleRParser, sigil_count)
+/* {{{ public int RParser::sigilCount() */
+PHP_METHOD(ParleRParser, sigilCount)
 {
 	RETURN_LONG(_parser_sigil_count<ze_parle_rparser_obj>(INTERNAL_FUNCTION_PARAM_PASSTHRU, ParleParser_ce));
 }
@@ -1647,6 +1648,7 @@ const zend_function_entry ParleParser_methods[] = {
 	PHP_ME(ParleParser, trace, arginfo_parle_parser_trace, ZEND_ACC_PUBLIC)
 	PHP_ME(ParleParser, errorInfo, arginfo_parle_parser_errorinfo, ZEND_ACC_PUBLIC)
 	PHP_ME(ParleParser, reset, arginfo_parle_parser_reset, ZEND_ACC_PUBLIC)
+	PHP_ME(ParleRParser, sigilCount, arginfo_parle_parser_sigil_count, ZEND_ACC_PUBLIC)
 	PHP_FE_END
 };
 
@@ -1667,7 +1669,7 @@ const zend_function_entry ParleRParser_methods[] = {
 	PHP_ME(ParleRParser, trace, arginfo_parle_parser_trace, ZEND_ACC_PUBLIC)
 	PHP_ME(ParleRParser, errorInfo, arginfo_parle_parser_errorinfo, ZEND_ACC_PUBLIC)
 	PHP_ME(ParleRParser, reset, arginfo_parle_parser_reset, ZEND_ACC_PUBLIC)
-	PHP_ME(ParleRParser, sigil_count, arginfo_parle_parser_sigil_count, ZEND_ACC_PUBLIC)
+	PHP_ME(ParleRParser, sigilCount, arginfo_parle_parser_sigil_count, ZEND_ACC_PUBLIC)
 	PHP_FE_END
 };
 
