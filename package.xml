@@ -10,6 +10,11 @@
 		<email>ab@php.net</email>
 		<active>yes</active>
 	</lead>
+	<contributor>
+		<name>Ben Hanson</name>
+		<email>benhanson2@icqmail.com</email>
+		<active>yes</active>
+	</contributor>
 	<date>2022-04-14</date>
 	<version>
 		<release>0.8.4</release>
@@ -43,7 +48,7 @@
 				</dir>
 				<dir name="parsertl14">
 					<file role="doc" name="README.md"/>
-					<dir name="include>
+					<dir name="include">
 						<dir name="parsertl">
 							<file role="src" name="bison_lookup.hpp"/>
 							<file role="src" name="debug.hpp"/>
