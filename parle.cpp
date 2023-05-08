@@ -1087,10 +1087,12 @@ _parser_sigil_name(INTERNAL_FUNCTION_PARAMETERS, zend_class_entry *ce) noexcept
 	try {
 		const std::size_t id = par.sm._rules.
 			at(par.results.entry.param).second[idx];
-		parle::string name = par.rules.name_from_token_id(id);
+		parle::string name;
 		std::string r8;
 
-		if (name.empty())
+		if (id < par.rules.terminals_count())
+			name = par.rules.name_from_token_id(id);
+		else
 			name = par.rules.name_from_nt_id(id);
 
 		r8 = PARLE_SCVT_U8(name);
@@ -1413,8 +1415,11 @@ _parser_sigil_count(INTERNAL_FUNCTION_PARAMETERS, zend_class_entry *ce) noexcept
 
 	try
 	{
-		return static_cast<long>(par.sm._rules.
-			at(par.results.entry.param).second.size());
+		if (par.results.entry.action != parsertl::action::reduce)
+			throw std::runtime_error("Not in a reduce state!");
+
+		return static_cast<long>(par.results.production_size(par.sm,
+			par.results.entry.param));
 	}
 	catch (const std::exception &e)
 	{
