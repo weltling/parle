@@ -734,12 +734,18 @@ namespace parsertl
 
         void terminals(string_vector& vec_) const
         {
+            vec_.clear();
             vec_.resize(_terminals.size());
 
             for (const auto& pair_ : _terminals)
             {
                 vec_[pair_.second] = pair_.first;
             }
+        }
+
+        std::size_t terminals_count() const
+        {
+            return _terminals.size();
         }
 
         void non_terminals(string_vector& vec_) const
@@ -754,8 +760,14 @@ namespace parsertl
             }
         }
 
+        std::size_t non_terminals_count() const
+        {
+            return _non_terminals.size();
+        }
+
         void symbols(string_vector& vec_) const
         {
+            vec_.clear();
             terminals(vec_);
             non_terminals(vec_);
         }
