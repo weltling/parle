@@ -1062,6 +1062,60 @@ PHP_METHOD(ParleRParser, sigil)
 /* }}} */
 
 template <typename parser_obj_type> void
+_parser_sigil_name(INTERNAL_FUNCTION_PARAMETERS, zend_class_entry *ce) noexcept
+{/*{{{*/
+	parser_obj_type *zppo;
+	zval *me;
+	zend_long idx = 0;
+
+	if(zend_parse_method_parameters(ZEND_NUM_ARGS(), getThis(), "O|l", &me, ce, &idx) == FAILURE) {
+		return;
+	}
+
+	zppo = _php_parle_parser_fetch_zobj<parser_obj_type>(Z_OBJ_P(me));
+
+	auto &par = *zppo->par;
+
+	if (idx < Z_L(0) ||
+		par.productions.size() - par.results.production_size(par.sm, par.results.entry.param) + static_cast<size_t>(idx) >= par.productions.size()) {
+		zend_throw_exception_ex(ParleParserException_ce, 0, "Invalid index " ZEND_LONG_FMT, idx);
+		return;
+	/*} else if (par.sm._rules[par.results.entry.param].second.empty()) {
+		RETURN_NULL();*/
+	}
+
+	try {
+		const std::size_t id = par.sm._rules.
+			at(par.results.entry.param).second[idx];
+		parle::string name = par.rules.name_from_token_id(id);
+		std::string r8;
+
+		if (name.empty())
+			name = par.rules.name_from_nt_id(id);
+
+		r8 = PARLE_SCVT_U8(name);
+		RETURN_STRINGL(r8.c_str(), r8.size());
+	} catch (const std::exception &e) {
+		php_parle_rethrow_from_cpp(ParleParserException_ce, e.what(), 0);
+	}
+}
+/* }}} */
+
+/* {{{ public string Parser::sigilName(int $idx) */
+PHP_METHOD(ParleParser, sigilName)
+{
+	_parser_sigil_name<ze_parle_parser_obj>(INTERNAL_FUNCTION_PARAM_PASSTHRU, ParleParser_ce);
+}
+/* }}} */
+
+/* {{{ public string RParser::sigilName(int $idx) */
+PHP_METHOD(ParleRParser, sigilName)
+{
+	_parser_sigil_name<ze_parle_rparser_obj>(INTERNAL_FUNCTION_PARAM_PASSTHRU, ParleRParser_ce);
+}
+/* }}} */
+
+template <typename parser_obj_type> void
 _parser_advance(INTERNAL_FUNCTION_PARAMETERS, zend_class_entry *ce) noexcept
 {/*{{{*/
 	parser_obj_type *zppo;
@@ -1545,6 +1599,10 @@ PARLE_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(arginfo_parle_parser_sigil, 0, 0, IS_ST
 	ZEND_ARG_TYPE_INFO(0, idx, IS_LONG, 0)
 ZEND_END_ARG_INFO();
 
+PARLE_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(arginfo_parle_parser_sigil_name, 0, 0, IS_STRING, 0)
+	ZEND_ARG_TYPE_INFO(0, idx, IS_LONG, 0)
+ZEND_END_ARG_INFO();
+
 ZEND_BEGIN_ARG_INFO_EX(arginfo_parle_parser_advance, 0, 0, 0)
 ZEND_END_ARG_INFO();
 
@@ -1642,6 +1700,7 @@ const zend_function_entry ParleParser_methods[] = {
 	PHP_ME(ParleParser, validate, arginfo_parle_parser_validate, ZEND_ACC_PUBLIC)
 	PHP_ME(ParleParser, tokenId, arginfo_parle_parser_tokenid, ZEND_ACC_PUBLIC)
 	PHP_ME(ParleParser, sigil, arginfo_parle_parser_sigil, ZEND_ACC_PUBLIC)
+	PHP_ME(ParleParser, sigilName, arginfo_parle_parser_sigil_name, ZEND_ACC_PUBLIC)
 	PHP_ME(ParleParser, advance, arginfo_parle_parser_advance, ZEND_ACC_PUBLIC)
 	PHP_ME(ParleParser, consume, arginfo_parle_parser_consume, ZEND_ACC_PUBLIC)
 	PHP_ME(ParleParser, dump, arginfo_parle_parser_dump, ZEND_ACC_PUBLIC)
@@ -1663,6 +1722,7 @@ const zend_function_entry ParleRParser_methods[] = {
 	PHP_ME(ParleRParser, validate, arginfo_parle_rparser_validate, ZEND_ACC_PUBLIC)
 	PHP_ME(ParleRParser, tokenId, arginfo_parle_parser_tokenid, ZEND_ACC_PUBLIC)
 	PHP_ME(ParleRParser, sigil, arginfo_parle_parser_sigil, ZEND_ACC_PUBLIC)
+	PHP_ME(ParleRParser, sigilName, arginfo_parle_parser_sigil_name, ZEND_ACC_PUBLIC)
 	PHP_ME(ParleRParser, advance, arginfo_parle_parser_advance, ZEND_ACC_PUBLIC)
 	PHP_ME(ParleRParser, consume, arginfo_parle_rparser_consume, ZEND_ACC_PUBLIC)
 	PHP_ME(ParleRParser, dump, arginfo_parle_parser_dump, ZEND_ACC_PUBLIC)
