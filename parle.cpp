@@ -1534,7 +1534,7 @@ PHP_METHOD(ParleStack, push)
 PARLE_BEGIN_ARG_WITH_RETURN_OBJ_INFO_EX(arginfo_parle_lexer_gettoken, 0, 0, Parle\\Token, 0)
 ZEND_END_ARG_INFO();
 
-PARLE_BEGIN_ARG_WITH_RETURN_OBJ_INFO_EX(arginfo_parle_parser_sigil_info, 0, 0, Parle\\SigilInfo, 0)
+PARLE_BEGIN_ARG_WITH_RETURN_OBJ_INFO_EX(arginfo_parle_parser_sigil_info, 0, 1, Parle\\SigilInfo, 0)
 	ZEND_ARG_TYPE_INFO(0, idx, IS_LONG, 0)
 ZEND_END_ARG_INFO();
 
@@ -2930,7 +2930,7 @@ PHP_MINIT_FUNCTION(parle)
 	zend_declare_property_null(ParleToken_ce, "value", sizeof("value")-1, ZEND_ACC_PUBLIC);
 
 	zend_declare_property_bool(ParleSigilInfo_ce, "token", sizeof("token")-1, static_cast<zend_bool>(false), ZEND_ACC_PUBLIC);
-	zend_declare_property_null(ParleToken_ce, "name", sizeof("name")-1, ZEND_ACC_PUBLIC);
+	zend_declare_property_null(ParleSigilInfo_ce, "name", sizeof("name")-1, ZEND_ACC_PUBLIC);
 
 	auto init_lexer_consts_and_props = [](zend_class_entry *ce) {
 #define DECL_CONST(name, val) zend_declare_class_constant_long(ce, name, sizeof(name) - 1, val);
