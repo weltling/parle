@@ -169,7 +169,9 @@
 		</required>
 	</dependencies>
 	<providesextension>parle</providesextension>
-	<extsrcrelease />
+	<extsrcrelease>
+		<configureoption name="enable-parle-utf32" default="no" prompt="Enable internal UTF-32 support in parle" />
+	</extsrcrelease>
 	<changelog>
 		<release>
 			<date>2022-04-14</date>
