@@ -1103,7 +1103,7 @@ _parser_sigil_info(INTERNAL_FUNCTION_PARAMETERS, zend_class_entry *ce) noexcept
 		r8 = PARLE_SCVT_U8(name);
 
 		object_init_ex(return_value, ParleSigilInfo_ce);
-		add_property_long_ex(return_value, "token", sizeof("token")-1, static_cast<zend_bool>(token));
+		add_property_bool_ex(return_value, "token", sizeof("token")-1, static_cast<zend_bool>(token));
 #if PHP_MAJOR_VERSION > 7 || PHP_MAJOR_VERSION >= 7 && PHP_MINOR_VERSION >= 2
 		add_property_stringl_ex(return_value, "name", sizeof("name")-1, r8.c_str(), r8.size());
 #else
