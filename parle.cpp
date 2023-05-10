@@ -1065,25 +1065,27 @@ PHP_METHOD(ParleRParser, sigil)
 template <typename parser_obj_type> void
 _parser_sigil_info(INTERNAL_FUNCTION_PARAMETERS, zend_class_entry *ce) noexcept
 {/*{{{*/
-	parser_obj_type *zppo;
-	zval *me;
-	zend_long idx = 0;
-
-	if(zend_parse_method_parameters(ZEND_NUM_ARGS(), getThis(), "O", &me, ce, &idx) == FAILURE) {
-		return;
-	}
-
-	zppo = _php_parle_parser_fetch_zobj<parser_obj_type>(Z_OBJ_P(me));
-
-	auto &par = *zppo->par;
-
-	if (idx < Z_L(0) ||
-		par.productions.size() - par.results.production_size(par.sm, par.results.entry.param) + static_cast<size_t>(idx) >= par.productions.size()) {
-		zend_throw_exception_ex(ParleParserException_ce, 0, "Invalid index " ZEND_LONG_FMT, idx);
-		return;
-	}
-
 	try {
+		parser_obj_type *zppo;
+		zval *me;
+		zend_long idx = 0;
+
+		if (zend_parse_method_parameters(ZEND_NUM_ARGS(), getThis(), "O|l", &me, ce, &idx) == FAILURE) {
+			php_parle_rethrow_from_cpp(ParleParserException_ce,
+				"zend_parse_method_parameters failed", 0);
+			return;
+		}
+
+		zppo = _php_parle_parser_fetch_zobj<parser_obj_type>(Z_OBJ_P(me));
+
+		auto &par = *zppo->par;
+
+		if (idx < Z_L(0) ||
+			par.productions.size() - par.results.production_size(par.sm, par.results.entry.param) + static_cast<size_t>(idx) >= par.productions.size()) {
+			zend_throw_exception_ex(ParleParserException_ce, 0, "Invalid index " ZEND_LONG_FMT, idx);
+			return;
+		}
+
 		const std::size_t id = par.sm._rules.
 			at(par.results.entry.param).second[idx];
 		bool token = false;
@@ -1103,9 +1105,9 @@ _parser_sigil_info(INTERNAL_FUNCTION_PARAMETERS, zend_class_entry *ce) noexcept
 		object_init_ex(return_value, ParleSigilInfo_ce);
 		add_property_long_ex(return_value, "token", sizeof("token")-1, static_cast<zend_bool>(token));
 #if PHP_MAJOR_VERSION > 7 || PHP_MAJOR_VERSION >= 7 && PHP_MINOR_VERSION >= 2
-		add_property_stringl_ex(return_value, "name", sizeof("value")-1, r8.c_str(), r8.size());
+		add_property_stringl_ex(return_value, "name", sizeof("name")-1, r8.c_str(), r8.size());
 #else
-		add_property_stringl_ex(return_value, "name", sizeof("value")-1, (char *)r8.c_str(), r8.size());
+		add_property_stringl_ex(return_value, "name", sizeof("name")-1, (char *)r8.c_str(), r8.size());
 #endif
 
 	} catch (const std::exception &e) {
@@ -1114,14 +1116,14 @@ _parser_sigil_info(INTERNAL_FUNCTION_PARAMETERS, zend_class_entry *ce) noexcept
 }
 /* }}} */
 
-/* {{{ public string Parser::sigilInfo(int $idx) */
+/* {{{ public Parser\SigilInfo Parser::sigilInfo(int $idx) */
 PHP_METHOD(ParleParser, sigilInfo)
 {
 	_parser_sigil_info<ze_parle_parser_obj>(INTERNAL_FUNCTION_PARAM_PASSTHRU, ParleParser_ce);
 }
 /* }}} */
 
-/* {{{ public string RParser::sigilInfo(int $idx) */
+/* {{{ public Parser\SigilInfo RParser::sigilInfo(int $idx) */
 PHP_METHOD(ParleRParser, sigilInfo)
 {
 	_parser_sigil_info<ze_parle_rparser_obj>(INTERNAL_FUNCTION_PARAM_PASSTHRU, ParleRParser_ce);
@@ -1421,8 +1423,13 @@ template <typename parser_obj_type> long
 _parser_sigil_count(INTERNAL_FUNCTION_PARAMETERS, zend_class_entry *ce) noexcept
 {/*{{{*/
 	zval *me;
+
+	if(zend_parse_method_parameters(ZEND_NUM_ARGS(), getThis(), "O|l", &me, ce) == FAILURE) {
+		return 0;
+	}
+
 	parser_obj_type *zppo = _php_parle_parser_fetch_zobj<parser_obj_type>(Z_OBJ_P(me));
-	auto &par = *zppo->par;
+	auto& par = *zppo->par;
 
 	try
 	{
