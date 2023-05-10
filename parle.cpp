@@ -1071,8 +1071,6 @@ _parser_sigil_info(INTERNAL_FUNCTION_PARAMETERS, zend_class_entry *ce) noexcept
 		zend_long idx = 0;
 
 		if (zend_parse_method_parameters(ZEND_NUM_ARGS(), getThis(), "O|l", &me, ce, &idx) == FAILURE) {
-			php_parle_rethrow_from_cpp(ParleParserException_ce,
-				"zend_parse_method_parameters failed", 0);
 			return;
 		}
 
@@ -1419,13 +1417,13 @@ _parser_reset(INTERNAL_FUNCTION_PARAMETERS, zend_class_entry *ce) noexcept
 }
 /* }}} */
 
-template <typename parser_obj_type> long
+template <typename parser_obj_type> void
 _parser_sigil_count(INTERNAL_FUNCTION_PARAMETERS, zend_class_entry *ce) noexcept
 {/*{{{*/
 	zval *me;
 
-	if(zend_parse_method_parameters(ZEND_NUM_ARGS(), getThis(), "O|l", &me, ce) == FAILURE) {
-		return 0;
+	if(zend_parse_method_parameters(ZEND_NUM_ARGS(), getThis(), "O", &me, ce) == FAILURE) {
+		return;
 	}
 
 	parser_obj_type *zppo = _php_parle_parser_fetch_zobj<parser_obj_type>(Z_OBJ_P(me));
@@ -1436,7 +1434,7 @@ _parser_sigil_count(INTERNAL_FUNCTION_PARAMETERS, zend_class_entry *ce) noexcept
 		if (par.results.entry.action != parsertl::action::reduce)
 			throw std::runtime_error("Not in a reduce state!");
 
-		return static_cast<long>(par.results.production_size(par.sm,
+		RETURN_LONG(par.results.production_size(par.sm,
 			par.results.entry.param));
 	}
 	catch (const std::exception &e)
@@ -1444,7 +1442,7 @@ _parser_sigil_count(INTERNAL_FUNCTION_PARAMETERS, zend_class_entry *ce) noexcept
 		php_parle_rethrow_from_cpp(ParleParserException_ce, e.what(), 0);
 	}
 
-	return 0;
+	return;
 }
 /* }}} */
 
@@ -1465,14 +1463,14 @@ PHP_METHOD(ParleRParser, reset)
 /* {{{ public int Parser::sigilCount() */
 PHP_METHOD(ParleParser, sigilCount)
 {
-	RETURN_LONG(_parser_sigil_count<ze_parle_parser_obj>(INTERNAL_FUNCTION_PARAM_PASSTHRU, ParleParser_ce));
+	_parser_sigil_count<ze_parle_parser_obj>(INTERNAL_FUNCTION_PARAM_PASSTHRU, ParleParser_ce);
 }
 /* }}} */
 
 /* {{{ public int RParser::sigilCount() */
 PHP_METHOD(ParleRParser, sigilCount)
 {
-	RETURN_LONG(_parser_sigil_count<ze_parle_rparser_obj>(INTERNAL_FUNCTION_PARAM_PASSTHRU, ParleParser_ce));
+	_parser_sigil_count<ze_parle_rparser_obj>(INTERNAL_FUNCTION_PARAM_PASSTHRU, ParleParser_ce);
 }
 /* }}} */
 
