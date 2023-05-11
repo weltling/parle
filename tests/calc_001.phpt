@@ -12,7 +12,8 @@ use Parle\Token;
 
 $p = new RParser;
 $p->token("INTEGER");
-$p->left("'+' '-' '*' '/'");
+$p->left("'+' '-'");
+$p->left("'*' '/'");
 
 $p->push("start", "exp");
 $add_idx = $p->push("exp", "exp '+' exp");
