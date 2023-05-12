@@ -23,7 +23,7 @@ $p->build();
 $lex = new Lexer;
 //$lex->push("[ -\\x10ffff]+", $p->tokenId("WORD"));
 $lex->push("[\p{L}\p{P}]+", $p->tokenId("WORD"));
-$lex->push("[\p{Z}\p{Zl}\p{Zp}\p{Zs}\s]+", Token::SKIP);
+$lex->push(".", Token::SKIP);
 $lex->build();
 
 /* UTF-8 */
