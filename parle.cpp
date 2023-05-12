@@ -80,7 +80,6 @@ static zend_class_entry *ParleLexerException_ce;
 static zend_class_entry *ParleParserException_ce;
 static zend_class_entry *ParleStackException_ce;
 static zend_class_entry *ParleToken_ce;
-static zend_class_entry *ParleSigilInfo_ce;
 static zend_class_entry *ParleErrorInfo_ce;
 /* }}} */
 
@@ -1063,7 +1062,7 @@ PHP_METHOD(ParleRParser, sigil)
 /* }}} */
 
 template <typename parser_obj_type> void
-_parser_sigil_info(INTERNAL_FUNCTION_PARAMETERS, zend_class_entry *ce) noexcept
+_parser_sigil_name(INTERNAL_FUNCTION_PARAMETERS, zend_class_entry *ce) noexcept
 {/*{{{*/
 	try {
 		parser_obj_type *zppo;
@@ -1084,47 +1083,41 @@ _parser_sigil_info(INTERNAL_FUNCTION_PARAMETERS, zend_class_entry *ce) noexcept
 			return;
 		}
 
-		const std::size_t id = par.sm._rules.
+		std::size_t id = par.sm._rules.
 			at(par.results.entry.param).second[idx];
-		bool token = false;
+		bool token = id < par.rules.terminals_count();
 		parle::string name;
 		std::string r8;
 
-		if (id < par.rules.terminals_count())
+		if (token)
 		{
 			name = par.rules.name_from_token_id(id);
-			token = true;
 		}
 		else
+		{
+			id -= par.rules.terminals_count();
 			name = par.rules.name_from_nt_id(id);
+		}
 
 		r8 = PARLE_SCVT_U8(name);
-
-		object_init_ex(return_value, ParleSigilInfo_ce);
-		add_property_bool_ex(return_value, "token", sizeof("token")-1, static_cast<zend_bool>(token));
-#if PHP_MAJOR_VERSION > 7 || PHP_MAJOR_VERSION >= 7 && PHP_MINOR_VERSION >= 2
-		add_property_stringl_ex(return_value, "name", sizeof("name")-1, r8.c_str(), r8.size());
-#else
-		add_property_stringl_ex(return_value, "name", sizeof("name")-1, (char *)r8.c_str(), r8.size());
-#endif
-
+		RETURN_STRINGL(r8.c_str(), r8.size());
 	} catch (const std::exception &e) {
 		php_parle_rethrow_from_cpp(ParleParserException_ce, e.what(), 0);
 	}
 }
 /* }}} */
 
-/* {{{ public Parser\SigilInfo Parser::sigilInfo(int $idx) */
-PHP_METHOD(ParleParser, sigilInfo)
+/* {{{ public Parser\SigilName Parser::sigilName(int $idx) */
+PHP_METHOD(ParleParser, sigilName)
 {
-	_parser_sigil_info<ze_parle_parser_obj>(INTERNAL_FUNCTION_PARAM_PASSTHRU, ParleParser_ce);
+	_parser_sigil_name<ze_parle_parser_obj>(INTERNAL_FUNCTION_PARAM_PASSTHRU, ParleParser_ce);
 }
 /* }}} */
 
-/* {{{ public Parser\SigilInfo RParser::sigilInfo(int $idx) */
-PHP_METHOD(ParleRParser, sigilInfo)
+/* {{{ public Parser\SigilName RParser::sigilName(int $idx) */
+PHP_METHOD(ParleRParser, sigilName)
 {
-	_parser_sigil_info<ze_parle_rparser_obj>(INTERNAL_FUNCTION_PARAM_PASSTHRU, ParleRParser_ce);
+	_parser_sigil_name<ze_parle_rparser_obj>(INTERNAL_FUNCTION_PARAM_PASSTHRU, ParleRParser_ce);
 }
 /* }}} */
 
@@ -1539,10 +1532,6 @@ PHP_METHOD(ParleStack, push)
 PARLE_BEGIN_ARG_WITH_RETURN_OBJ_INFO_EX(arginfo_parle_lexer_gettoken, 0, 0, Parle\\Token, 0)
 ZEND_END_ARG_INFO();
 
-PARLE_BEGIN_ARG_WITH_RETURN_OBJ_INFO_EX(arginfo_parle_parser_sigil_info, 0, 1, Parle\\SigilInfo, 0)
-	ZEND_ARG_TYPE_INFO(0, idx, IS_LONG, 0)
-ZEND_END_ARG_INFO();
-
 ZEND_BEGIN_ARG_INFO_EX(arginfo_parle_lexer_build, 0, 0, 0)
 ZEND_END_ARG_INFO();
 
@@ -1624,6 +1613,10 @@ PARLE_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(arginfo_parle_parser_sigil, 0, 0, IS_ST
 	ZEND_ARG_TYPE_INFO(0, idx, IS_LONG, 0)
 ZEND_END_ARG_INFO();
 
+PARLE_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(arginfo_parle_parser_sigil_name, 0, 0, IS_STRING, 0)
+	ZEND_ARG_TYPE_INFO(0, idx, IS_LONG, 0)
+ZEND_END_ARG_INFO();
+
 ZEND_BEGIN_ARG_INFO_EX(arginfo_parle_parser_advance, 0, 0, 0)
 ZEND_END_ARG_INFO();
 
@@ -1683,10 +1676,6 @@ const zend_function_entry ParleToken_methods[] = {
 	PHP_FE_END
 };
 
-const zend_function_entry ParleSigilInfo_methods[] = {
-	PHP_FE_END
-};
-
 const zend_function_entry ParleLexer_methods[] = {
 	PHP_ME(ParleLexer, push, arginfo_parle_lexer_push, ZEND_ACC_PUBLIC)
 	PHP_ME(ParleLexer, getToken, arginfo_parle_lexer_gettoken, ZEND_ACC_PUBLIC)
@@ -1725,7 +1714,7 @@ const zend_function_entry ParleParser_methods[] = {
 	PHP_ME(ParleParser, validate, arginfo_parle_parser_validate, ZEND_ACC_PUBLIC)
 	PHP_ME(ParleParser, tokenId, arginfo_parle_parser_tokenid, ZEND_ACC_PUBLIC)
 	PHP_ME(ParleParser, sigil, arginfo_parle_parser_sigil, ZEND_ACC_PUBLIC)
-	PHP_ME(ParleParser, sigilInfo, arginfo_parle_parser_sigil_info, ZEND_ACC_PUBLIC)
+	PHP_ME(ParleParser, sigilName, arginfo_parle_parser_sigil_name, ZEND_ACC_PUBLIC)
 	PHP_ME(ParleParser, advance, arginfo_parle_parser_advance, ZEND_ACC_PUBLIC)
 	PHP_ME(ParleParser, consume, arginfo_parle_parser_consume, ZEND_ACC_PUBLIC)
 	PHP_ME(ParleParser, dump, arginfo_parle_parser_dump, ZEND_ACC_PUBLIC)
@@ -1747,7 +1736,7 @@ const zend_function_entry ParleRParser_methods[] = {
 	PHP_ME(ParleRParser, validate, arginfo_parle_rparser_validate, ZEND_ACC_PUBLIC)
 	PHP_ME(ParleRParser, tokenId, arginfo_parle_parser_tokenid, ZEND_ACC_PUBLIC)
 	PHP_ME(ParleRParser, sigil, arginfo_parle_parser_sigil, ZEND_ACC_PUBLIC)
-	PHP_ME(ParleRParser, sigilInfo, arginfo_parle_parser_sigil_info, ZEND_ACC_PUBLIC)
+	PHP_ME(ParleRParser, sigilName, arginfo_parle_parser_sigil_name, ZEND_ACC_PUBLIC)
 	PHP_ME(ParleRParser, advance, arginfo_parle_parser_advance, ZEND_ACC_PUBLIC)
 	PHP_ME(ParleRParser, consume, arginfo_parle_rparser_consume, ZEND_ACC_PUBLIC)
 	PHP_ME(ParleRParser, dump, arginfo_parle_parser_dump, ZEND_ACC_PUBLIC)
@@ -2923,9 +2912,6 @@ PHP_MINIT_FUNCTION(parle)
 	INIT_CLASS_ENTRY(ce, "Parle\\Token", ParleToken_methods);
 	ParleToken_ce = zend_register_internal_class(&ce);
 
-	INIT_CLASS_ENTRY(ce, "Parle\\SigilInfo", ParleSigilInfo_methods);
-	ParleSigilInfo_ce = zend_register_internal_class(&ce);
-
 #define DECL_CONST(name, val) zend_declare_class_constant_long(ParleToken_ce, name, sizeof(name) - 1, val);
 	DECL_CONST("EOI", Z_L(0))
 	DECL_CONST("UNKNOWN", static_cast<zend_long>(parle::lexer::smatch::npos()));
@@ -2933,9 +2919,6 @@ PHP_MINIT_FUNCTION(parle)
 #undef DECL_CONST
 	zend_declare_property_long(ParleToken_ce, "id", sizeof("id")-1, static_cast<zend_long>(lexertl::smatch::npos()), ZEND_ACC_PUBLIC);
 	zend_declare_property_null(ParleToken_ce, "value", sizeof("value")-1, ZEND_ACC_PUBLIC);
-
-	zend_declare_property_bool(ParleSigilInfo_ce, "token", sizeof("token")-1, static_cast<zend_bool>(false), ZEND_ACC_PUBLIC);
-	zend_declare_property_null(ParleSigilInfo_ce, "name", sizeof("name")-1, ZEND_ACC_PUBLIC);
 
 	auto init_lexer_consts_and_props = [](zend_class_entry *ce) {
 #define DECL_CONST(name, val) zend_declare_class_constant_long(ce, name, sizeof(name) - 1, val);
