@@ -22,7 +22,7 @@ $p->build();
 
 $lex = new Lexer;
 //$lex->push("[ -\\x10ffff]+", $p->tokenId("WORD"));
-$lex->push("[\p{L}\p{P}\p{Lo}]+", $p->tokenId("WORD"));
+$lex->push("[\p{L}\p{P}\p{InCJK_Unified_Ideographs}]+", $p->tokenId("WORD"));
 $lex->push(".", Token::SKIP);
 $lex->build();
 
