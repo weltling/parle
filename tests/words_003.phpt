@@ -36,23 +36,31 @@ $words = array(
 );
 
 foreach ($words as $in) {
-
-	$lex->consume($in);
-
-	$lex->advance();
-	$tok = $lex->getToken();
-
+	$p->consume($in, $lex);
 	$out = array();
-	while (Token::EOI != $tok->id) {
-		if ($tok->id > 0) {
-			$out[] = $tok->value;
+
+	while (Parser::ACTION_ERROR != $p->action && Parser::ACTION_ACCEPT != $p->action) {
+		switch ($p->action) {
+			case Parser::ACTION_ERROR:
+				throw new ParserException("Parser error");
+				break;
+			case Parser::ACTION_REDUCE:
+				switch ($p->reduceId)
+				{
+					case $word_idx:
+						$out[] = $p->sigil(0);
+						break;
+					case $words_idx:
+						$out[] = $p->sigil(1);
+						break;
+				}
 		}
-		$lex->advance();
-		$tok = $lex->getToken();
+
+		$p->advance();
 	}
+
 	var_dump(implode(" ", $out));
 }
-
 
 ?>
 ==DONE==
