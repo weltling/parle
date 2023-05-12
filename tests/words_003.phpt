@@ -22,7 +22,7 @@ $p->build();
 
 $lex = new Lexer;
 //$lex->push("[ -\\x10ffff]+", $p->tokenId("WORD"));
-$lex->push("[\p{L}\p{P}\p{InCJK_Unified_Ideographs_Extension_A}]+", $p->tokenId("WORD"));
+$lex->push("[\p{L}\p{P}\p{Lo}]+", $p->tokenId("WORD"));
 $lex->push(".", Token::SKIP);
 $lex->build();
 
@@ -65,7 +65,7 @@ foreach ($words as $in) {
 ?>
 ==DONE==
 --EXPECT--
-string(37) "füße абракадабра 芬 蘭"
+string(36) "füße абракадабра 芬蘭"
 string(32) "Sah ein Knab' ein Röslein stehn"
 string(79) "Но, чтобы стоять, я должен держаться корней."
 string(22) "Homines sumus nun dei."
