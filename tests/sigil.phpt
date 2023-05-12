@@ -12,7 +12,7 @@ use Parle\SigilToken;
 
 $p = new Parser;
 $p->push("start", "'a' B");
-$p->push("B", "'b'");
+$b_idx = $p->push("B", "'b'");
 $p->build();
 
 $lex = new Lexer;
@@ -26,8 +26,7 @@ $p->consume("a b", $lex);
 while (Parser::ACTION_ERROR != $p->action && Parser::ACTION_ACCEPT != $p->action) {
 	switch ($p->action) {
 		case Parser::ACTION_REDUCE:
-			echo $p->sigilInfo(0)->name . "\n";
-			echo $p->sigilInfo(0)->token . "\n";
+			echo $p->sigilName(($p->reduceId == $b_idx) ? 0 : 1) . "\n";
 			echo $p->sigilCount() . "\n";
 			break;	
 	}
@@ -39,8 +38,6 @@ while (Parser::ACTION_ERROR != $p->action && Parser::ACTION_ACCEPT != $p->action
 --EXPECT--
 'b'
 1
-1
-'a'
-1
+B
 2
 ==DONE==
