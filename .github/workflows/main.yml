@@ -18,7 +18,7 @@ jobs:
         gcc-versions: ['9', '11', '12']
     runs-on: ${{ matrix.operating-system }}
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - uses: egor-tensin/setup-gcc@v1
         with:
           version: ${{ matrix.gcc-versions }}
@@ -31,4 +31,33 @@ jobs:
           CC=gcc-${{ matrix.gcc-versions }} CXX=g++-${{ matrix.gcc-versions }} ./configure $UTF32_OPT
       - run: make
       - run: make test TESTS="-P -q --show-diff"
-
+  pecl:
+    runs-on: ubuntu-latest
+    container: php:8.2-cli-alpine
+    steps:
+      - name: Install required system packages
+        run: apk add --update $PHPIZE_DEPS
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Create temporary directory
+        id: temp-dir
+        run: printf "path=%s\n" "$(mktemp -d)" >>"$GITHUB_OUTPUT"
+      - name: Create package
+        run: |
+          cd "${{ steps.temp-dir.outputs.path }}"
+          pecl package "$GITHUB_WORKSPACE/package.xml"
+      - name: Compile package
+        run: printf '' | pecl install ${{ steps.temp-dir.outputs.path }}/parle-*.tgz
+      - name: Enable extension
+        run: docker-php-ext-enable parle
+      - name: Check for PHP startup warnings
+        run: |
+          php -d display_errors=stderr -d display_startup_errors=1 -d error_reporting=-1 -r ';' 2>/tmp/php-startup-warnings
+          if [ -s /tmp/php-startup-warnings ]; then
+            echo 'The PHP extension was successfully installed, but PHP raised these warnings:' >&2
+            cat /tmp/php-startup-warnings >&2
+            exit 1
+          fi
+          echo "PHP didn't raise any warnings at startup."
+      - name: Inspect extension
+        run: php --ri parle
