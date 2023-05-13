@@ -2302,7 +2302,7 @@ php_parle_par_read_property(zend_object *object, zend_string *member, int type, 
 
 	retval = rv;
 	if (PARLE_IS_PROP("action")) {
-		ZVAL_LONG(retval, static_cast<long>(par.results.entry.action));
+		ZVAL_LONG(retval, static_cast<zend_long>(par.results.entry.action));
 	} else if (PARLE_IS_PROP("reduceId")) {
 		try {
 			ZVAL_LONG(retval, par.results.reduce_id());
@@ -2436,7 +2436,7 @@ php_parle_par_get_properties(zend_object *object) noexcept
 
 	auto &par = *zppo->par;
 
-	ZVAL_LONG(&zv, static_cast<long>(par.results.entry.action));
+	ZVAL_LONG(&zv, static_cast<zend_long>(par.results.entry.action));
 	zend_hash_str_update(props, "action", sizeof("action")-1, &zv);
 	if (par.results.entry.action == parsertl::action::reduce) {
 		ZVAL_LONG(&zv, par.results.reduce_id());
