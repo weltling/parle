@@ -31,6 +31,13 @@ Released versions can be installed using the ```pecl``` command:
 pecl install parle-beta
 ```
 
+By default, `pecl` will ask about enabling the UTF-32 support. For an unattended installation, the below can be considered:
+
+```
+echo | pecl install parle-beta
+```
+
+In this case, any package related question will be answered automatically with their default values.
 
 ## From git
 
