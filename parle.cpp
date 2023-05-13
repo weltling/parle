@@ -1463,7 +1463,7 @@ PHP_METHOD(ParleParser, sigilCount)
 /* {{{ public int RParser::sigilCount() */
 PHP_METHOD(ParleRParser, sigilCount)
 {
-	_parser_sigil_count<ze_parle_rparser_obj>(INTERNAL_FUNCTION_PARAM_PASSTHRU, ParleParser_ce);
+	_parser_sigil_count<ze_parle_rparser_obj>(INTERNAL_FUNCTION_PARAM_PASSTHRU, ParleRParser_ce);
 }
 /* }}} */
 
@@ -1721,7 +1721,7 @@ const zend_function_entry ParleParser_methods[] = {
 	PHP_ME(ParleParser, trace, arginfo_parle_parser_trace, ZEND_ACC_PUBLIC)
 	PHP_ME(ParleParser, errorInfo, arginfo_parle_parser_errorinfo, ZEND_ACC_PUBLIC)
 	PHP_ME(ParleParser, reset, arginfo_parle_parser_reset, ZEND_ACC_PUBLIC)
-	PHP_ME(ParleRParser, sigilCount, arginfo_parle_parser_sigil_count, ZEND_ACC_PUBLIC)
+	PHP_ME(ParleParser, sigilCount, arginfo_parle_parser_sigil_count, ZEND_ACC_PUBLIC)
 	PHP_FE_END
 };
 
