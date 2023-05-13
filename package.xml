@@ -29,6 +29,8 @@
 	<notes>
 		- Update the bundled parsertl/lexertl libraries (Ben Hanson)
 		- If the grammar ambiquity is detected, parser will now throw an exception
+		- Implemented Parser::sigilCount() (Ben Hanson)
+		- Implement Parser::sigilName() (Ben Hanson)
 	</notes>
 	<contents>
 		<dir name="/">
@@ -155,6 +157,7 @@
 				<file role="test" name="words_001.phpt"/>
 				<file role="test" name="words_002.phpt"/>
 				<file role="test" name="words_003.phpt"/>
+				<file role="test" name="sigil.phpt"/>
 			</dir>
 		</dir>
 	</contents>
