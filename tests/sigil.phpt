@@ -8,7 +8,6 @@ Test sigil functions
 use Parle\Parser;
 use Parle\Lexer;
 use Parle\Token;
-use Parle\SigilToken;
 
 $p = new Parser;
 $p->push("start", "'a' B");
