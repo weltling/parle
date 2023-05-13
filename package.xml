@@ -18,8 +18,8 @@
 	</contributor>
 	<date>2023-05-13</date>
 	<version>
-		<release>0.8.4</release>
-		<api>0.8.4</api>
+		<release>0.8.5</release>
+		<api>0.8.5</api>
 	</version>
 	<stability>
 		<release>beta</release>
@@ -27,11 +27,7 @@
 	</stability>
 	<license uri="http://opensource.org/licenses/BSD-2-Clause">BSD 2-clause</license>
 	<notes>
-		- Update the bundled parsertl/lexertl libraries (Ben Hanson)
-		- If the grammar ambiquity is detected, parser will now throw an exception
-		- Configure option --enable-parle-utf32 can be passed during pecl install (Michele Locati)
-		- Implemented Parser::sigilCount() (Ben Hanson)
-		- Implement Parser::sigilName() (Ben Hanson)
+		- TODO
 	</notes>
 	<contents>
 		<dir name="/">
@@ -178,6 +174,25 @@
 		<configureoption name="enable-parle-utf32" default="no" prompt="Enable internal UTF-32 support in parle" />
 	</extsrcrelease>
 	<changelog>
+		<release>
+			<date>2023-05-13</date>
+			<version>
+				<release>0.8.4</release>
+				<api>0.8.4</api>
+			</version>
+			<stability>
+				<release>beta</release>
+				<api>beta</api>
+			</stability>
+			<license uri="http://opensource.org/licenses/BSD-2-Clause">BSD 2-clause</license>
+			<notes>
+				- Update the bundled parsertl/lexertl libraries (Ben Hanson)
+				- If the grammar ambiquity is detected, parser will now throw an exception
+				- Configure option --enable-parle-utf32 can be passed during pecl install (Michele Locati)
+				- Implemented Parser::sigilCount() (Ben Hanson)
+				- Implement Parser::sigilName() (Ben Hanson)
+			</notes>
+		</release>
 		<release>
 			<date>2022-04-14</date>
 			<version>
