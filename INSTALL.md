@@ -3,7 +3,7 @@ INSTALLATION
 
 # Pre-requisites
 
-* PHP version 7.0 and above.
+* PHP version 7.4 and above.
 * A [C++14](http://en.cppreference.com/w/cpp/compiler_support) capable compiler is required. At least clang-5.0, GCC 5.0 and VS2015 are known to successfully build the extension.
 
 
@@ -12,6 +12,9 @@ INSTALLATION
 ## Windows
 
 DLL for Windows can be downloaded for the [PECL page](https://pecl.php.net/package/parle).
+
+If no DLL is available or there's another reason to build, please follow the [wiki](https://wiki.php.net/internals/windows/stepbystepbuild_sdk_2#building_pecl_extensions)
+instructions on how to setup the [php-sdk](https://github.com/php/php-sdk-binary-tools) and build an extension.
 
 ## RPM
 
