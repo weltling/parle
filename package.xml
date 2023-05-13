@@ -16,7 +16,7 @@
 		<email>benhanson2@icqmail.com</email>
 		<active>yes</active>
 	</contributor>
-	<date>2022-04-14</date>
+	<date>2023-05-13</date>
 	<version>
 		<release>0.8.4</release>
 		<api>0.8.4</api>
@@ -29,7 +29,7 @@
 	<notes>
 		- Update the bundled parsertl/lexertl libraries (Ben Hanson)
 		- If the grammar ambiquity is detected, parser will now throw an exception
-		- Configure option --enable-parle-utf32 can be passed with pecl install (Michele Locati)
+		- Configure option --enable-parle-utf32 can be passed during pecl install (Michele Locati)
 		- Implemented Parser::sigilCount() (Ben Hanson)
 		- Implement Parser::sigilName() (Ben Hanson)
 	</notes>
