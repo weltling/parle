@@ -1027,12 +1027,13 @@ _parser_sigil(INTERNAL_FUNCTION_PARAMETERS, zend_class_entry *ce) noexcept
 
 	auto &par = *zppo->par;
 
-	if (idx < Z_L(0) ||
+	if (par.results.entry.action != parsertl::action::reduce) {
+		zend_throw_exception_ex(ParleParserException_ce, 0, "Not in a reduce state!");
+		return;
+	} else if (idx < Z_L(0) ||
 		par.productions.size() - par.results.production_size(par.sm, par.results.entry.param) + static_cast<size_t>(idx) >= par.productions.size()) {
 		zend_throw_exception_ex(ParleParserException_ce, 0, "Invalid index " ZEND_LONG_FMT, idx);
 		return;
-	/*} else if (par.sm._rules[par.results.entry.param].second.empty()) {
-		RETURN_NULL();*/
 	}
 
 	try {
@@ -1077,7 +1078,10 @@ _parser_sigil_name(INTERNAL_FUNCTION_PARAMETERS, zend_class_entry *ce) noexcept
 
 		auto &par = *zppo->par;
 
-		if (idx < Z_L(0) ||
+		if (par.results.entry.action != parsertl::action::reduce) {
+			zend_throw_exception_ex(ParleParserException_ce, 0, "Not in a reduce state!");
+			return;
+		} else if (idx < Z_L(0) ||
 			par.productions.size() - par.results.production_size(par.sm, par.results.entry.param) + static_cast<size_t>(idx) >= par.productions.size()) {
 			zend_throw_exception_ex(ParleParserException_ce, 0, "Invalid index " ZEND_LONG_FMT, idx);
 			return;
@@ -1422,11 +1426,13 @@ _parser_sigil_count(INTERNAL_FUNCTION_PARAMETERS, zend_class_entry *ce) noexcept
 	parser_obj_type *zppo = _php_parle_parser_fetch_zobj<parser_obj_type>(Z_OBJ_P(me));
 	auto& par = *zppo->par;
 
+	if (par.results.entry.action != parsertl::action::reduce) {
+		zend_throw_exception_ex(ParleParserException_ce, 0, "Not in a reduce state!");
+		return;
+	}
+
 	try
 	{
-		if (par.results.entry.action != parsertl::action::reduce)
-			throw std::runtime_error("Not in a reduce state!");
-
 		RETURN_LONG(par.results.production_size(par.sm,
 			par.results.entry.param));
 	}

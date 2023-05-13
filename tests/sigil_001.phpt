@@ -1,5 +1,5 @@
 --TEST--
-Test sigil functions
+Test sigil methods
 --SKIPIF--
 <?php if (!extension_loaded("parle")) print "skip"; ?>
 --FILE--
