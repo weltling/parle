@@ -13,12 +13,21 @@
 
 namespace parsertl
 {
-    void read_bison(const char* start_, const char* end_, rules& rules_)
+    template<typename char_type, typename rules_type>
+    void read_bison(const char_type* start_, const char_type* end_,
+        rules_type& rules_)
     {
+	using bison_lrules = lexertl::basic_rules<char, char_type>;
+        using bison_lsm = lexertl::basic_state_machine<char_type>;
+        using bison_crmatch = lexertl::recursive_match_results<const char_type*>;
+        using bison_criterator =
+            lexertl::iterator<const char_type*, bison_lsm, bison_crmatch>;
+        using string = std::basic_string<char_type>;
+
         rules grules_;
         state_machine gsm_;
-        lexertl::rules lrules_;
-        lexertl::state_machine lsm_;
+        bison_lrules lrules_;
+        bison_lsm lsm_;
 
         grules_.token("LITERAL NAME");
         grules_.push("start", "list");
@@ -125,10 +134,10 @@ namespace parsertl
         lrules_.push("PREC,PRODUCTIONS", "\\s+", lrules_.skip(), ".");
         lrules_.push("FINISH", "(.|\n)+", lrules_.skip(), "INITIAL");
 
-        lexertl::generator::build(lrules_, lsm_);
+        lexertl::basic_generator<bison_lrules, bison_lsm>::build(lrules_, lsm_);
 
-        lexertl::criterator iter_(start_, end_, lsm_);
-        using token = token<lexertl::criterator>;
+        bison_criterator iter_(start_, end_, lsm_);
+        using token = token<bison_criterator>;
         typename token::token_vector productions_;
         match_results results_(iter_->id, gsm_);
 
@@ -141,7 +150,7 @@ namespace parsertl
                 {
                     const token& token_ =
                         results_.dollar(1, gsm_, productions_);
-                    const std::string str_(token_.first, token_.second);
+                    const string str_(token_.first, token_.second);
 
                     rules_.token(str_.c_str());
                 }
@@ -149,7 +158,7 @@ namespace parsertl
                 {
                     const token& token_ =
                         results_.dollar(1, gsm_, productions_);
-                    const std::string str_(token_.first, token_.second);
+                    const string str_(token_.first, token_.second);
 
                     rules_.left(str_.c_str());
                 }
@@ -157,7 +166,7 @@ namespace parsertl
                 {
                     const token& token_ =
                         results_.dollar(1, gsm_, productions_);
-                    const std::string str_(token_.first, token_.second);
+                    const string str_(token_.first, token_.second);
 
                     rules_.right(str_.c_str());
                 }
@@ -165,7 +174,7 @@ namespace parsertl
                 {
                     const token& token_ =
                         results_.dollar(1, gsm_, productions_);
-                    const std::string str_(token_.first, token_.second);
+                    const string str_(token_.first, token_.second);
 
                     rules_.nonassoc(str_.c_str());
                 }
@@ -173,7 +182,7 @@ namespace parsertl
                 {
                     const token& token_ =
                         results_.dollar(1, gsm_, productions_);
-                    const std::string str_(token_.first, token_.second);
+                    const string str_(token_.first, token_.second);
 
                     rules_.precedence(str_.c_str());
                 }
@@ -182,15 +191,15 @@ namespace parsertl
                     const token& name_ =
                         results_.dollar(1, gsm_, productions_);
 
-                    rules_.start(std::string(name_.first,
+                    rules_.start(string(name_.first,
                         name_.second).c_str());
                 }
                 else if (results_.entry.param == prod_index_)
                 {
                     const token& lhs_ = results_.dollar(0, gsm_, productions_);
                     const token& rhs_ = results_.dollar(2, gsm_, productions_);
-                    const std::string lhs_str_(lhs_.first, lhs_.second);
-                    const std::string rhs_str_(rhs_.first, rhs_.second);
+                    const string lhs_str_(lhs_.first, lhs_.second);
+                    const string rhs_str_(rhs_.first, rhs_.second);
 
                     rules_.push(lhs_str_.c_str(), rhs_str_.c_str());
                 }

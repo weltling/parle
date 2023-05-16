@@ -11,6 +11,7 @@ use Parle\RLexer;
 use Parle\Token;
 
 $p = new RParser;
+
 $p->token("INTEGER");
 $p->left("'+' '-'");
 $p->left("'*' '/'");

@@ -525,8 +525,7 @@ namespace parsertl
 
         id_type token_id(const string& name_) const
         {
-            typename string_id_type_map::const_iterator iter_ =
-                _terminals.find(name_);
+            auto iter_ = _terminals.find(name_);
 
             if (iter_ == _terminals.end())
             {
@@ -613,8 +612,7 @@ namespace parsertl
             }
             else
             {
-                typename string_id_type_map::const_iterator iter_ =
-                    _non_terminals.find(_start);
+                auto iter_ = _non_terminals.find(_start);
 
                 if (iter_ != _non_terminals.end())
                     start_ = iter_->second;
@@ -688,7 +686,8 @@ namespace parsertl
                                     s_._id == start_)
                                 {
                                     std::ostringstream ss_;
-                                    const string name_ = name_from_nt_id(p_._lhs);
+                                    const string name_ =
+                                        name_from_nt_id(p_._lhs);
 
                                     ss_ << "The start symbol occurs on the "
                                         "RHS of rule '";
