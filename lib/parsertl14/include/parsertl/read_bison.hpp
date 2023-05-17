@@ -17,11 +17,14 @@ namespace parsertl
     void read_bison(const char_type* start_, const char_type* end_,
         rules_type& rules_)
     {
-	using bison_lrules = lexertl::basic_rules<char, char_type>;
+        using bison_lrules = lexertl::basic_rules<char, char_type>;
         using bison_lsm = lexertl::basic_state_machine<char_type>;
-        using bison_crmatch = lexertl::recursive_match_results<const char_type*>;
+        using bison_crmatch =
+            lexertl::recursive_match_results<const char_type*>;
         using bison_criterator =
             lexertl::iterator<const char_type*, bison_lsm, bison_crmatch>;
+        using bison_lgenerator =
+            lexertl::basic_generator<bison_lrules, bison_lsm>;
         using string = std::basic_string<char_type>;
 
         rules grules_;
@@ -134,7 +137,7 @@ namespace parsertl
         lrules_.push("PREC,PRODUCTIONS", "\\s+", lrules_.skip(), ".");
         lrules_.push("FINISH", "(.|\n)+", lrules_.skip(), "INITIAL");
 
-        lexertl::basic_generator<bison_lrules, bison_lsm>::build(lrules_, lsm_);
+        bison_lgenerator::build(lrules_, lsm_);
 
         bison_criterator iter_(start_, end_, lsm_);
         using token = token<bison_criterator>;
@@ -209,7 +212,17 @@ namespace parsertl
         }
 
         if (results_.entry.action == action::error)
-            throw runtime_error("Syntax error");
+        {
+            std::ostringstream ss_;
+            string token_ = iter_->str();
+
+            ss_ << "Syntax error on line " <<
+                std::count(start_, iter_->first, '\n') + 1 <<
+                ": '";
+            narrow(token_.c_str(), ss_);
+            ss_ << '\'';
+            throw runtime_error(ss_.str());
+        }
     }
 }
 
