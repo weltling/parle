@@ -1240,7 +1240,12 @@ _parser_dump(INTERNAL_FUNCTION_PARAMETERS, zend_class_entry *ce) noexcept
 #if PARLE_U32
 		zend_throw_exception_ex(ParleParserException_ce, 0, "Parser dump is not supported with UTF-32");
 #else
-		parsertl::debug::dump(par.rules, std::cout);
+		std::stringstream ss;
+		std::string str;
+
+		parsertl::debug::dump(par.rules, ss);
+		str = ss.str();
+		php_write((void*)str.c_str(), str.size());
 #endif
 	} catch (const std::exception &e) {
 		php_parle_rethrow_from_cpp(ParleLexerException_ce, e.what(), 0);
