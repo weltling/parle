@@ -160,8 +160,6 @@ namespace lexertl
             ostream& stream_)
         {
             const std::size_t states_ = dfa_._states.size();
-            typename dfa_state::id_type_string_token_map::const_iterator iter_;
-            typename dfa_state::id_type_string_token_map::const_iterator end_;
 
             stream_ << std::endl;
 
@@ -195,9 +193,8 @@ namespace lexertl
             for (id_type i_ = 0; i_ < states_; ++i_)
             {
                 const dfa_state& state_ = dfa_._states[i_];
-
-                iter_ = state_._transitions.begin();
-                end_ = state_._transitions.end();
+                auto iter_ = state_._transitions.begin();
+                auto end_ = state_._transitions.end();
 
                 const string src_name = node_name(dfa_id_, i_);
 

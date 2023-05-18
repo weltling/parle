@@ -42,6 +42,7 @@
 #include "include/lexertl/debug.hpp"
 #include "include/lexertl/match_results.hpp"
 #include "include/lexertl/state_machine.hpp"
+#include "include/lexertl/utf_iterators.hpp"
 
 #include "include/parsertl/generator.hpp"
 #include "include/parsertl/lookup.hpp"
@@ -1238,7 +1239,20 @@ _parser_dump(INTERNAL_FUNCTION_PARAMETERS, zend_class_entry *ce) noexcept
 		/* XXX See comment in _lexer_dump(). */
 		// XXX need std:wcout dump!
 #if PARLE_U32
-		zend_throw_exception_ex(ParleParserException_ce, 0, "Parser dump is not supported with UTF-32");
+		using utf_out_iter = lexertl::basic_utf8_out_iterator
+			<const parle::char_type*>;
+		std::basic_stringstream<parle::char_type> ss;
+		parle::string str;
+
+		parsertl::basic_debug<parle::char_type>::dump(par.rules, ss);
+		str = ss.str();
+
+		const parle::char_type* end_str = str.c_str() + str.size();
+		utf_out_iter iter(str.c_str(), end_str);
+		utf_out_iter end(end_str, end_str);
+		std::string u8(iter, end);
+
+		php_write((void*)u8.c_str(), u8.size());
 #else
 		std::stringstream ss;
 		std::string str;

@@ -14,6 +14,7 @@
 #include "match_results.hpp"
 #include "narrow.hpp"
 #include "runtime_error.hpp"
+#include "../../../lexertl14/include/lexertl/stream_num.hpp"
 #include "token.hpp"
 
 namespace parsertl
@@ -127,8 +128,8 @@ namespace parsertl
             lexer_rules rules_;
 
             rules_.insert_macro("TERMINAL",
-                "'(\\\\([^0-9cx]|[0-9]{1,3}|c[@a-zA-Z]|x\\d+)|[^'])+'|"
-                "[\"](\\\\([^0-9cx]|[0-9]{1,3}|c[@a-zA-Z]|x\\d+)|[^\"])+[\"]");
+                R"('(\\([^0-9cx]|[0-9]{1,3}|c[@a-zA-Z]|x\d+)|[^'])+'|)"
+                R"(["](\\([^0-9cx]|[0-9]{1,3}|c[@a-zA-Z]|x\d+)|[^"])+["])");
             rules_.insert_macro("IDENTIFIER", "[A-Za-z_.][-A-Za-z_.0-9]*");
             rules_.push("{TERMINAL}", ebnf_tables::TERMINAL);
             rules_.push("{IDENTIFIER}", ebnf_tables::IDENTIFIER);
@@ -272,7 +273,7 @@ namespace parsertl
         id_type push(const string& lhs_, const string& rhs_)
         {
             // Return the first index of any EBNF/rule with ors.
-            id_type index_ = static_cast<id_type>(_grammar.size());
+            auto index_ = static_cast<id_type>(_grammar.size());
             const std::size_t old_size_ = _grammar.size();
 
             validate(lhs_.c_str());
@@ -398,7 +399,7 @@ namespace parsertl
                         std::pair<string, string> pair_;
 
                         ++counter_;
-                        ss_ << counter_;
+                        lexertl::stream_num(counter_, ss_);
                         pair_.first = lhs_ + char_type('_') + ss_.str();
                         _generated_rules.insert(pair_.first);
                         pair_.second = empty_or_ + rhs_stack_.top();
@@ -416,7 +417,7 @@ namespace parsertl
                         std::pair<string, string> pair_;
 
                         ++counter_;
-                        ss_ << counter_;
+                        lexertl::stream_num(counter_, ss_);
                         pair_.first = lhs_ + char_type('_') + ss_.str();
                         _generated_rules.insert(pair_.first);
                         pair_.second = empty_or_ + pair_.first +
@@ -435,7 +436,7 @@ namespace parsertl
                         std::pair<string, string> pair_;
 
                         ++counter_;
-                        ss_ << counter_;
+                        lexertl::stream_num(counter_, ss_);
                         pair_.first = lhs_ + char_type('_') + ss_.str();
                         _generated_rules.insert(pair_.first);
                         pair_.second = rhs_stack_.top() + or_ +
@@ -452,7 +453,7 @@ namespace parsertl
                         std::pair<string, string> pair_;
 
                         ++counter_;
-                        ss_ << counter_;
+                        lexertl::stream_num(counter_, ss_);
                         pair_.first = lhs_ + char_type('_') + ss_.str();
                         _generated_rules.insert(pair_.first);
                         pair_.second = rhs_stack_.top();
@@ -1128,6 +1129,7 @@ namespace parsertl
 
     using rules = basic_rules<char>;
     using wrules = basic_rules<wchar_t>;
+    using u32rules = basic_rules<char32_t>;
 }
 
 #endif

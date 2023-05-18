@@ -667,8 +667,7 @@ namespace lexertl
         (const basic_state_machine<char_type, id_type>& sm_,
             const std::size_t tabs_, const bool pointers_, std::ostream& os_)
         {
-            const typename detail::basic_internals<id_type>& internals_ =
-                sm_.data();
+            const auto& internals_ = sm_.data();
             const std::size_t lookup_divisor_ = 8;
             // Lookup is always 256 entries long now
             const std::size_t lookup_quotient_ = 256 / lookup_divisor_;

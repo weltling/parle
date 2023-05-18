@@ -148,8 +148,8 @@ namespace lexertl
                 assert(_tree_node_stack.size() == 1);
 
                 observer_ptr<node> lhs_node_ = _tree_node_stack.top();
-                const bool non_greedy_ = std::find_if(regex_.cbegin(), regex_.cend(),
-                    [](const token& token_)
+                const bool non_greedy_ = std::find_if(regex_.cbegin(),
+                    regex_.cend(), [](const token& token_)
                     {
                         return token_._type == token_type::AOPT ||
                             token_._type == token_type::AZEROORMORE ||
@@ -159,7 +159,8 @@ namespace lexertl
 
                 _tree_node_stack.pop();
                 _node_ptr_vector.push_back(std::make_unique<end_node>
-                    (id_, user_id_, next_dfa_, push_dfa_, pop_dfa_, !non_greedy_));
+                    (id_, user_id_, next_dfa_, push_dfa_, pop_dfa_,
+                        !non_greedy_));
 
                 observer_ptr<node> rhs_node_ = _node_ptr_vector.back().get();
 
@@ -606,18 +607,17 @@ namespace lexertl
             void insert_range(const string_token& token_,
                 const string_token& token2_, string_token_vector data_[2])
             {
-                typename string_token_vector::const_iterator iter_ =
-                    std::find_if(data_[0].begin(), data_[0].end(),
-                        [&token_](const std::unique_ptr<string_token>& rhs_)
-                        {
-                            return token_ == *rhs_.get();
-                        });
+                auto iter_ = std::find_if(data_[0].cbegin(), data_[0].cend(),
+                    [&token_](const std::unique_ptr<string_token>& rhs_)
+                    {
+                        return token_ == *rhs_.get();
+                    });
 
-                if (iter_ == data_[0].end())
+                if (iter_ == data_[0].cend())
                 {
-                    data_[0].emplace_back(std::make_unique
+                    data_[0].push_back(std::make_unique
                         <string_token>(token_));
-                    data_[1].emplace_back(std::make_unique
+                    data_[1].push_back(std::make_unique
                         <string_token>(token2_));
                 }
                 else
@@ -756,8 +756,7 @@ namespace lexertl
                         "to hold all ids.");
                 }
 
-                typename charset_map::const_iterator iter_ =
-                    _charset_map.find(charset_);
+                auto iter_ = _charset_map.find(charset_);
 
                 if (iter_ == _charset_map.end())
                 {
