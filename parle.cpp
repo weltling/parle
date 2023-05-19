@@ -92,9 +92,17 @@ namespace parle {/*{{{*/
 	// dirty quirk
 	using char_type = uint32_t;
 	using string = std::basic_string<char_type>;
+#if PARLE_U32
+	using utf_out_iter = lexertl::basic_utf8_out_iterator
+		<const parle::char_type*>;
+#endif
 #else
 	using char_type = char32_t;
 	using string = std::u32string;
+#if PARLE_U32
+	using utf_out_iter = lexertl::basic_utf8_out_iterator
+		<const parle::char_type*>;
+#endif
 #endif
 #else
 	using char_type = char;
@@ -165,6 +173,7 @@ namespace parle {/*{{{*/
 		using generator = parsertl::basic_generator<parle_rules, state_machine, id_type>;
 		using parle_productions = parsertl::token<parle::lexer::siterator>::token_vector;
 		using parle_rproductions = parsertl::token<parle::lexer::sriterator>::token_vector;
+		using debug = parsertl::basic_debug<char_type>;
 
 		struct parser {
 			parser() : lex(nullptr) {}
@@ -652,13 +661,26 @@ _lexer_dump(INTERNAL_FUNCTION_PARAMETERS, zend_class_entry *ce) noexcept
 	auto &lex = *zplo->lex;
 
 	try {
-		/* XXX std::cout might be not thread safe, need to gather the right
-			descriptor from the SAPI and convert to a usable stream. */
-		// XXX need std::wcout dump!
 #if PARLE_U32
-		zend_throw_exception_ex(ParleLexerException_ce, 0, "Lexer dump is not supported with UTF-32");
+		std::basic_stringstream<parle::char_type> ss;
+		parle::string str;
+
+		parle::lexer::debug::dump(lex.sm, lex.rules, ss);
+		str = ss.str();
+
+		const parle::char_type* end_str = str.c_str() + str.size();
+		parle::utf_out_iter iter(str.c_str(), end_str);
+		parle::utf_out_iter end(end_str, end_str);
+		std::string u8(iter, end);
+
+		php_write((void*)u8.c_str(), u8.size());
 #else
-		parle::lexer::debug::dump(lex.sm, lex.rules, std::cout);
+		std::stringstream ss;
+		std::string str;
+
+		parle::lexer::debug::dump(lex.sm, lex.rules, ss);
+		str = ss.str();
+		php_write((void*)str.c_str(), str.size());
 #endif
 	} catch (const std::exception &e) {
 		php_parle_rethrow_from_cpp(ParleLexerException_ce, e.what(), 0);
@@ -1236,20 +1258,16 @@ _parser_dump(INTERNAL_FUNCTION_PARAMETERS, zend_class_entry *ce) noexcept
 
 	try {
 		auto &par = *zppo->par;
-		/* XXX See comment in _lexer_dump(). */
-		// XXX need std:wcout dump!
 #if PARLE_U32
-		using utf_out_iter = lexertl::basic_utf8_out_iterator
-			<const parle::char_type*>;
 		std::basic_stringstream<parle::char_type> ss;
 		parle::string str;
 
-		parsertl::basic_debug<parle::char_type>::dump(par.rules, ss);
+		parle::parser::debug::dump(par.rules, ss);
 		str = ss.str();
 
 		const parle::char_type* end_str = str.c_str() + str.size();
-		utf_out_iter iter(str.c_str(), end_str);
-		utf_out_iter end(end_str, end_str);
+		parle::utf_out_iter iter(str.c_str(), end_str);
+		parle::utf_out_iter end(end_str, end_str);
 		std::string u8(iter, end);
 
 		php_write((void*)u8.c_str(), u8.size());
