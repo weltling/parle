@@ -6,7 +6,7 @@
 #ifndef LEXERTL_STREAM_NUM_HPP
 #define LEXERTL_STREAM_NUM_HPP
 
-#include <ostream>
+#include <sstream>
 
 namespace lexertl
 {
