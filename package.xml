@@ -127,6 +127,7 @@
 							<file role="src" name="sm_to_csm.hpp"/>
 							<file role="src" name="sm_traits.hpp"/>
 							<file role="src" name="state_machine.hpp"/>
+							<file role="src" name="stream_num.hpp"/>
 							<file role="src" name="stream_shared_iterator.hpp"/>
 							<file role="src" name="string_token.hpp"/>
 							<file role="src" name="utf_iterators.hpp"/>
