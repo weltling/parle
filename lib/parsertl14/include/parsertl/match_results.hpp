@@ -94,8 +94,9 @@ namespace parsertl
         }
 
         template<typename token_vector>
-        const typename token_vector::value_type& dollar(const std::size_t index_,
-            const sm_type& sm_, const token_vector& productions) const
+        const typename token_vector::value_type&
+            dollar(const std::size_t index_, const sm_type& sm_,
+                const token_vector& productions) const
         {
             if (entry.action != action::reduce)
             {

@@ -17,12 +17,13 @@ namespace parsertl
     struct base_state_machine
     {
         using id_type = id_ty;
-        using capture_vector = std::vector<std::pair<id_type, id_type>>;
-        using captures_vector =
-            std::vector<std::pair<std::size_t, capture_vector>>;
+        using id_type_pair = std::pair<id_type, id_type>;
+        using capture_vector = std::vector<id_type_pair>;
+        using capture = std::pair<std::size_t, capture_vector>;
+        using captures_vector = std::vector<capture>;
         using id_type_vector = std::vector<id_type>;
-        using id_type_pair = std::pair<id_type, id_type_vector>;
-        using rules = std::vector<id_type_pair>;
+        using id_type_vector_pair = std::pair<id_type, id_type_vector>;
+        using rules = std::vector<id_type_vector_pair>;
 
         std::size_t _columns = 0;
         std::size_t _rows = 0;
@@ -81,13 +82,16 @@ namespace parsertl
 
     // Uses a vector of vectors for the state machine
     template<typename id_ty>
-    class basic_state_machine : public base_state_machine<id_ty>
+    struct basic_state_machine : base_state_machine<id_ty>
     {
-    public:
         using base_sm = base_state_machine<id_ty>;
         using id_type = id_ty;
         using entry = typename base_sm::entry;
-        using table = std::vector<std::vector<std::pair<id_type, entry>>>;
+        using id_type_entry_pair = std::pair<id_type, entry>;
+        using id_type_entry_pair_vec = std::vector<id_type_entry_pair>;
+        using table = std::vector<id_type_entry_pair_vec>;
+
+        table _table;
 
         // No need to specify constructor.
         ~basic_state_machine() override = default;
@@ -153,20 +157,18 @@ namespace parsertl
         {
             _table.resize(base_sm::_rows);
         }
-
-    private:
-        table _table;
     };
 
     // Uses uncompressed 2d array for state machine
     template<typename id_ty>
-    class basic_uncompressed_state_machine : public base_state_machine<id_ty>
+    struct basic_uncompressed_state_machine : base_state_machine<id_ty>
     {
-    public:
         using base_sm = base_state_machine<id_ty>;
         using id_type = id_ty;
         using entry = typename base_sm::entry;
         using table = std::vector<entry>;
+
+        table _table;
 
         // No need to specify constructor.
         ~basic_uncompressed_state_machine() override = default;
@@ -202,9 +204,6 @@ namespace parsertl
         {
             _table.resize(base_sm::_columns * base_sm::_rows);
         }
-
-    private:
-        table _table;
     };
 
     using state_machine = basic_state_machine<uint16_t>;

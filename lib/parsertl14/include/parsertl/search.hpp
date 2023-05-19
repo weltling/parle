@@ -55,7 +55,7 @@ namespace parsertl
 
         if (success_)
         {
-            typename token::iter_type last_ = iter_->first;
+            auto last_ = iter_->first;
 
             captures_.resize((sm_._captures.empty() ? 0 :
                 sm_._captures.back().first +
@@ -87,8 +87,7 @@ namespace parsertl
 
             for (const auto& pair_ : prod_map_)
             {
-                typename token::iter_type sec_ =
-                    pair_.second.back().second;
+                auto sec_ = pair_.second.back().second;
 
                 if (sec_ > last_)
                 {

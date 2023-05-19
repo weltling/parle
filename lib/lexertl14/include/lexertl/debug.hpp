@@ -11,6 +11,7 @@
 #include "rules.hpp"
 #include "sm_to_csm.hpp"
 #include "state_machine.hpp"
+#include "stream_num.hpp"
 #include "string_token.hpp"
 #include <vector>
 
@@ -62,7 +63,8 @@ namespace lexertl
                 dfa_ < dfas_; ++dfa_)
             {
                 lexer_state(stream_);
-                stream_ << dfa_ << std::endl << std::endl;
+                 stream_num<std::size_t>(dfa_, stream_);
+                stream_ << std::endl << std::endl;
 
                 dump_ex(csm_._sm_vector[dfa_], stream_);
             }
@@ -84,7 +86,8 @@ namespace lexertl
                 const dfa_state& state_ = dfa_._states[i_];
 
                 state(stream_);
-                stream_ << i_ << std::endl;
+                stream_num(i_, stream_);
+                stream_ << std::endl;
 
                 if (state_._end_state)
                 {
@@ -94,7 +97,7 @@ namespace lexertl
                         dfa_state::push_pop_dfa::push_dfa)
                     {
                         push(stream_);
-                        stream_ << state_._push_dfa;
+                        stream_num(state_._push_dfa, stream_);
                     }
                     else if (state_._push_pop_dfa ==
                         dfa_state::push_pop_dfa::pop_dfa)
@@ -103,26 +106,29 @@ namespace lexertl
                     }
 
                     id(stream_);
-                    stream_ << static_cast<std::size_t>(state_._id);
+                    stream_num(static_cast<std::size_t>(state_._id), stream_);
                     user_id(stream_);
-                    stream_ << static_cast<std::size_t>(state_._user_id);
+                    stream_num(static_cast<std::size_t>(state_._user_id),
+                        stream_);
                     dfa(stream_);
-                    stream_ << static_cast<std::size_t>(state_._next_dfa);
+                    stream_num(static_cast<std::size_t>(state_._next_dfa),
+                        stream_);
                     stream_ << std::endl;
                 }
 
                 if (i_ == 0 && bol_index_ != char_state_machine::npos())
                 {
                     bol(stream_);
-                    stream_ << static_cast<std::size_t>(bol_index_) <<
-                        std::endl;
+                    stream_num(static_cast<std::size_t>(bol_index_), stream_);
+                    stream_ << std::endl;
                 }
 
                 if (state_._eol_index != char_state_machine::npos())
                 {
                     eol(stream_);
-                    stream_ << static_cast<std::size_t>(state_._eol_index) <<
-                        std::endl;
+                    stream_num(static_cast<std::size_t>(state_._eol_index),
+                        stream_);
+                    stream_ << std::endl;
                 }
 
                 for (const auto& tran_ : state_._transitions)
@@ -141,10 +147,11 @@ namespace lexertl
 
                     for (const auto& range_ : token_._ranges)
                     {
-                        if (range_.first == '-' || range_.first == '^' ||
-                            range_.first == ']')
+                        if (range_.first == static_cast<char_type>('-') ||
+                            range_.first == static_cast<char_type>('^') ||
+                            range_.first == static_cast<char_type>(']'))
                         {
-                            stream_ << '\\';
+                            stream_ << static_cast<char_type>('\\');
                         }
 
                         chars_ = string_token::escape_char
@@ -154,13 +161,14 @@ namespace lexertl
                         {
                             if (range_.first + 1 < range_.second)
                             {
-                                chars_ += '-';
+                                chars_ += static_cast<char_type>('-');
                             }
 
-                            if (range_.second == '-' || range_.second == '^' ||
-                                range_.second == ']')
+                            if (range_.second == static_cast<char_type>('-') ||
+                                range_.second == static_cast<char_type>('^') ||
+                                range_.second == static_cast<char_type>(']'))
                             {
-                                stream_ << '\\';
+                                stream_ << static_cast<char_type>('\\');
                             }
 
                             chars_ += string_token::escape_char(range_.second);
@@ -170,8 +178,8 @@ namespace lexertl
                     }
 
                     close_bracket(stream_);
-                    stream_ << static_cast<std::size_t>(tran_.first) <<
-                        std::endl;
+                    stream_num(static_cast<std::size_t>(tran_.first), stream_);
+                    stream_ << std::endl;
                 }
 
                 stream_ << std::endl;
@@ -188,6 +196,11 @@ namespace lexertl
             stream_ << L"Lexer state: ";
         }
 
+        static void lexer_state(std::basic_ostream<char32_t>& stream_)
+        {
+            stream_ << U"Lexer state: ";
+        }
+
         static void state(std::ostream& stream_)
         {
             stream_ << "State: ";
@@ -196,6 +209,11 @@ namespace lexertl
         static void state(std::wostream& stream_)
         {
             stream_ << L"State: ";
+        }
+
+        static void state(std::basic_ostream<char32_t>& stream_)
+        {
+            stream_ << U"State: ";
         }
 
         static void bol(std::ostream& stream_)
@@ -208,6 +226,11 @@ namespace lexertl
             stream_ << L"  BOL -> ";
         }
 
+        static void bol(std::basic_ostream<char32_t>& stream_)
+        {
+            stream_ << U"  BOL -> ";
+        }
+
         static void eol(std::ostream& stream_)
         {
             stream_ << "  EOL -> ";
@@ -216,6 +239,11 @@ namespace lexertl
         static void eol(std::wostream& stream_)
         {
             stream_ << L"  EOL -> ";
+        }
+
+        static void eol(std::basic_ostream<char32_t> & stream_)
+        {
+            stream_ << U"  EOL -> ";
         }
 
         static void end_state(std::ostream& stream_)
@@ -228,6 +256,11 @@ namespace lexertl
             stream_ << L"  END STATE";
         }
 
+        static void end_state(std::basic_ostream<char32_t>& stream_)
+        {
+            stream_ << U"  END STATE";
+        }
+
         static void id(std::ostream& stream_)
         {
             stream_ << ", Id = ";
@@ -236,6 +269,11 @@ namespace lexertl
         static void id(std::wostream& stream_)
         {
             stream_ << L", Id = ";
+        }
+
+        static void id(std::basic_ostream<char32_t>& stream_)
+        {
+            stream_ << U", Id = ";
         }
 
         static void push(std::ostream& stream_)
@@ -248,6 +286,11 @@ namespace lexertl
             stream_ << L", PUSH ";
         }
 
+        static void push(std::basic_ostream<char32_t>& stream_)
+        {
+            stream_ << U", PUSH ";
+        }
+
         static void pop(std::ostream& stream_)
         {
             stream_ << ", POP";
@@ -256,6 +299,11 @@ namespace lexertl
         static void pop(std::wostream& stream_)
         {
             stream_ << L", POP";
+        }
+
+        static void pop(std::basic_ostream<char32_t>& stream_)
+        {
+            stream_ << U", POP";
         }
 
         static void user_id(std::ostream& stream_)
@@ -268,6 +316,11 @@ namespace lexertl
             stream_ << L", User Id = ";
         }
 
+        static void user_id(std::basic_ostream<char32_t>& stream_)
+        {
+            stream_ << U", User Id = ";
+        }
+
         static void open_bracket(std::ostream& stream_)
         {
             stream_ << "  [";
@@ -276,6 +329,11 @@ namespace lexertl
         static void open_bracket(std::wostream& stream_)
         {
             stream_ << L"  [";
+        }
+
+        static void open_bracket(std::basic_ostream<char32_t>& stream_)
+        {
+            stream_ << U"  [";
         }
 
         static void negated(std::ostream& stream_)
@@ -288,6 +346,11 @@ namespace lexertl
             stream_ << L"^";
         }
 
+        static void negated(std::basic_ostream<char32_t>& stream_)
+        {
+            stream_ << U"^";
+        }
+
         static void close_bracket(std::ostream& stream_)
         {
             stream_ << "] -> ";
@@ -296,6 +359,11 @@ namespace lexertl
         static void close_bracket(std::wostream& stream_)
         {
             stream_ << L"] -> ";
+        }
+
+        static void close_bracket(std::basic_ostream<char32_t>& stream_)
+        {
+            stream_ << U"] -> ";
         }
 
         static void dfa(std::ostream& stream_)
@@ -307,10 +375,16 @@ namespace lexertl
         {
             stream_ << L", dfa = ";
         }
+
+        static void dfa(std::basic_ostream<char32_t>& stream_)
+        {
+            stream_ << U", dfa = ";
+        }
     };
 
     using debug = basic_debug<state_machine, char>;
     using wdebug = basic_debug<wstate_machine, wchar_t>;
+    using u32debug = basic_debug<u32state_machine, char32_t>;
 }
 
 #endif

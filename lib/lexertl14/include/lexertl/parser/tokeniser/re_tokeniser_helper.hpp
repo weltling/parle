@@ -1139,7 +1139,7 @@ namespace lexertl
                     throw runtime_error(ss_.str());
                 }
 
-                const typename state_type::char_type* start_ = state_._curr;
+                const auto start_ = state_._curr;
                 const std::size_t idx = state_.index();
 
                 do
@@ -1165,8 +1165,8 @@ namespace lexertl
 
                 for (const block* entry_ = lookup_; entry_->_name; ++entry_)
                 {
-                    const typename state_type::char_type* source_ = start_;
-                    const char* name_ = entry_->_name;
+                    auto source_ = start_;
+                    auto name_ = entry_->_name;
 
                     for (; source_ != state_._curr && *name_;
                         ++source_, ++name_)

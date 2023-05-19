@@ -625,8 +625,7 @@ namespace lexertl
                 {
                     if (!macro_.empty())
                     {
-                        typename macro_map::const_iterator iter_ =
-                            _macro_map.find(macro_);
+                        auto iter_ = _macro_map.find(macro_);
 
                         if (iter_->second.size() > 3)
                         {

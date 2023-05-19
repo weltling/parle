@@ -10,6 +10,7 @@
 #include <ios> // Needed by GCC 4.4
 #include <iostream>
 #include <string>
+#include "stream_num.hpp"
 #include <utility>
 #include <vector>
 
@@ -387,8 +388,8 @@ namespace lexertl
 
                     out_ += '\\';
                     out_ += 'x';
-                    ss_ << std::hex <<
-                        static_cast<std::size_t>(ch_);
+                    ss_ << std::hex;
+                    stream_num(static_cast<std::size_t>(ch_), ss_);
                     out_ += ss_.str();
                 }
                 else

@@ -128,8 +128,8 @@ namespace parsertl
                         const std::size_t id_ =
                             symbol_._type == symbol::type::TERMINAL ?
                             symbol_._id : terminals_ + symbol_._id;
-                        typename size_t_vector::const_iterator sym_iter_ =
-                            std::find(symbols_.begin(), symbols_.end(), id_);
+                        auto sym_iter_ = std::find(symbols_.begin(),
+                            symbols_.end(), id_);
                         size_t_pair new_pair_(pair_.first, pair_.second + 1);
 
                         if (sym_iter_ == symbols_.end())
@@ -143,8 +143,8 @@ namespace parsertl
                             const std::size_t index_ =
                                 sym_iter_ - symbols_.begin();
                             size_t_pair_vector& vec_ = item_sets_[index_];
-                            typename size_t_pair_vector::const_iterator i_ =
-                                std::find(vec_.begin(), vec_.end(), new_pair_);
+                            auto i_ = std::find(vec_.begin(), vec_.end(),
+                                new_pair_);
 
                             if (i_ == vec_.end())
                             {
@@ -222,8 +222,7 @@ namespace parsertl
                     }
 
                     trie trie_(production_._lhs, prod_._lhs_indexes);
-                    typename trie_map::const_iterator map_iter_ =
-                        map_.find(trie_);
+                    auto map_iter_ = map_.find(trie_);
 
                     if (map_iter_ == map_.end())
                     {
@@ -578,7 +577,7 @@ namespace parsertl
             {
                 sm_._rules.emplace_back();
 
-                typename sm::id_type_pair& pair_ = sm_._rules.back();
+                auto& pair_ = sm_._rules.back();
 
                 pair_.first = static_cast<id_type>(terminals_ +
                     production_._lhs);
@@ -636,8 +635,7 @@ namespace parsertl
 
         static void closure(const rules& rules_, dfa_state& state_)
         {
-            const typename rules::nt_location_vector& nt_locations_ =
-                rules_.nt_locations();
+            const auto& nt_locations_ = rules_.nt_locations();
             const grammar& grammar_ = rules_.grammar();
 
             for (std::size_t c_ = 0; c_ < state_._closure.size(); ++c_)
@@ -658,9 +656,8 @@ namespace parsertl
                             rule_ != npos(); rule_ = grammar_[rule_]._next_lhs)
                         {
                             const size_t_pair new_pair_(rule_, 0);
-                            typename size_t_pair_vector::const_iterator i_ =
-                                std::find(state_._closure.begin(),
-                                    state_._closure.end(), new_pair_);
+                            auto i_ = std::find(state_._closure.begin(),
+                                state_._closure.end(), new_pair_);
 
                             if (i_ == state_._closure.end())
                             {

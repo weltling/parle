@@ -42,9 +42,11 @@
 #include "include/lexertl/debug.hpp"
 #include "include/lexertl/match_results.hpp"
 #include "include/lexertl/state_machine.hpp"
+#include "include/lexertl/utf_iterators.hpp"
 
 #include "include/parsertl/generator.hpp"
 #include "include/parsertl/lookup.hpp"
+#include "include/parsertl/read_bison.hpp"
 #include "include/parsertl/state_machine.hpp"
 #include "include/parsertl/parse.hpp"
 #include "include/parsertl/token.hpp"
@@ -1237,9 +1239,27 @@ _parser_dump(INTERNAL_FUNCTION_PARAMETERS, zend_class_entry *ce) noexcept
 		/* XXX See comment in _lexer_dump(). */
 		// XXX need std:wcout dump!
 #if PARLE_U32
-		zend_throw_exception_ex(ParleParserException_ce, 0, "Parser dump is not supported with UTF-32");
+		using utf_out_iter = lexertl::basic_utf8_out_iterator
+			<const parle::char_type*>;
+		std::basic_stringstream<parle::char_type> ss;
+		parle::string str;
+
+		parsertl::basic_debug<parle::char_type>::dump(par.rules, ss);
+		str = ss.str();
+
+		const parle::char_type* end_str = str.c_str() + str.size();
+		utf_out_iter iter(str.c_str(), end_str);
+		utf_out_iter end(end_str, end_str);
+		std::string u8(iter, end);
+
+		php_write((void*)u8.c_str(), u8.size());
 #else
-		parsertl::debug::dump(par.rules, std::cout);
+		std::stringstream ss;
+		std::string str;
+
+		parsertl::debug::dump(par.rules, ss);
+		str = ss.str();
+		php_write((void*)str.c_str(), str.size());
 #endif
 	} catch (const std::exception &e) {
 		php_parle_rethrow_from_cpp(ParleLexerException_ce, e.what(), 0);
@@ -1299,7 +1319,7 @@ _parser_trace(INTERNAL_FUNCTION_PARAMETERS, zend_class_entry *ce) noexcept
 				std::vector<parle::string> symbols;
 				par.rules.terminals(symbols);
 				par.rules.non_terminals(symbols);
-				parle::parser::state_machine::id_type_pair &pair_ = par.sm._rules[entry.param];
+				parle::parser::state_machine::id_type_vector_pair &pair_ = par.sm._rules[entry.param];
 
 				s = PARLE_PRE_U32("reduce by ") + symbols[pair_.first] + PARLE_PRE_U32(" ->");
 
@@ -1473,6 +1493,45 @@ PHP_METHOD(ParleRParser, sigilCount)
 }
 /* }}} */
 
+template <typename parser_obj_type> void
+_parser_read_bison(INTERNAL_FUNCTION_PARAMETERS, zend_class_entry *ce) noexcept
+{/*{{{*/
+	parser_obj_type *zppo;
+	zval *me;
+	zend_string *input;
+
+	if (zend_parse_method_parameters(ZEND_NUM_ARGS(), getThis(), "OS", &me, ce, &input) == FAILURE) {
+		return;
+	}
+
+	zppo = _php_parle_parser_fetch_zobj<parser_obj_type>(Z_OBJ_P(me));
+
+	try {
+		auto &rules = zppo->par->rules;
+		parle::string bison(PARLE_CVT_U32(ZSTR_VAL(input)));
+
+		rules.clear();
+		parsertl::read_bison(bison.c_str(),
+			bison.c_str() + bison.size(),
+			rules);
+	} catch (const std::exception &e) {
+		php_parle_rethrow_from_cpp(ParleParserException_ce, e.what(), 0);
+	}
+}/*}}}*/
+
+/* {{{ public void Parser::readBison(string $input) */
+PHP_METHOD(ParleParser, readBison)
+{
+	_parser_read_bison<ze_parle_parser_obj>(INTERNAL_FUNCTION_PARAM_PASSTHRU, ParleParser_ce);
+}
+/* }}} */
+
+/* {{{ public void RParser::readBison(string $input) */
+PHP_METHOD(ParleRParser, readBison)
+{
+	_parser_read_bison<ze_parle_rparser_obj>(INTERNAL_FUNCTION_PARAM_PASSTHRU, ParleRParser_ce);
+}
+
 /* {{{ public void Stack::pop(void) */
 PHP_METHOD(ParleStack, pop)
 {
@@ -1591,6 +1650,10 @@ ZEND_END_ARG_INFO();
 
 ZEND_BEGIN_ARG_INFO_EX(arginfo_parle_parser_precedence, 0, 0, 1)
 	ZEND_ARG_TYPE_INFO(0, tok, IS_STRING, 0)
+ZEND_END_ARG_INFO();
+
+ZEND_BEGIN_ARG_INFO_EX(arginfo_parle_parser_read_bison, 0, 0, 1)
+	ZEND_ARG_TYPE_INFO(0, input, IS_STRING, 0)
 ZEND_END_ARG_INFO();
 
 ZEND_BEGIN_ARG_INFO_EX(arginfo_parle_parser_build, 0, 0, 0)
@@ -1728,6 +1791,7 @@ const zend_function_entry ParleParser_methods[] = {
 	PHP_ME(ParleParser, errorInfo, arginfo_parle_parser_errorinfo, ZEND_ACC_PUBLIC)
 	PHP_ME(ParleParser, reset, arginfo_parle_parser_reset, ZEND_ACC_PUBLIC)
 	PHP_ME(ParleParser, sigilCount, arginfo_parle_parser_sigil_count, ZEND_ACC_PUBLIC)
+	PHP_ME(ParleParser, readBison, arginfo_parle_parser_read_bison, ZEND_ACC_PUBLIC)
 	PHP_FE_END
 };
 
@@ -1750,6 +1814,7 @@ const zend_function_entry ParleRParser_methods[] = {
 	PHP_ME(ParleRParser, errorInfo, arginfo_parle_parser_errorinfo, ZEND_ACC_PUBLIC)
 	PHP_ME(ParleRParser, reset, arginfo_parle_parser_reset, ZEND_ACC_PUBLIC)
 	PHP_ME(ParleRParser, sigilCount, arginfo_parle_parser_sigil_count, ZEND_ACC_PUBLIC)
+	PHP_ME(ParleRParser, readBison, arginfo_parle_parser_read_bison, ZEND_ACC_PUBLIC)
 	PHP_FE_END
 };
 
