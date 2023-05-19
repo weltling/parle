@@ -10,6 +10,15 @@ $p = new Parser;
 
 $p->readBison("%%\n;start: 'a';%%\n");
 $p->dump();
+
+try
+{
+	$p->readBison("@");
+}
+catch (\Throwable $e)
+{
+	echo $e->getMessage(), "\n";
+}
 ?>
 ==DONE==
 --EXPECT--
@@ -19,4 +28,5 @@ $p->dump();
 start: 'a';
 
 %%
+Syntax error on line 1: '@'
 ==DONE==
