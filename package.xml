@@ -27,7 +27,10 @@
 	</stability>
 	<license uri="http://opensource.org/licenses/BSD-2-Clause">BSD 2-clause</license>
 	<notes>
-		- TODO
+		- Implement Parser::readBison() (Ben Hanson)
+		- Parser::dump() is supported in UTF-32 mode (Ben Hanson)
+		- Parser::dump() works with PHP streams (Ben Hanson)
+		- Update the bundled parsertl/lexertl libraries (Ben Hanson)
 	</notes>
 	<contents>
 		<dir name="/">
