@@ -58,6 +58,7 @@
 							<file role="src" name="dfa.hpp"/>
 							<file role="src" name="ebnf.y"/>
 							<file role="src" name="ebnf_tables.hpp"/>
+							<file role="src" name="enum_operator.hpp"/>
 							<file role="src" name="enums.hpp"/>
 							<file role="src" name="generator.hpp"/>
 							<file role="src" name="iterator.hpp"/>
@@ -112,8 +113,8 @@
 							<file role="src" name="char_traits.hpp"/>
 							<file role="src" name="debug.hpp"/>
 							<file role="src" name="dot.hpp"/>
-							<file role="src" name="enums.hpp"/>
 							<file role="src" name="enum_operator.hpp"/>
+							<file role="src" name="enums.hpp"/>
 							<file role="src" name="generate_cpp.hpp"/>
 							<file role="src" name="generator.hpp"/>
 							<file role="src" name="internals.hpp"/>
