@@ -9,26 +9,29 @@
 
 namespace lexertl
 {
-    enum regex_flags
+    enum class regex_flags
     {
         icase = 1, dot_not_newline = 2, dot_not_cr_lf = 4,
         skip_ws = 8, match_zero_len = 16
     };
-    // 0 = end state, 1 = id, 2 = user id, 3 = push_dfa_index
-    // 4 = next dfa, 5 = dead state, 6 = dfa_start
-    enum
+    // 0 = end_state, 1 = id, 2 = user_id, 3 = push_dfa
+    // 4 = next_dfa, 5 = dead_state, 6 = dfa start
+    enum class state_index
     {
-        end_state_index, id_index, user_id_index, push_dfa_index,
-        next_dfa_index, eol_index, dead_state_index, transitions_index
+        end_state, id, user_id, push_dfa,
+        next_dfa, eol, dead_state, transitions
     };
     // Rule flags:
-    enum feature_flags
+    enum class feature_bit
     {
-        bol_bit = 1, eol_bit = 2, skip_bit = 4, again_bit = 8,
-        multi_state_bit = 16, recursive_bit = 32, advance_bit = 64
+        bol = 1, eol = 2, skip = 4, again = 8,
+        multi_state = 16, recursive = 32, advance = 64
     };
     // End state flags:
-    enum { end_state_bit = 1, greedy_bit = 2, pop_dfa_bit = 4 };
+    enum class state_bit
+    {
+        end_state = 1, greedy = 2, pop_dfa = 4
+    };
 }
 
 #endif

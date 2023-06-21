@@ -36,6 +36,8 @@ namespace lexertl
             {
             }
 
+            basic_node(const basic_node&) = delete;
+            const basic_node& operator =(const basic_node&) = delete;
             virtual ~basic_node() = default;
 
             static id_type null_token()
@@ -219,19 +221,14 @@ namespace lexertl
             }
 
         protected:
-            const bool _nullable = false;
-            node_vector _firstpos;
-            node_vector _lastpos;
-
             virtual void copy_node(node_ptr_vector& node_ptr_vector_,
                 node_stack& new_node_stack_, bool_stack& perform_op_stack_,
                 bool& down_) const = 0;
 
         private:
-            // No copy construction.
-            basic_node(const basic_node&) = delete;
-            // No assignment.
-            const basic_node& operator =(const basic_node&) = delete;
+            const bool _nullable = false;
+            node_vector _firstpos;
+            node_vector _lastpos;
         };
     }
 }

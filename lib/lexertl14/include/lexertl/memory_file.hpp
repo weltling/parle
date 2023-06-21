@@ -12,7 +12,7 @@
 #include <cstddef>
 
 #ifdef _WIN32
-#include <windows.h>
+#include <Windows.h>
 #else
 #include <fcntl.h>
 #include <unistd.h>
@@ -144,6 +144,7 @@ namespace lexertl
 
     using memory_file = basic_memory_file<char>;
     using wmemory_file = basic_memory_file<wchar_t>;
+    using u32memory_file = basic_memory_file<char32_t>;
 }
 
 #endif

@@ -43,7 +43,8 @@ namespace parsertl
         using prod_vector = std::vector<prod>;
         using string = typename rules::string;
 
-        static void build(rules& rules_, sm& sm_, std::string* warnings_ = 0)
+        static void build(rules& rules_, sm& sm_,
+            std::string* warnings_ = nullptr)
         {
             dfa dfa_;
             prod_vector new_grammar_;
@@ -304,7 +305,7 @@ namespace parsertl
         }
 
         // http://www.sqlite.org/src/artifact?ci=trunk&filename=tool/lemon.c
-        // FindFirstSets()
+        // FindFirstSets function
         static void build_first_sets(const prod_vector& grammar_,
             nt_info_vector& nt_info_)
         {
@@ -367,7 +368,7 @@ namespace parsertl
                         }
                         else
                         {
-                            nt_info& rhs_info_ = nt_info_[symbol_._id];
+                            const nt_info& rhs_info_ = nt_info_[symbol_._id];
 
                             progress_ |= set_union(lhs_info_._first_set,
                                 rhs_info_._first_set);
@@ -427,7 +428,7 @@ namespace parsertl
                                         for (; next_iter_ != rhs_end_;
                                             ++next_iter_)
                                         {
-                                            std::size_t next_id_ =
+                                            auto next_id_ =
                                                 static_cast<std::size_t>(~0);
 
                                             if (next_iter_->_type ==
@@ -679,7 +680,7 @@ namespace parsertl
             {
                 for (const auto s_ : states_)
                 {
-                    dfa_state& state_ = dfa_[s_];
+                    const dfa_state& state_ = dfa_[s_];
 
                     if (state_._basis == basis_)
                     {
@@ -700,7 +701,7 @@ namespace parsertl
             return index_;
         }
 
-        static std::size_t hash_set(size_t_pair_vector& vec_)
+        static std::size_t hash_set(const size_t_pair_vector& vec_)
         {
             std::size_t hash_ = 0;
 

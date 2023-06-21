@@ -28,22 +28,12 @@ namespace lexertl
         using pointer = char_type*;
         using reference = char_type&;
 
-        basic_stream_shared_iterator() :
-            _master(false),
-            _live(false),
-            _index(shared::npos()),
-            _shared(nullptr)
-        {
-        }
+        basic_stream_shared_iterator() = default;
 
         basic_stream_shared_iterator(istream& stream_,
             const std::size_t buff_size_ = 1024,
             const std::size_t increment_ = 1024) :
-            _master(true),
-            _live(false),
-            _index(shared::npos()),
-            // For exception safety don't call new yet
-            _shared(nullptr)
+            _master(true)
         {
             // Safe to call potentially throwing new now.
             _shared = new shared(stream_, buff_size_, increment_);
@@ -52,8 +42,6 @@ namespace lexertl
         }
 
         basic_stream_shared_iterator(const basic_stream_shared_iterator& rhs_) :
-            _master(false),
-            _live(false),
             _index(rhs_._master ? rhs_._shared->lowest() : rhs_._index),
             _shared(rhs_._shared)
         {
@@ -167,18 +155,17 @@ namespace lexertl
         class shared
         {
         public:
-            std::size_t _ref_count;
+            std::size_t _ref_count = 0;
             using char_vector = std::vector<char_type>;
             using iter_list = std::vector<basic_stream_shared_iterator*>;
             istream& _stream;
-            std::size_t _increment;
-            std::size_t _len;
+            std::size_t _increment = 0;
+            std::size_t _len = 0;
             char_vector _buffer;
             iter_list _clients;
 
             shared(istream& stream_, const std::size_t buff_size_,
                 const std::size_t increment_) :
-                _ref_count(0),
                 _increment(increment_),
                 _stream(stream_)
             {
@@ -186,6 +173,8 @@ namespace lexertl
                 _stream.read(&_buffer.front(), _buffer.size());
                 _len = static_cast<std::size_t>(_stream.gcount());
             }
+
+            shared& operator =(const shared& rhs_) = delete;
 
             bool reload_buffer()
             {
@@ -306,15 +295,12 @@ namespace lexertl
             {
                 return ~static_cast<std::size_t>(0);
             }
-
-        private:
-            shared& operator =(const shared& rhs_);
         };
 
-        bool _master;
-        bool _live;
-        std::size_t _index;
-        shared* _shared;
+        bool _master = false;
+        bool _live = false;
+        std::size_t _index = shared::npos();
+        shared* _shared = nullptr;
 
         void check_master()
         {
@@ -334,20 +320,19 @@ namespace lexertl
 
         void update_state()
         {
-            if (_index >= _shared->_len)
+            if (_index >= _shared->_len &&
+                !_shared->reload_buffer())
             {
-                if (!_shared->reload_buffer())
-                {
-                    _shared->erase(this);
-                    _index = shared::npos();
-                    _live = false;
-                }
+                _shared->erase(this);
+                _index = shared::npos();
+                _live = false;
             }
         }
     };
 
     using stream_shared_iterator = basic_stream_shared_iterator<char>;
     using wstream_shared_iterator = basic_stream_shared_iterator<wchar_t>;
+    using u32stream_shared_iterator = basic_stream_shared_iterator<char32_t>;
 }
 
 #endif

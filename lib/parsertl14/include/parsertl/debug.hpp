@@ -70,6 +70,8 @@ namespace parsertl
                 case rules::associativity::right_assoc:
                     right(stream_);
                     break;
+                default:
+                    break;
                 }
 
                 stream_ << pair_.second << static_cast<char_type>('\n');
@@ -88,80 +90,7 @@ namespace parsertl
                 static_cast<char_type>('%') <<
                 static_cast<char_type>('\n') <<
                 static_cast<char_type>('\n');
-
-            for (auto iter_ = grammar_.cbegin(), end_ = grammar_.cend();
-                iter_ != end_; ++iter_)
-            {
-                if (seen_.find(iter_->_lhs) == seen_.end())
-                {
-                    auto lhs_iter_ = iter_;
-                    std::size_t index_ = lhs_iter_ - grammar_.begin();
-
-                    stream_ << symbols_[terminals_ + lhs_iter_->_lhs];
-                    stream_ << static_cast<char_type>(':');
-
-                    while (index_ != static_cast<std::size_t>(~0))
-                    {
-                        if (lhs_iter_->_rhs.first.empty())
-                        {
-                            stream_ << static_cast<char_type>(' ');
-                            empty(stream_);
-                        }
-                        else
-                        {
-                            auto rhs_iter_ = lhs_iter_->_rhs.first.cbegin();
-                            auto rhs_end_ = lhs_iter_->_rhs.first.cend();
-
-                            for (; rhs_iter_ != rhs_end_; ++rhs_iter_)
-                            {
-                                const std::size_t id_ =
-                                    rhs_iter_->_type == symbol::type::TERMINAL ?
-                                    rhs_iter_->_id :
-                                    terminals_ + rhs_iter_->_id;
-
-                                // Don't dump '$'
-                                if (id_ > 0)
-                                {
-                                    stream_ << static_cast<char_type>(' ') <<
-                                        symbols_[id_];
-                                }
-                            }
-                        }
-
-                        if (!lhs_iter_->_rhs.second.empty())
-                        {
-                            stream_ << static_cast<char_type>(' ');
-                            prec(stream_);
-                            stream_ << lhs_iter_->_rhs.second;
-                        }
-
-                        index_ = lhs_iter_->_next_lhs;
-
-                        if (index_ != static_cast<std::size_t>(~0))
-                        {
-                            const string& lhs_ =
-                                symbols_[terminals_ + lhs_iter_->_lhs];
-
-                            lhs_iter_ = grammar_.begin() + index_;
-                            stream_ << static_cast <char_type>('\n');
-
-                            for (std::size_t i_ = 0, size_ = lhs_.size();
-                                i_ < size_; ++i_)
-                            {
-                                stream_ << static_cast<char_type>(' ');
-                            }
-
-                            stream_ << static_cast<char_type>('|');
-                        }
-                    }
-
-                    seen_.insert(iter_->_lhs);
-                    stream_ << static_cast<char_type>(';') <<
-                        static_cast<char_type>('\n') <<
-                        static_cast<char_type>('\n');
-                }
-            }
-
+            dump_grammar(grammar_, seen_, symbols_, terminals_, stream_);
             stream_ << static_cast<char_type>('%') <<
                 static_cast<char_type>('%') <<
                 static_cast<char_type>('\n');
@@ -188,55 +117,39 @@ namespace parsertl
                     const production& p_ = grammar_[pair_.first];
                     std::size_t j_ = 0;
 
-                    stream_ << static_cast < char_type>(' ') <<
-                        static_cast <char_type>(' ') <<
+                    stream_ << static_cast<char_type>(' ') <<
+                        static_cast<char_type>(' ') <<
                         symbols_[terminals_ + p_._lhs] <<
-                        static_cast <char_type>(' ') <<
-                        static_cast <char_type>('-') <<
-                        static_cast <char_type>('>');
-
-                    for (; j_ < p_._rhs.size(); ++j_)
-                    {
-                        const symbol& symbol_ = p_._rhs[j_];
-                        const std::size_t id_ = symbol_._type ==
-                            symbol::type::TERMINAL ? symbol_._id :
-                            terminals_ + symbol_._id;
-
-                        if (j_ == pair_.second)
-                        {
-                            stream_ << static_cast <char_type>(' ') <<
-                                static_cast <char_type>('.');
-                        }
-
-                        stream_ << static_cast <char_type>(' ') <<
-                            symbols_[id_];
-                    }
+                        static_cast<char_type>(' ') <<
+                        static_cast<char_type>('-') <<
+                        static_cast<char_type>('>');
+                    dump_rhs(j_, p_, terminals_, pair_, symbols_, stream_);
 
                     if (j_ == pair_.second)
                     {
-                        stream_ << static_cast <char_type>(' ') <<
-                            static_cast <char_type>('.');
+                        stream_ << static_cast<char_type>(' ') <<
+                            static_cast<char_type>('.');
                     }
 
-                    stream_ << static_cast <char_type>('\n');
+                    stream_ << static_cast<char_type>('\n');
                 }
 
                 if (!state_._transitions.empty())
-                    stream_ << static_cast <char_type>('\n');
+                    stream_ << static_cast<char_type>('\n');
 
                 for (const auto& pair_ : state_._transitions)
                 {
-                    stream_ << static_cast <char_type>(' ') <<
-                        static_cast <char_type>(' ') <<
+                    stream_ << static_cast<char_type>(' ') <<
+                        static_cast<char_type>(' ') <<
                         symbols_[pair_.first] <<
-                        static_cast <char_type>(' ') <<
-                        static_cast <char_type>('-') <<
-                        static_cast <char_type>('>') <<
-                        static_cast <char_type>(' ') << pair_.second <<
-                        static_cast <char_type>('\n');
+                        static_cast<char_type>(' ') <<
+                        static_cast<char_type>('-') <<
+                        static_cast<char_type>('>') <<
+                        static_cast<char_type>(' ') << pair_.second <<
+                        static_cast<char_type>('\n');
                 }
 
-                stream_ << static_cast <char_type>('\n');
+                stream_ << static_cast<char_type>('\n');
             }
         }
 
@@ -252,6 +165,113 @@ namespace parsertl
         using token_info_vector = typename rules::token_info_vector;
         using token_map = std::map<token_prec_assoc, string>;
         using token_pair = std::pair<token_prec_assoc, string>;
+
+        static void dump_grammar(const production_vector& grammar_,
+            std::set<std::size_t>& seen_, const string_vector& symbols_,
+            const std::size_t terminals_, ostream& stream_)
+        {
+            for (auto iter_ = grammar_.cbegin(), end_ = grammar_.cend();
+                iter_ != end_; ++iter_)
+            {
+                if (seen_.find(iter_->_lhs) == seen_.end())
+                {
+                    auto lhs_iter_ = iter_;
+                    std::size_t index_ = lhs_iter_ - grammar_.begin();
+
+                    stream_ << symbols_[terminals_ + lhs_iter_->_lhs];
+                    stream_ << static_cast<char_type>(':');
+
+                    while (index_ != static_cast<std::size_t>(~0))
+                        dump_production(grammar_, lhs_iter_, symbols_,
+                            terminals_, index_, stream_);
+
+                    seen_.insert(iter_->_lhs);
+                    stream_ << static_cast<char_type>(';') <<
+                        static_cast<char_type>('\n') <<
+                        static_cast<char_type>('\n');
+                }
+            }
+        }
+
+        static void dump_production(const production_vector& grammar_,
+            typename production_vector::const_iterator& lhs_iter_,
+            const string_vector& symbols_, const std::size_t terminals_,
+            std::size_t& index_, ostream& stream_)
+        {
+            if (lhs_iter_->_rhs.first.empty())
+            {
+                stream_ << static_cast<char_type>(' ');
+                empty(stream_);
+            }
+            else
+            {
+                auto rhs_iter_ = lhs_iter_->_rhs.first.cbegin();
+                auto rhs_end_ = lhs_iter_->_rhs.first.cend();
+
+                for (; rhs_iter_ != rhs_end_; ++rhs_iter_)
+                {
+                    const std::size_t id_ =
+                        rhs_iter_->_type == symbol::type::TERMINAL ?
+                        rhs_iter_->_id :
+                        terminals_ + rhs_iter_->_id;
+
+                    // Don't dump '$'
+                    if (id_ > 0)
+                    {
+                        stream_ << static_cast<char_type>(' ') <<
+                            symbols_[id_];
+                    }
+                }
+            }
+
+            if (!lhs_iter_->_rhs.second.empty())
+            {
+                stream_ << static_cast<char_type>(' ');
+                prec(stream_);
+                stream_ << lhs_iter_->_rhs.second;
+            }
+
+            index_ = lhs_iter_->_next_lhs;
+
+            if (index_ != static_cast<std::size_t>(~0))
+            {
+                const string& lhs_ =
+                    symbols_[terminals_ + lhs_iter_->_lhs];
+
+                lhs_iter_ = grammar_.cbegin() + index_;
+                stream_ << static_cast<char_type>('\n');
+
+                for (std::size_t i_ = 0, size_ = lhs_.size();
+                    i_ < size_; ++i_)
+                {
+                    stream_ << static_cast<char_type>(' ');
+                }
+
+                stream_ << static_cast<char_type>('|');
+            }
+        }
+
+        static void dump_rhs(std::size_t& j_, const production& p_,
+            const std::size_t terminals_, const size_t_pair& pair_,
+            const string_vector& symbols_, ostream& stream_)
+        {
+            for (; j_ < p_._rhs.first.size(); ++j_)
+            {
+                const symbol& symbol_ = p_._rhs.first[j_];
+                const std::size_t id_ = symbol_._type ==
+                    symbol::type::TERMINAL ? symbol_._id :
+                    terminals_ + symbol_._id;
+
+                if (j_ == pair_.second)
+                {
+                    stream_ << static_cast<char_type>(' ') <<
+                        static_cast<char_type>('.');
+                }
+
+                stream_ << static_cast<char_type>(' ') <<
+                    symbols_[id_];
+            }
+        }
 
         static void empty(std::ostream& stream_)
         {

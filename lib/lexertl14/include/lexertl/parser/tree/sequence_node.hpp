@@ -30,19 +30,19 @@ namespace lexertl
                 _left(left_),
                 _right(right_)
             {
-                _left->append_firstpos(node::_firstpos);
+                _left->append_firstpos(node::firstpos());
 
                 if (_left->nullable())
                 {
-                    _right->append_firstpos(node::_firstpos);
+                    _right->append_firstpos(node::firstpos());
                 }
 
                 if (_right->nullable())
                 {
-                    _left->append_lastpos(node::_lastpos);
+                    _left->append_lastpos(node::lastpos());
                 }
 
-                _right->append_lastpos(node::_lastpos);
+                _right->append_lastpos(node::lastpos());
 
                 node_vector& lastpos_ = _left->lastpos();
                 const node_vector& firstpos_ = _right->firstpos();
@@ -97,8 +97,8 @@ namespace lexertl
 
                     observer_ptr<node> lhs_ = new_node_stack_.top();
 
-                    node_ptr_vector_.emplace_back
-                    (std::make_unique<basic_sequence_node>(lhs_, rhs_));
+                    node_ptr_vector_.push_back(std::make_unique
+                        <basic_sequence_node>(lhs_, rhs_));
                     new_node_stack_.top() = node_ptr_vector_.back().get();
                 }
                 else

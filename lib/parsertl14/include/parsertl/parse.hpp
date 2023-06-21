@@ -64,8 +64,8 @@ namespace parsertl
                     sm_.at(results_.stack.back(), results_.token_id);
                 break;
             default:
-                // action::accept
-                // action::error
+                // accept
+                // error
                 break;
             }
 

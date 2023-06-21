@@ -99,7 +99,7 @@ namespace lexertl
                 auto rhs_token_ = std::make_unique<token>(*iter_++);
                 char action_ = 0;
 
-                _token_stack.emplace(std::move(rhs_token_));
+                _token_stack.push(std::move(rhs_token_));
                 rhs_token_ = std::make_unique<token>(*iter_);
 
                 if (iter_ + 1 != end_) ++iter_;
@@ -113,7 +113,7 @@ namespace lexertl
                     {
                     case '<':
                     case '=':
-                        _token_stack.emplace(std::move(rhs_token_));
+                        _token_stack.push(std::move(rhs_token_));
                         rhs_token_ = std::make_unique<token>(*iter_);
 
                         if (iter_ + 1 != end_) ++iter_;
@@ -164,7 +164,7 @@ namespace lexertl
 
                 observer_ptr<node> rhs_node_ = _node_ptr_vector.back().get();
 
-                _node_ptr_vector.emplace_back(std::make_unique<sequence_node>
+                _node_ptr_vector.push_back(std::make_unique<sequence_node>
                     (lhs_node_, rhs_node_));
                 root_ = _node_ptr_vector.back().get();
 
@@ -173,7 +173,7 @@ namespace lexertl
                     fixup_bol(root_);
                 }
 
-                if ((flags_ & match_zero_len) == 0)
+                if ((flags_ & *regex_flags::match_zero_len) == 0)
                 {
                     const auto& firstpos_ = root_->firstpos();
 
@@ -256,14 +256,14 @@ namespace lexertl
                     orexp(handle_);
                     break;
                 case token_type::SEQUENCE:
-                    _token_stack.emplace(std::make_unique<token>
+                    _token_stack.push(std::make_unique<token>
                         (token_type::OREXP));
                     break;
                 case token_type::SUB:
                     sub(handle_);
                     break;
                 case token_type::EXPRESSION:
-                    _token_stack.emplace(std::make_unique<token>
+                    _token_stack.push(std::make_unique<token>
                         (token_type::SUB));
                     break;
                 case token_type::REPEAT:
@@ -284,26 +284,26 @@ namespace lexertl
                 case token_type::OPT:
                 case token_type::AOPT:
                     optional(rhs_->_type == token_type::OPT);
-                    _token_stack.emplace(std::make_unique<token>
+                    _token_stack.push(std::make_unique<token>
                         (token_type::DUP));
                     break;
                 case token_type::ZEROORMORE:
                 case token_type::AZEROORMORE:
                     zero_or_more(rhs_->_type == token_type::ZEROORMORE);
-                    _token_stack.emplace(std::make_unique<token>
+                    _token_stack.push(std::make_unique<token>
                         (token_type::DUP));
                     break;
                 case token_type::ONEORMORE:
                 case token_type::AONEORMORE:
                     one_or_more(rhs_->_type == token_type::ONEORMORE);
-                    _token_stack.emplace(std::make_unique<token>
+                    _token_stack.push(std::make_unique<token>
                         (token_type::DUP));
                     break;
                 case token_type::REPEATN:
                 case token_type::AREPEATN:
                     repeatn(rhs_->_type == token_type::REPEATN,
                         handle_.top().get());
-                    _token_stack.emplace(std::make_unique<token>
+                    _token_stack.push(std::make_unique<token>
                         (token_type::DUP));
                     break;
                 default:
@@ -320,7 +320,7 @@ namespace lexertl
 
                 if (handle_.size() == 1)
                 {
-                    _token_stack.emplace(std::make_unique<token>
+                    _token_stack.push(std::make_unique<token>
                         (token_type::REGEX));
                 }
                 else
@@ -330,7 +330,7 @@ namespace lexertl
                     handle_.pop();
                     assert(handle_.top()->_type == token_type::SEQUENCE);
                     perform_or();
-                    _token_stack.emplace(std::make_unique<token>
+                    _token_stack.push(std::make_unique<token>
                         (token_type::OREXP));
                 }
             }
@@ -344,7 +344,7 @@ namespace lexertl
 
                 observer_ptr<node> lhs_ = _tree_node_stack.top();
 
-                _node_ptr_vector.emplace_back
+                _node_ptr_vector.push_back
                 (std::make_unique<selection_node>(lhs_, rhs_));
                 _tree_node_stack.top() = _node_ptr_vector.back().get();
             }
@@ -356,7 +356,7 @@ namespace lexertl
 
                 if (handle_.size() == 1)
                 {
-                    _token_stack.emplace(std::make_unique<token>
+                    _token_stack.push(std::make_unique<token>
                         (token_type::SEQUENCE));
                 }
                 else
@@ -365,7 +365,7 @@ namespace lexertl
                     assert(handle_.top()->_type == token_type::EXPRESSION);
                     // perform join
                     sequence();
-                    _token_stack.emplace(std::make_unique<token>
+                    _token_stack.push(std::make_unique<token>
                         (token_type::SUB));
                 }
             }
@@ -377,14 +377,14 @@ namespace lexertl
 
                 if (handle_.size() == 1)
                 {
-                    _token_stack.emplace(std::make_unique<token>
+                    _token_stack.push(std::make_unique<token>
                         (token_type::EXPRESSION));
                 }
                 else
                 {
                     handle_.pop();
                     assert(handle_.top()->_type == token_type::DUP);
-                    _token_stack.emplace(std::make_unique<token>
+                    _token_stack.push(std::make_unique<token>
                         (token_type::REPEAT));
                 }
             }
@@ -399,10 +399,10 @@ namespace lexertl
                     handle_.size() == 1);
 
                 // store charset
-                _node_ptr_vector.emplace_back
-                (std::make_unique<leaf_node>(bol_token(), true));
+                _node_ptr_vector.push_back(std::make_unique<leaf_node>
+                    (bol_token(), true));
                 _tree_node_stack.push(_node_ptr_vector.back().get());
-                _token_stack.emplace(std::make_unique<token>
+                _token_stack.push(std::make_unique<token>
                     (token_type::REPEAT));
             }
 
@@ -431,10 +431,10 @@ namespace lexertl
                 }
 
                 // store charset
-                _node_ptr_vector.emplace_back
-                (std::make_unique<leaf_node>(eol_token(), true));
+                _node_ptr_vector.push_back(std::make_unique<leaf_node>
+                    (eol_token(), true));
                 _tree_node_stack.push(_node_ptr_vector.back().get());
-                _token_stack.emplace(std::make_unique<token>
+                _token_stack.push(std::make_unique<token>
                     (token_type::REPEAT));
             }
 
@@ -447,10 +447,10 @@ namespace lexertl
                 const id_type id_ = lookup(handle_.top()->_str);
 
                 // store charset
-                _node_ptr_vector.
-                    emplace_back(std::make_unique<leaf_node>(id_, true));
+                _node_ptr_vector.push_back(std::make_unique<leaf_node>
+                    (id_, true));
                 _tree_node_stack.push(_node_ptr_vector.back().get());
-                _token_stack.emplace(std::make_unique<token>
+                _token_stack.push(std::make_unique<token>
                     (token_type::REPEAT));
             }
 
@@ -479,11 +479,11 @@ namespace lexertl
 
                 push_ranges(data_, std::integral_constant<bool, char_24_bit>());
 
-                _token_stack.emplace(std::make_unique<token>
+                _token_stack.push(std::make_unique<token>
                     (token_type::OPENPAREN));
-                _token_stack.emplace(std::make_unique<token>
+                _token_stack.push(std::make_unique<token>
                     (token_type::REGEX));
-                _token_stack.emplace(std::make_unique<token>
+                _token_stack.push(std::make_unique<token>
                     (token_type::CLOSEPAREN));
             }
 
@@ -664,11 +664,11 @@ namespace lexertl
 
                     if (iter_ == end_)
                     {
-                        data_[0].emplace_back(std::make_unique
+                        data_[0].push_back(std::make_unique
                             <string_token>(token_));
-                        data_[1].emplace_back(std::make_unique
+                        data_[1].push_back(std::make_unique
                             <string_token>(token2_));
-                        data_[2].emplace_back(std::make_unique
+                        data_[2].push_back(std::make_unique
                             <string_token>(token3_));
                         finished_ = true;
                     }
@@ -740,7 +740,7 @@ namespace lexertl
             {
                 const id_type id_ = lookup(*token_);
 
-                _node_ptr_vector.emplace_back(std::make_unique
+                _node_ptr_vector.push_back(std::make_unique
                     <leaf_node>(id_, true));
                 _tree_node_stack.push(_node_ptr_vector.back().get());
             }
@@ -781,8 +781,7 @@ namespace lexertl
                 assert(handle_.top()->_type == token_type::REGEX);
                 handle_.pop();
                 assert(handle_.top()->_type == token_type::CLOSEPAREN);
-                _token_stack.emplace(std::make_unique<token>
-                    (token_type::REPEAT));
+                _token_stack.push(std::make_unique<token>(token_type::REPEAT));
             }
 
             void sequence()
@@ -793,8 +792,8 @@ namespace lexertl
 
                 observer_ptr<node> lhs_ = _tree_node_stack.top();
 
-                _node_ptr_vector.emplace_back
-                (std::make_unique<sequence_node>(lhs_, rhs_));
+                _node_ptr_vector.push_back(std::make_unique<sequence_node>
+                    (lhs_, rhs_));
                 _tree_node_stack.top() = _node_ptr_vector.back().get();
             }
 
@@ -811,13 +810,13 @@ namespace lexertl
                     node_->greedy(greedy_);
                 }
 
-                _node_ptr_vector.emplace_back(std::make_unique<leaf_node>
+                _node_ptr_vector.push_back(std::make_unique<leaf_node>
                     (node::null_token(), greedy_));
 
                 observer_ptr<node> rhs_ = _node_ptr_vector.back().get();
 
-                _node_ptr_vector.emplace_back
-                (std::make_unique<selection_node>(lhs_, rhs_));
+                _node_ptr_vector.push_back(std::make_unique<selection_node>
+                    (lhs_, rhs_));
                 _tree_node_stack.top() = _node_ptr_vector.back().get();
             }
 
@@ -826,8 +825,8 @@ namespace lexertl
                 // perform *
                 observer_ptr<node> ptr_ = _tree_node_stack.top();
 
-                _node_ptr_vector.emplace_back
-                (std::make_unique<iteration_node>(ptr_, greedy_));
+                _node_ptr_vector.push_back(std::make_unique<iteration_node>
+                    (ptr_, greedy_));
                 _tree_node_stack.top() = _node_ptr_vector.back().get();
             }
 
@@ -837,13 +836,13 @@ namespace lexertl
                 observer_ptr<node> lhs_ = _tree_node_stack.top();
                 observer_ptr<node> copy_ = lhs_->copy(_node_ptr_vector);
 
-                _node_ptr_vector.emplace_back(std::make_unique<iteration_node>
+                _node_ptr_vector.push_back(std::make_unique<iteration_node>
                     (copy_, greedy_));
 
                 observer_ptr<node> rhs_ = _node_ptr_vector.back().get();
 
-                _node_ptr_vector.emplace_back
-                (std::make_unique<sequence_node>(lhs_, rhs_));
+                _node_ptr_vector.push_back(std::make_unique<sequence_node>
+                    (lhs_, rhs_));
                 _tree_node_stack.top() = _node_ptr_vector.back().get();
             }
 
@@ -955,22 +954,22 @@ namespace lexertl
 
                 if (!found_)
                 {
-                    _node_ptr_vector.emplace_back
-                    (std::make_unique<leaf_node>(bol_token(), true));
+                    _node_ptr_vector.push_back(std::make_unique<leaf_node>
+                        (bol_token(), true));
 
                     observer_ptr<node> lhs_ = _node_ptr_vector.back().get();
 
-                    _node_ptr_vector.emplace_back
-                    (std::make_unique<leaf_node>(node::null_token(), true));
+                    _node_ptr_vector.push_back(std::make_unique<leaf_node>
+                        (node::null_token(), true));
 
                     observer_ptr<node> rhs_ = _node_ptr_vector.back().get();
 
-                    _node_ptr_vector.emplace_back
-                    (std::make_unique<selection_node>(lhs_, rhs_));
+                    _node_ptr_vector.push_back(std::make_unique<selection_node>
+                        (lhs_, rhs_));
                     lhs_ = _node_ptr_vector.back().get();
 
-                    _node_ptr_vector.emplace_back
-                    (std::make_unique<sequence_node>(lhs_, root_));
+                    _node_ptr_vector.push_back(std::make_unique<sequence_node>
+                        (lhs_, root_));
                     root_ = _node_ptr_vector.back().get();
                 }
             }

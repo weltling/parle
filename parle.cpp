@@ -36,6 +36,7 @@
 #define __STDC_FORMAT_MACROS
 #include "inttypes.h"
 
+#include "include/lexertl/enum_operator.hpp"
 #include "include/lexertl/generator.hpp"
 #include "include/lexertl/lookup.hpp"
 #include "include/lexertl/iterator.hpp"
@@ -1916,7 +1917,8 @@ php_parle_lexer_obj_ctor(zend_class_entry *ce, zend_object_handlers *obj_handler
 	zplo->zo.handlers = obj_handlers;
 
 	zplo->lex = new lex_type{};
-	zplo->lex->rules.flags(lexertl::dot_not_newline | lexertl::dot_not_cr_lf);
+	zplo->lex->rules.flags(*lexertl::regex_flags::dot_not_newline |
+		*lexertl::regex_flags::dot_not_cr_lf);
 
 	return &zplo->zo;
 }/*}}}*/
@@ -3011,11 +3013,11 @@ PHP_MINIT_FUNCTION(parle)
 
 	auto init_lexer_consts_and_props = [](zend_class_entry *ce) {
 #define DECL_CONST(name, val) zend_declare_class_constant_long(ce, name, sizeof(name) - 1, val);
-		DECL_CONST("ICASE", lexertl::icase)
-		DECL_CONST("DOT_NOT_LF", lexertl::dot_not_newline)
-		DECL_CONST("DOT_NOT_CRLF", lexertl::dot_not_cr_lf)
-		DECL_CONST("SKIP_WS", lexertl::skip_ws)
-		DECL_CONST("MATCH_ZERO_LEN", lexertl::match_zero_len)
+		DECL_CONST("ICASE", *lexertl::regex_flags::icase)
+		DECL_CONST("DOT_NOT_LF", *lexertl::regex_flags::dot_not_newline)
+		DECL_CONST("DOT_NOT_CRLF", *lexertl::regex_flags::dot_not_cr_lf)
+		DECL_CONST("SKIP_WS", *lexertl::regex_flags::skip_ws)
+		DECL_CONST("MATCH_ZERO_LEN", *lexertl::regex_flags::match_zero_len)
 #undef DECL_CONST
 		zend_declare_property_bool(ce, "bol", sizeof("bol")-1, 0, ZEND_ACC_PUBLIC);
 		zend_declare_property_long(ce, "flags", sizeof("flags")-1, 0, ZEND_ACC_PUBLIC);

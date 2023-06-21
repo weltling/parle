@@ -6,7 +6,6 @@
 #ifndef PARSERTL_SEARCH_HPP
 #define PARSERTL_SEARCH_HPP
 
-#include "../../../lexertl14/include/lexertl/iterator.hpp"
 #include <map>
 #include "match_results.hpp"
 #include "parse.hpp"
@@ -583,8 +582,8 @@ namespace parsertl
                         sm_.at(results_.stack.back(), results_.token_id);
                     break;
                 default:
-                    // action::accept
-                    // action::error
+                    // accept
+                    // error
                     break;
                 }
 

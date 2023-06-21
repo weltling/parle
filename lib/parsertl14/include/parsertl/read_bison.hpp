@@ -104,9 +104,9 @@ namespace parsertl
         lrules_.push("[ \t\r]+", lrules_.skip());
 
         lrules_.push("INITIAL,CODE,PRODUCTIONS", "[{]", ">CODE");
-        lrules_.push("CODE", "'(\\\\.|[^'])*'", ".");
+        lrules_.push("CODE", R"('(\\.|[^'])*')", ".");
 
-        lrules_.push("CODE", "[\"](\\\\.|[^\"])*[\"]", ".");
+        lrules_.push("CODE", R"(\"(\\.|[^"])*\")", ".");
         lrules_.push("CODE", "<%", ">CODE");
         lrules_.push("CODE", "%>", "<");
         lrules_.push("CODE", "[^}]", ".");
@@ -120,8 +120,8 @@ namespace parsertl
         lrules_.push("PRODUCTIONS", "%empty",
             grules_.token_id("'%empty'"), ".");
         lrules_.push("INITIAL,PRODUCTIONS",
-            "'(\\\\([^0-9cx]|[0-9]{1,3}|c[@a-zA-Z]|x\\d+)|[^'])+'|"
-            "[\"](\\\\([^0-9cx]|[0-9]{1,3}|c[@a-zA-Z]|x\\d+)|[^\"])+[\"]",
+            R"('(\\([^0-9cx]|[0-9]{1,3}|c[@a-zA-Z]|x\d+)|[^'])+'|)"
+            R"(\"(\\([^0-9cx]|[0-9]{1,3}|c[@a-zA-Z]|x\d+)|[^"])+\")",
             grules_.token_id("LITERAL"), ".");
         lrules_.push("INITIAL,PRODUCTIONS",
             "[A-Za-z_.][-A-Za-z_.0-9]*", grules_.token_id("NAME"), ".");

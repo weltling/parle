@@ -19,7 +19,7 @@ namespace lexertl
 {
     template<typename sm, typename char_type, typename id_type = uint16_t,
         bool is_dfa = true>
-        class basic_debug
+    class basic_debug
     {
     public:
         using char_state_machine =
@@ -72,6 +72,8 @@ namespace lexertl
 
     protected:
         using dfa_state = typename char_state_machine::state;
+        using id_type_string_token_pair =
+            typename dfa_state::id_type_string_token_pair;
         using string_token = typename dfa_state::string_token;
         using stringstream = std::basic_stringstream<char_type>;
 
@@ -132,58 +134,62 @@ namespace lexertl
                 }
 
                 for (const auto& tran_ : state_._transitions)
-                {
-                    string_token token_ = tran_.second;
-
-                    open_bracket(stream_);
-
-                    if (!tran_.second.any() && tran_.second.negatable())
-                    {
-                        token_.negate();
-                        negated(stream_);
-                    }
-
-                    string chars_;
-
-                    for (const auto& range_ : token_._ranges)
-                    {
-                        if (range_.first == static_cast<char_type>('-') ||
-                            range_.first == static_cast<char_type>('^') ||
-                            range_.first == static_cast<char_type>(']'))
-                        {
-                            stream_ << static_cast<char_type>('\\');
-                        }
-
-                        chars_ = string_token::escape_char
-                        (range_.first);
-
-                        if (range_.first != range_.second)
-                        {
-                            if (range_.first + 1 < range_.second)
-                            {
-                                chars_ += static_cast<char_type>('-');
-                            }
-
-                            if (range_.second == static_cast<char_type>('-') ||
-                                range_.second == static_cast<char_type>('^') ||
-                                range_.second == static_cast<char_type>(']'))
-                            {
-                                stream_ << static_cast<char_type>('\\');
-                            }
-
-                            chars_ += string_token::escape_char(range_.second);
-                        }
-
-                        stream_ << chars_;
-                    }
-
-                    close_bracket(stream_);
-                    stream_num(static_cast<std::size_t>(tran_.first), stream_);
-                    stream_ << std::endl;
-                }
+                    dump_transition(tran_, stream_);
 
                 stream_ << std::endl;
             }
+        }
+
+        static void dump_transition(const id_type_string_token_pair& tran_,
+            ostream& stream_)
+        {
+            string_token token_ = tran_.second;
+
+            open_bracket(stream_);
+
+            if (!tran_.second.any() && tran_.second.negatable())
+            {
+                token_.negate();
+                negated(stream_);
+            }
+
+            string chars_;
+
+            for (const auto& range_ : token_._ranges)
+            {
+                if (range_.first == static_cast<char_type>('-') ||
+                    range_.first == static_cast<char_type>('^') ||
+                    range_.first == static_cast<char_type>(']'))
+                {
+                    stream_ << static_cast<char_type>('\\');
+                }
+
+                chars_ = string_token::escape_char
+                (range_.first);
+
+                if (range_.first != range_.second)
+                {
+                    if (range_.first + 1 < range_.second)
+                    {
+                        chars_ += static_cast<char_type>('-');
+                    }
+
+                    if (range_.second == static_cast<char_type>('-') ||
+                        range_.second == static_cast<char_type>('^') ||
+                        range_.second == static_cast<char_type>(']'))
+                    {
+                        stream_ << static_cast<char_type>('\\');
+                    }
+
+                    chars_ += string_token::escape_char(range_.second);
+                }
+
+                stream_ << chars_;
+            }
+
+            close_bracket(stream_);
+            stream_num(static_cast<std::size_t>(tran_.first), stream_);
+            stream_ << std::endl;
         }
 
         static void lexer_state(std::ostream& stream_)

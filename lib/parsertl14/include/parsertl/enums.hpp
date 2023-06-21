@@ -8,7 +8,7 @@
 
 namespace parsertl
 {
-    enum rule_flags { enable_captures = 1 };
+    enum class rule_flags { enable_captures = 1 };
     enum class action
     {
         error,

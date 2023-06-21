@@ -31,10 +31,10 @@ namespace lexertl
                 _set_greedy(!greedy_),
                 _greedy(greedy_)
             {
-                if (!node::_nullable)
+                if (!node::nullable())
                 {
-                    node::_firstpos.push_back(this);
-                    node::_lastpos.push_back(this);
+                    node::firstpos().push_back(this);
+                    node::lastpos().push_back(this);
                 }
             }
 
@@ -102,7 +102,7 @@ namespace lexertl
                 node_stack& new_node_stack_, bool_stack&/*perform_op_stack_*/,
                 bool&/*down_*/) const override
             {
-                node_ptr_vector_.emplace_back(std::make_unique<basic_leaf_node>
+                node_ptr_vector_.push_back(std::make_unique<basic_leaf_node>
                     (_token, _greedy));
                 new_node_stack_.push(node_ptr_vector_.back().get());
             }

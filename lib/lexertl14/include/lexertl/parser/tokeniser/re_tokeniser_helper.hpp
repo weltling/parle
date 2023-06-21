@@ -7,6 +7,7 @@
 #define LEXERTL_RE_TOKENISER_HELPER_HPP
 
 #include "../../char_traits.hpp"
+#include "../../enum_operator.hpp"
 // strlen()
 #include <cstring>
 #include "re_tokeniser_state.hpp"
@@ -175,7 +176,7 @@ namespace lexertl
 
                         token_.insert(range_);
 
-                        if (state_._flags & icase)
+                        if (state_._flags & *regex_flags::icase)
                         {
                             string_token folded_;
 
@@ -1464,7 +1465,7 @@ namespace lexertl
 
                 // Even though ranges are used now, we still need to consider
                 // each character if icase is set.
-                if (state_._flags & icase)
+                if (state_._flags & *regex_flags::icase)
                 {
                     range range_(start_, end_);
                     string_token folded_;

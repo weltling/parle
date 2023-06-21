@@ -55,7 +55,7 @@ namespace parsertl
             {
             }
 
-            void clear()
+            void clear() noexcept
             {
                 // Qualify action to prevent compilation error
                 action = parsertl::action::error;
@@ -72,7 +72,7 @@ namespace parsertl
         // Just in case someone wants to use a pointer to the base
         virtual ~base_state_machine() = default;
 
-        virtual void clear()
+        virtual void clear() noexcept
         {
             _columns = _rows = 0;
             _rules.clear();
@@ -96,7 +96,7 @@ namespace parsertl
         // No need to specify constructor.
         ~basic_state_machine() override = default;
 
-        void clear() override
+        void clear() noexcept override
         {
             base_sm::clear();
             _table.clear();
@@ -173,7 +173,7 @@ namespace parsertl
         // No need to specify constructor.
         ~basic_uncompressed_state_machine() override = default;
 
-        void clear() override
+        void clear() noexcept override
         {
             base_sm::clear();
             _table.clear();

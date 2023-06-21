@@ -6,6 +6,8 @@
 #ifndef PARSERTL_SEARCH_ITERATOR_HPP
 #define PARSERTL_SEARCH_ITERATOR_HPP
 
+#include "capture.hpp"
+#include "../../../lexertl14/include/lexertl/iterator.hpp"
 #include "match_results.hpp"
 #include "search.hpp"
 
@@ -17,8 +19,7 @@ namespace parsertl
     {
     public:
         using iter_type = typename lexer_iterator::value_type::iter_type;
-        using results =
-            std::vector<std::vector<std::pair<iter_type, iter_type>>>;
+        using results = std::vector<std::vector<capture<iter_type>>>;
         using value_type = results;
         using difference_type = ptrdiff_t;
         using pointer = const value_type*;

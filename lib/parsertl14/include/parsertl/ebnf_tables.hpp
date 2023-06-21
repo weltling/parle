@@ -13,7 +13,7 @@ namespace parsertl
 {
     struct ebnf_tables
     {
-        enum
+        enum class yyconsts
         {
             YYFINAL = 15,
             YYLAST = 31,
@@ -22,7 +22,7 @@ namespace parsertl
             YYTABLE_NINF = -1
         };
 
-        enum yytokentype
+        enum class yytokentype
         {
             EMPTY = 258,
             IDENTIFIER = 259,

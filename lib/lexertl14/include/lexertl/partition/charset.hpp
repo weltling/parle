@@ -25,15 +25,10 @@ namespace lexertl
             token _token;
             index_set _index_set;
 
-            basic_charset() :
-                _token(),
-                _index_set()
-            {
-            }
+            basic_charset() = default;
 
             basic_charset(const token& token_, const id_type index_) :
-                _token(token_),
-                _index_set()
+                _token(token_)
             {
                 _index_set.insert(index_);
             }

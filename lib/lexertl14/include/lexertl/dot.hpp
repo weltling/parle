@@ -64,7 +64,11 @@ namespace lexertl
         static string node_name(id_type dfa_id_, id_type state_id_)
         {
             stringstream namestream_;
-            namestream_ << "L" << dfa_id_ << "_S" << state_id_;
+
+            namestream_ << 'L';
+            stream_num(dfa_id_, namestream_);
+            namestream_ << "_S";
+            stream_num(state_id_, namestream_);
             return namestream_.str();
         }
 
@@ -137,8 +141,8 @@ namespace lexertl
                 {
                     out_ << '\\';
                     out_ << 'x';
-                    out_ << std::hex <<
-                        static_cast<std::size_t>(ch_);
+                    out_ << std::hex;
+                    stream_num(static_cast<std::size_t>(ch_), out_);
                 }
                 else
                 {
@@ -177,9 +181,9 @@ namespace lexertl
                 else if (state_._end_state)
                 {
                     stream_ << "    " << name <<
-                        " [shape = doublecircle, xlabel=\"id =" <<
-                        static_cast<std::size_t>(state_._id) << "\"];" <<
-                        std::endl;
+                        " [shape = doublecircle, xlabel=\"id =";
+                    stream_num(static_cast<std::size_t>(state_._id), stream_);
+                    stream_ << "\"];" << std::endl;
                 }
                 else
                 {
@@ -214,39 +218,7 @@ namespace lexertl
                         negated(stream_);
                     }
 
-                    string chars_;
-                    auto ranges_iter_ = token_._ranges.cbegin();
-                    auto ranges_end_ = token_._ranges.cend();
-
-                    for (; ranges_iter_ != ranges_end_; ++ranges_iter_)
-                    {
-                        if (ranges_iter_->first == '^' ||
-                            ranges_iter_->first == ']')
-                        {
-                            stream_ << "\\\\";
-                        }
-
-                        chars_ = double_escape_char(ranges_iter_->first);
-
-                        if (ranges_iter_->first != ranges_iter_->second)
-                        {
-                            if (ranges_iter_->first + 1 < ranges_iter_->second)
-                            {
-                                chars_ += '-';
-                            }
-
-                            if (ranges_iter_->second == '^' ||
-                                ranges_iter_->second == ']')
-                            {
-                                stream_ << "\\\\";
-                            }
-
-                            chars_ += double_escape_char(ranges_iter_->second);
-                        }
-
-                        stream_ << chars_;
-                    }
-
+                    dump_ranges(token_, stream_);
                     close_bracket(stream_);
                     stream_ << "\"];" << std::endl;
                 }
@@ -256,6 +228,40 @@ namespace lexertl
                     stream_ << "    " << src_name << " -> " << dst_name
                         << " [style = \"dashed\"];" << std::endl;
                 }
+            }
+        }
+
+        static void dump_ranges(const string_token& token_, ostream& stream_)
+        {
+            string chars_;
+
+            for (const auto& range : token_._ranges)
+            {
+                if (range.first == '^' ||
+                    range.first == ']')
+                {
+                    stream_ << R"(\\)";
+                }
+
+                chars_ = double_escape_char(range.first);
+
+                if (range.first != range.second)
+                {
+                    if (range.first + 1 < range.second)
+                    {
+                        chars_ += '-';
+                    }
+
+                    if (range.second == '^' ||
+                        range.second == ']')
+                    {
+                        stream_ << R"(\\)";
+                    }
+
+                    chars_ += double_escape_char(range.second);
+                }
+
+                stream_ << chars_;
             }
         }
 
@@ -289,6 +295,7 @@ namespace lexertl
 
     using dot = basic_dot<basic_state_machine<char>, char>;
     using wdot = basic_dot<basic_state_machine<wchar_t>, wchar_t>;
+    using u32dot = basic_dot<basic_state_machine<char32_t>, char32_t>;
 }
 
 #endif
