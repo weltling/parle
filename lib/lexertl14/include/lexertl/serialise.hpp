@@ -6,6 +6,7 @@
 #ifndef LEXERTL_SERIALISE_HPP
 #define LEXERTL_SERIALISE_HPP
 
+#include "runtime_error.hpp"
 #include "state_machine.hpp"
 
 namespace lexertl

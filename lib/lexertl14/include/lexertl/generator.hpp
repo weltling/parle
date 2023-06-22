@@ -9,6 +9,7 @@
 #include <algorithm>
 #include "partition/charset.hpp"
 #include "char_traits.hpp"
+#include "enum_operator.hpp"
 #include "partition/equivset.hpp"
 #include <list>
 #include <memory>
@@ -106,7 +107,8 @@ namespace lexertl
             auto next_dfa_iter_ = next_dfas_[dfa_].cbegin();
             auto push_dfa_iter_ = pushes_[dfa_].cbegin();
             auto pop_dfa_iter_ = pops_[dfa_].cbegin();
-            const bool seen_bol_ = (rules_.features()[dfa_] & bol_bit) != 0;
+            const bool seen_bol_ =
+                (rules_.features()[dfa_] & *feature_bit::bol) != 0;
             observer_ptr<node> root_ = nullptr;
 
             root_ = parser_.parse(*regex_iter_, *id_iter_, *user_id_iter_,
@@ -125,10 +127,10 @@ namespace lexertl
                 observer_ptr<node> rhs_ = parser_.parse(*regex_iter_, *id_iter_,
                     *user_id_iter_, *next_dfa_iter_, *push_dfa_iter_,
                     *pop_dfa_iter_, rules_.flags(), cr_id_, nl_id_,
-                    (rules_.features()[dfa_] & bol_bit) != 0);
+                    (rules_.features()[dfa_] & *feature_bit::bol) != 0);
 
-                node_ptr_vector_.emplace_back
-                (std::make_unique<selection_node>(root_, rhs_));
+                node_ptr_vector_.push_back(std::make_unique<selection_node>
+                    (root_, rhs_));
                 root_ = node_ptr_vector_.back().get();
 
                 ++regex_iter_;
@@ -205,7 +207,7 @@ namespace lexertl
                     second].begin() : sm_traits::npos();
             }
 
-            dfa_alphabet_ = charset_list_.size() + transitions_index +
+            dfa_alphabet_ = charset_list_.size() + *state_index::transitions +
                 (cr_id_ == sm_traits::npos() &&
                     nl_id_ == sm_traits::npos() ? 0 : 1);
 
@@ -247,7 +249,7 @@ namespace lexertl
                                 dfa_alphabet_);
 
                         // Prune abstemious transitions from end states.
-                        if (*ptr_ && !(*ptr_ & greedy_bit) &&
+                        if (*ptr_ && !(*ptr_ & *state_bit::greedy) &&
                             !equivset_->_greedy)
                         {
                             continue;
@@ -276,12 +278,12 @@ namespace lexertl
                 }
                 else if (i_ == parser::eol_token())
                 {
-                    ptr_[eol_index] = transition_;
+                    ptr_[*state_index::eol] = transition_;
                     eol_set_.insert(index_ + 1);
                 }
                 else
                 {
-                    ptr_[i_ + transitions_index] = transition_;
+                    ptr_[i_ + *state_index::transitions] = transition_;
                 }
             }
         }
@@ -297,29 +299,31 @@ namespace lexertl
             {
                 observer_ptr<id_type> ptr_ = &dfa_.front() +
                     eol_ * dfa_alphabet_;
-                const id_type eol_state_ = ptr_[eol_index];
-                const id_type cr_state_ = ptr_[cr_id_ + transitions_index];
-                const id_type nl_state_ = ptr_[nl_id_ + transitions_index];
+                const id_type eol_state_ = ptr_[*state_index::eol];
+                const id_type cr_state_ =
+                    ptr_[cr_id_ + *state_index::transitions];
+                const id_type nl_state_ =
+                    ptr_[nl_id_ + *state_index::transitions];
 
                 if (cr_state_)
                 {
-                    ptr_[transitions_index + cr_id_] = 0;
+                    ptr_[*state_index::transitions + cr_id_] = 0;
                     ptr_ = &dfa_.front() + eol_state_ * dfa_alphabet_;
 
-                    if (ptr_[transitions_index + cr_id_] == 0)
+                    if (ptr_[*state_index::transitions + cr_id_] == 0)
                     {
-                        ptr_[transitions_index + cr_id_] = cr_state_;
+                        ptr_[*state_index::transitions + cr_id_] = cr_state_;
                     }
                 }
 
                 if (nl_state_)
                 {
-                    ptr_[transitions_index + nl_id_] = 0;
+                    ptr_[*state_index::transitions + nl_id_] = 0;
                     ptr_ = &dfa_.front() + eol_state_ * dfa_alphabet_;
 
-                    if (ptr_[transitions_index + nl_id_] == 0)
+                    if (ptr_[*state_index::transitions + nl_id_] == 0)
                     {
-                        ptr_[transitions_index + nl_id_] = nl_state_;
+                        ptr_[*state_index::transitions + nl_id_] = nl_state_;
                     }
                 }
             }
@@ -337,62 +341,65 @@ namespace lexertl
             {
                 observer_ptr<id_type> ptr_ = &dfa_.front() +
                     eol_ * dfa_alphabet_;
-                const id_type eol_state_ = ptr_[eol_index];
+                const id_type eol_state_ = ptr_[*state_index::eol];
                 id_type cr_state_ = 0;
                 id_type nl_state_ = 0;
 
                 for (; i_ < (sm_traits::char_24_bit ? 2 : 1); ++i_)
                 {
-                    ptr_ = &dfa_.front() + ptr_[transitions_index + zero_id_] *
+                    ptr_ = &dfa_.front() +
+                        ptr_[*state_index::transitions + zero_id_] *
                         dfa_alphabet_;
                 }
 
-                cr_state_ = ptr_[transitions_index + cr_id_];
+                cr_state_ = ptr_[*state_index::transitions + cr_id_];
 
                 if (cr_state_)
                 {
                     ptr_ = &dfa_.front() + eol_state_ * dfa_alphabet_;
 
-                    if (ptr_[transitions_index + zero_id_] != 0) continue;
+                    if (ptr_[*state_index::transitions + zero_id_] != 0)
+                        continue;
 
-                    ptr_[transitions_index + zero_id_] =
+                    ptr_[*state_index::transitions + zero_id_] =
                         static_cast<id_type>(dfa_.size() / dfa_alphabet_);
                     dfa_.resize(dfa_.size() + dfa_alphabet_, 0);
 
                     for (i_ = 0; i_ < (sm_traits::char_24_bit ? 1 : 0); ++i_)
                     {
                         ptr_ = &dfa_.front() + dfa_.size() - dfa_alphabet_;
-                        ptr_[transitions_index + zero_id_] =
+                        ptr_[*state_index::transitions + zero_id_] =
                             static_cast<id_type>(dfa_.size() / dfa_alphabet_);
                         dfa_.resize(dfa_.size() + dfa_alphabet_, 0);
                     }
 
                     ptr_ = &dfa_.front() + dfa_.size() - dfa_alphabet_;
-                    ptr_[transitions_index + cr_id_] = cr_state_;
+                    ptr_[*state_index::transitions + cr_id_] = cr_state_;
                 }
 
-                nl_state_ = ptr_[transitions_index + nl_id_];
+                nl_state_ = ptr_[*state_index::transitions + nl_id_];
 
                 if (nl_state_)
                 {
                     ptr_ = &dfa_.front() + eol_state_ * dfa_alphabet_;
 
-                    if (ptr_[transitions_index + zero_id_] != 0) continue;
+                    if (ptr_[*state_index::transitions + zero_id_] != 0)
+                        continue;
 
-                    ptr_[transitions_index + zero_id_] =
+                    ptr_[*state_index::transitions + zero_id_] =
                         static_cast<id_type>(dfa_.size() / dfa_alphabet_);
                     dfa_.resize(dfa_.size() + dfa_alphabet_, 0);
 
                     for (i_ = 0; i_ < (sm_traits::char_24_bit ? 1 : 0); ++i_)
                     {
                         ptr_ = &dfa_.front() + dfa_.size() - dfa_alphabet_;
-                        ptr_[transitions_index + zero_id_] =
+                        ptr_[*state_index::transitions + zero_id_] =
                             static_cast<id_type>(dfa_.size() / dfa_alphabet_);
                         dfa_.resize(dfa_.size() + dfa_alphabet_, 0);
                     }
 
                     ptr_ = &dfa_.front() + dfa_.size() - dfa_alphabet_;
-                    ptr_[transitions_index + nl_id_] = nl_state_;
+                    ptr_[*state_index::transitions + nl_id_] = nl_state_;
                 }
             }
         }
@@ -441,7 +448,7 @@ namespace lexertl
 
             if (internals_._dfa.size() > 1)
             {
-                internals_._features |= multi_state_bit;
+                internals_._features |= *feature_bit::multi_state;
             }
 
             sm_.data().swap(internals_);
@@ -468,7 +475,7 @@ namespace lexertl
                 typename charset_list::iterator end_;
                 charset_ptr overlap_ = std::make_unique<charset>();
 
-                lhs_.emplace_back(std::move(rhs_.front()));
+                lhs_.push_back(std::move(rhs_.front()));
                 rhs_.pop_front();
 
                 while (!rhs_.empty())
@@ -513,7 +520,7 @@ namespace lexertl
 
                     if (!r_->empty())
                     {
-                        lhs_.emplace_back(std::move(r_));
+                        lhs_.push_back(std::move(r_));
                     }
                 }
             }
@@ -523,7 +530,7 @@ namespace lexertl
         {
             for (const auto& pair_ : map_)
             {
-                list_.emplace_back(std::make_unique<charset>
+                list_.push_back(std::make_unique<charset>
                     (pair_.first, pair_.second));
             }
         }
@@ -570,11 +577,13 @@ namespace lexertl
                     char_ < range_.second; ++char_)
                 {
                     // Note char_ must be unsigned
-                    ptr_[char_] = index_ + transitions_index;
+                    ptr_[char_] = index_ +
+                        static_cast<id_type>(*state_index::transitions);
                 }
 
                 // Note range_.second must be unsigned
-                ptr_[range_.second] = index_ + transitions_index;
+                ptr_[range_.second] = index_ +
+                    static_cast<id_type>(*state_index::transitions);
             }
         }
 
@@ -620,8 +629,8 @@ namespace lexertl
 
             if (!found_)
             {
-                seen_sets_.emplace_back(std::move(set_ptr_));
-                seen_vectors_.emplace_back(std::move(vector_ptr_));
+                seen_sets_.push_back(std::move(set_ptr_));
+                seen_vectors_.push_back(std::move(vector_ptr_));
                 hash_vector_.push_back(hash_);
                 // State 0 is the jam state...
                 index_ = static_cast<id_type>(seen_sets_.size());
@@ -632,20 +641,20 @@ namespace lexertl
 
                 if (end_state_)
                 {
-                    dfa_[old_size_] |= end_state_bit;
+                    dfa_[old_size_] |= *state_bit::end_state;
 
                     if (greedy_)
-                        dfa_[old_size_] |= greedy_bit;
+                        dfa_[old_size_] |= *state_bit::greedy;
 
                     if (pop_dfa_)
                     {
-                        dfa_[old_size_] |= pop_dfa_bit;
+                        dfa_[old_size_] |= *state_bit::pop_dfa;
                     }
 
-                    dfa_[old_size_ + id_index] = id_;
-                    dfa_[old_size_ + user_id_index] = user_id_;
-                    dfa_[old_size_ + push_dfa_index] = push_dfa_;
-                    dfa_[old_size_ + next_dfa_index] = next_dfa_;
+                    dfa_[old_size_ + *state_index::id] = id_;
+                    dfa_[old_size_ + *state_index::user_id] = user_id_;
+                    dfa_[old_size_ + *state_index::push_dfa] = push_dfa_;
+                    dfa_[old_size_ + *state_index::next_dfa] = next_dfa_;
                 }
             }
 
@@ -703,7 +712,7 @@ namespace lexertl
                 typename equivset_list::iterator end_;
                 equivset_ptr overlap_ = std::make_unique<equivset>();
 
-                lhs_.emplace_back(std::move(rhs_.front()));
+                lhs_.push_back(std::move(rhs_.front()));
                 rhs_.pop_front();
 
                 while (!rhs_.empty())
@@ -748,7 +757,7 @@ namespace lexertl
 
                     if (!r_->empty())
                     {
-                        lhs_.emplace_back(std::move(r_));
+                        lhs_.push_back(std::move(r_));
                     }
                 }
             }
@@ -771,13 +780,13 @@ namespace lexertl
                             std::set<id_type> index_set_;
 
                             index_set_.insert(token_);
-                            list_.emplace_back
-                            (std::make_unique<equivset>(index_set_,
-                                token_, node_->greedy(), node_->followpos()));
+                            list_.push_back(std::make_unique<equivset>
+                                (index_set_, token_, node_->greedy(),
+                                    node_->followpos()));
                         }
                         else
                         {
-                            list_.emplace_back(std::make_unique<equivset>
+                            list_.push_back(std::make_unique<equivset>
                                 (set_mapping_[token_], token_, node_->greedy(),
                                     node_->followpos()));
                         }

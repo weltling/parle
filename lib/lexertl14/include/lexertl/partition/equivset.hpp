@@ -7,6 +7,7 @@
 #define LEXERTL_EQUIVSET_HPP
 
 #include <algorithm>
+#include <iterator>
 #include "../parser/tree/node.hpp"
 #include <set>
 
@@ -23,17 +24,11 @@ namespace lexertl
             using node_vector = std::vector<observer_ptr<node>>;
 
             index_vector _index_vector;
-            id_type _id;
-            bool _greedy;
+            id_type _id = 0;
+            bool _greedy = true;
             node_vector _followpos;
 
-            basic_equivset() :
-                _index_vector(),
-                _id(0),
-                _greedy(true),
-                _followpos()
-            {
-            }
+            basic_equivset() = default;
 
             basic_equivset(const index_set& index_set_, const id_type id_,
                 const bool greedy_, const node_vector& followpos_) :
@@ -58,28 +53,7 @@ namespace lexertl
                     // Note that the LHS takes priority in order to
                     // respect rule ordering priority in the lex spec.
                     overlap_._id = _id;
-
-                    if (_greedy)
-                        overlap_._greedy = true;
-                    else
-                    {
-                        bool greedy_ = false;
-
-                        for (const node* node_ : rhs_._followpos)
-                        {
-                            // If a 'hard greedy' transition is present,
-                            // then respect that above all else.
-                            if (node_->what_type() == node::node_type::LEAF &&
-                                node_->greedy() && node_->set_greedy())
-                            {
-                                greedy_ = true;
-                                break;
-                            }
-                        }
-
-                        overlap_._greedy = greedy_;
-                    }
-
+                    process_greedy(rhs_, overlap_);
                     overlap_._followpos = _followpos;
 
                     auto overlap_begin_ = overlap_._followpos.cbegin();
@@ -109,6 +83,30 @@ namespace lexertl
             }
 
         private:
+            void process_greedy(basic_equivset& rhs_, basic_equivset& overlap_)
+            {
+                if (_greedy)
+                    overlap_._greedy = true;
+                else
+                {
+                    bool greedy_ = false;
+
+                    for (const node* node_ : rhs_._followpos)
+                    {
+                        // If a 'hard greedy' transition is present,
+                        // then respect that above all else.
+                        if (node_->what_type() == node::node_type::LEAF &&
+                            node_->greedy() && node_->set_greedy())
+                        {
+                            greedy_ = true;
+                            break;
+                        }
+                    }
+
+                    overlap_._greedy = greedy_;
+                }
+            }
+
             void intersect_indexes(index_vector& rhs_, index_vector& overlap_)
             {
                 std::set_intersection(_index_vector.begin(),

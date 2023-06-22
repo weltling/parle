@@ -24,10 +24,7 @@ namespace lexertl
         using reference = const value_type&;
         using iterator_category = std::forward_iterator_tag;
 
-        iterator() :
-            _results(iter(), iter())
-        {
-        }
+        iterator() = default;
 
         iterator(const iter& start_, const iter& end_, const sm_type& sm_,
             const bool bol_ = true, const id_type state_ = 0) :

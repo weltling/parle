@@ -7,6 +7,7 @@
 #define LEXERTL_RE_TOKENISER_HPP
 
 #include <cstring>
+#include "../../enum_operator.hpp"
 #include "re_token.hpp"
 #include "../../runtime_error.hpp"
 #include <sstream>
@@ -203,11 +204,12 @@ namespace lexertl
                         {
                             token_._type = token_type::CHARSET;
 
-                            if (state_._flags & dot_not_newline)
+                            if (state_._flags & *regex_flags::dot_not_newline)
                             {
                                 token_._str.insert(range('\n', '\n'));
                             }
-                            else if (state_._flags & dot_not_cr_lf)
+                            else if (state_._flags &
+                                *regex_flags::dot_not_cr_lf)
                             {
                                 token_._str.insert(range('\n', '\n'));
                                 token_._str.insert(range('\r', '\r'));
@@ -295,7 +297,8 @@ namespace lexertl
             {
                 bool skipped_ = false;
 
-                if ((state_._flags & skip_ws) && !state_._in_string)
+                if ((state_._flags & *regex_flags::skip_ws) &&
+                    !state_._in_string)
                 {
                     bool c_comment_ = false;
                     bool skip_ws_ = false;
@@ -370,11 +373,13 @@ namespace lexertl
                         case 'i':
                             if (negate_)
                             {
-                                state_._flags = state_._flags & ~icase;
+                                state_._flags = state_._flags &
+                                    ~*regex_flags::icase;
                             }
                             else
                             {
-                                state_._flags = state_._flags | icase;
+                                state_._flags = state_._flags |
+                                    *regex_flags::icase;
                             }
 
                             negate_ = false;
@@ -382,19 +387,20 @@ namespace lexertl
                         case 's':
                             if (negate_)
                             {
+                                state_._flags = state_._flags |
 #ifdef _WIN32
-                                state_._flags = state_._flags | dot_not_cr_lf;
+                                    *regex_flags::dot_not_cr_lf;
 #else
-                                state_._flags = state_._flags | dot_not_newline;
+                                    *regex_flags::dot_not_newline;
 #endif
                             }
                             else
                             {
+                                state_._flags = state_._flags &
 #ifdef _WIN32
-                                state_._flags = state_._flags & ~dot_not_cr_lf;
+                                    ~*regex_flags::dot_not_cr_lf;
 #else
-                                state_._flags =
-                                    state_._flags & ~dot_not_newline;
+                                    ~*regex_flags::dot_not_newline;
 #endif
                             }
 
@@ -403,11 +409,13 @@ namespace lexertl
                         case 'x':
                             if (negate_)
                             {
-                                state_._flags = state_._flags & ~skip_ws;
+                                state_._flags = state_._flags &
+                                    ~*regex_flags::skip_ws;
                             }
                             else
                             {
-                                state_._flags = state_._flags | skip_ws;
+                                state_._flags = state_._flags |
+                                    *regex_flags::skip_ws;
                             }
 
                             negate_ = false;
@@ -461,7 +469,7 @@ namespace lexertl
 
                 token_.insert(range_);
 
-                if (state_._flags & icase)
+                if (state_._flags & *regex_flags::icase)
                 {
                     string_token folded_;
 

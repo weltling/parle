@@ -31,14 +31,12 @@ namespace lexertl
 
         basic_string_token() = default;
 
-        basic_string_token(char_type ch_) :
-            _ranges()
+        basic_string_token(const char_type ch_)
         {
             insert(range(ch_, ch_));
         }
 
-        basic_string_token(char_type first_, char_type second_) :
-            _ranges()
+        basic_string_token(const char_type first_, const char_type second_)
         {
             insert(range(first_, second_));
         }

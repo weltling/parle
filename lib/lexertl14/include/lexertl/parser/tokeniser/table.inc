@@ -525,4 +525,4 @@
     { "IsYezidi", IsYezidi },
     { "IsYi", IsYi },
     { "IsZanabazar_Square", IsZanabazar_Square },
-    { 0, 0 }
+    { nullptr, nullptr }

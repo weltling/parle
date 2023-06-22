@@ -24,11 +24,7 @@ namespace lexertl
         using reference =
             typename std::iterator_traits<char_iterator>::reference;
 
-        basic_utf8_in_iterator() :
-            _it(char_iterator()),
-            _end(char_iterator())
-        {
-        }
+        basic_utf8_in_iterator() = default;
 
         explicit basic_utf8_in_iterator(const char_iterator& it_,
             const char_iterator& end_) :
@@ -111,8 +107,8 @@ namespace lexertl
         }
 
     private:
-        char_iterator _it;
-        char_iterator _end;
+        char_iterator _it = char_iterator();
+        char_iterator _end = char_iterator();
         char_type _char = 0;
 
         void next()
@@ -256,7 +252,7 @@ namespace lexertl
         }
 
     private:
-        char_iterator _it;
+        char_iterator _it = char_iterator();
         char _bytes[4]{};
         unsigned char _count = 0;
         unsigned char _index = 0;
@@ -315,11 +311,7 @@ namespace lexertl
         using reference =
             typename std::iterator_traits<char_iterator>::reference;
 
-        basic_utf16_in_iterator() :
-            _it(char_iterator()),
-            _end(char_iterator())
-        {
-        }
+        basic_utf16_in_iterator() = default;
 
         explicit basic_utf16_in_iterator(const char_iterator& it_,
             const char_iterator& end_) :
@@ -392,8 +384,8 @@ namespace lexertl
         }
 
     private:
-        char_iterator _it;
-        char_iterator _end;
+        char_iterator _it = char_iterator();
+        char_iterator _end = char_iterator();
         char_type _char = 0;
 
         void next()
@@ -484,7 +476,7 @@ namespace lexertl
         }
 
     private:
-        char_iterator _it;
+        char_iterator _it = char_iterator();
         out_char _chars[2]{};
         unsigned char _count = 0;
         unsigned char _index = 0;
@@ -531,10 +523,7 @@ namespace lexertl
         using reference =
             typename std::iterator_traits<char_iterator>::reference;
 
-        basic_flip_iterator() :
-            _it(char_iterator())
-        {
-        }
+        basic_flip_iterator() = default;
 
         explicit basic_flip_iterator(const char_iterator& it_) :
             _it(it_)
@@ -544,8 +533,8 @@ namespace lexertl
         value_type operator *() const
         {
             value_type val = *_it;
-            char* first = reinterpret_cast<char*>(&val);
-            char* second = reinterpret_cast<char*>(&val + 1) - 1;
+            auto first = reinterpret_cast<char*>(&val);
+            auto second = reinterpret_cast<char*>(&val + 1) - 1;
 
             for (; first < second; ++first, --second)
             {
@@ -580,7 +569,7 @@ namespace lexertl
         }
 
     private:
-        char_iterator _it;
+        char_iterator _it = char_iterator();
     };
 }
 

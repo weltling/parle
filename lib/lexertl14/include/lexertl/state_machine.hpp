@@ -170,16 +170,21 @@ namespace lexertl
                         continue;
                     }
 
-                    new_ptr_[end_state_index] = ptr_[end_state_index];
-                    new_ptr_[id_index] = ptr_[id_index];
-                    new_ptr_[user_id_index] = ptr_[user_id_index];
-                    new_ptr_[push_dfa_index] = ptr_[push_dfa_index];
-                    new_ptr_[next_dfa_index] = ptr_[next_dfa_index];
-                    new_ptr_[eol_index] = lookup_ptr_[ptr_[eol_index]];
-                    new_ptr_ += transitions_index;
-                    ptr_ += transitions_index;
+                    new_ptr_[*state_index::end_state] =
+                        ptr_[*state_index::end_state];
+                    new_ptr_[*state_index::id] = ptr_[*state_index::id];
+                    new_ptr_[*state_index::user_id] =
+                        ptr_[*state_index::user_id];
+                    new_ptr_[*state_index::push_dfa] =
+                        ptr_[*state_index::push_dfa];
+                    new_ptr_[*state_index::next_dfa] =
+                        ptr_[*state_index::next_dfa];
+                    new_ptr_[*state_index::eol] =
+                        lookup_ptr_[ptr_[*state_index::eol]];
+                    new_ptr_ += *state_index::transitions;
+                    ptr_ += *state_index::transitions;
 
-                    for (id_type i_ = transitions_index;
+                    for (id_type i_ = *state_index::transitions;
                         i_ < dfa_alphabet_; ++i_)
                     {
                         *new_ptr_++ = lookup_ptr_[*ptr_++];
@@ -275,7 +280,8 @@ namespace lexertl
         {
             const std::size_t dfa_alphabet_ =
                 internals_._dfa_alphabet[dfa_index_];
-            const std::size_t alphabet_ = dfa_alphabet_ - transitions_index;
+            const std::size_t alphabet_ =
+                dfa_alphabet_ - *state_index::transitions;
             const id_type_vector& source_dfa_ = internals_._dfa[dfa_index_];
             observer_ptr<const id_type> ptr_ = &source_dfa_.front();
             const std::size_t size_ = (source_dfa_.size() - dfa_alphabet_) /
@@ -297,28 +303,28 @@ namespace lexertl
             {
                 state& state_ = dest_dfa_._states[i_];
 
-                state_._end_state = ptr_[end_state_index] != 0;
+                state_._end_state = ptr_[*state_index::end_state] != 0;
 
-                if (ptr_[push_dfa_index] != npos())
+                if (ptr_[*state_index::push_dfa] != npos())
                 {
                     state_._push_pop_dfa = state::push_pop_dfa::push_dfa;
                 }
-                else if (ptr_[end_state_index] & pop_dfa_bit)
+                else if (ptr_[*state_index::end_state] & *state_bit::pop_dfa)
                 {
                     state_._push_pop_dfa = state::push_pop_dfa::pop_dfa;
                 }
 
-                state_._id = ptr_[id_index];
-                state_._user_id = ptr_[user_id_index];
-                state_._push_dfa = ptr_[push_dfa_index];
-                state_._next_dfa = ptr_[next_dfa_index];
+                state_._id = ptr_[*state_index::id];
+                state_._user_id = ptr_[*state_index::user_id];
+                state_._push_dfa = ptr_[*state_index::push_dfa];
+                state_._next_dfa = ptr_[*state_index::next_dfa];
 
-                if (ptr_[eol_index])
+                if (ptr_[*state_index::eol])
                 {
-                    state_._eol_index = ptr_[eol_index] - 1;
+                    state_._eol_index = ptr_[*state_index::eol] - 1;
                 }
 
-                ptr_ += transitions_index;
+                ptr_ += *state_index::transitions;
 
                 for (id_type col_index_ = 0; col_index_ < alphabet_;
                     ++col_index_, ++ptr_)
@@ -357,7 +363,7 @@ namespace lexertl
 
         void minimise()
         {
-            const id_type dfas_ = static_cast<id_type>(_sm_vector.size());
+            const auto dfas_ = static_cast<id_type>(_sm_vector.size());
 
             for (id_type i_ = 0; i_ < dfas_; ++i_)
             {

@@ -35,8 +35,8 @@ namespace lexertl
                 _pop_dfa(pop_dfa_),
                 _greedy(greedy_)
             {
-                node::_firstpos.push_back(this);
-                node::_lastpos.push_back(this);
+                node::firstpos().push_back(this);
+                node::lastpos().push_back(this);
             }
 
             ~basic_end_node() override = default;

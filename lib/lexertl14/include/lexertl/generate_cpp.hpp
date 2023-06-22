@@ -6,6 +6,7 @@
 #ifndef LEXERTL_GENERATE_CPP_HPP
 #define LEXERTL_GENERATE_CPP_HPP
 
+#include "enum_operator.hpp"
 #include "enums.hpp"
 #include <sstream>
 #include "state_machine.hpp"
@@ -29,7 +30,7 @@ namespace lexertl
             os_ << "template<typename iter_type, typename id_type>\n";
             os_ << "void " << name_ << " (lexertl::";
 
-            if (internals_._features & recursive_bit)
+            if (internals_._features & *feature_bit::recursive)
             {
                 os_ << "recursive_match_results";
             }
@@ -42,7 +43,7 @@ namespace lexertl
             os_ << "{\n";
             os_ << "    using results = lexertl::";
 
-            if (internals_._features & recursive_bit)
+            if (internals_._features & *feature_bit::recursive)
             {
                 os_ << "recursive_match_results";
             }
@@ -56,7 +57,7 @@ namespace lexertl
             os_ << "    typename results::iter_type end_token_ = "
                 "results_.second;\n";
 
-            if (internals_._features & skip_bit)
+            if (internals_._features & *feature_bit::skip)
             {
                 os_ << "skip:\n";
             }
@@ -65,7 +66,7 @@ namespace lexertl
                 "results_.second;\n\n";
             os_ << "    results_.first = curr_;\n\n";
 
-            if (internals_._features & again_bit)
+            if (internals_._features & *feature_bit::again)
             {
                 os_ << "again:\n";
             }
@@ -79,7 +80,7 @@ namespace lexertl
             os_ << "        return;\n";
             os_ << "    }\n\n";
 
-            if (internals_._features & bol_bit)
+            if (internals_._features & *feature_bit::bol)
             {
                 os_ << "    bool bol_ = results_.bol;\n";
             }
@@ -120,7 +121,7 @@ namespace lexertl
             os_ << " *ptr_ = dfa_ + dfa_alphabet_;\n";
             os_ << "    bool end_state_ = *ptr_ != 0;\n";
 
-            if (internals_._features & recursive_bit)
+            if (internals_._features & *feature_bit::recursive)
             {
                 os_ << "    bool pop_ = (";
 
@@ -137,7 +138,7 @@ namespace lexertl
                     os_ << ')';
                 }
 
-                os_ << " & " << pop_dfa_bit;
+                os_ << " & " << *state_bit::pop_dfa;
 
                 if (pointers_)
                 {
@@ -155,7 +156,7 @@ namespace lexertl
                 os_ << "static_cast<id_type>(reinterpret_cast<ptrdiff_t>(";
             }
 
-            os_ << "*(ptr_ + " << id_index << ")";
+            os_ << "*(ptr_ + " << *state_index::id << ")";
 
             if (pointers_)
             {
@@ -171,7 +172,7 @@ namespace lexertl
                 os_ << "static_cast<id_type>(reinterpret_cast<ptrdiff_t>(";
             }
 
-            os_ << "*(ptr_ + " << user_id_index << ")";
+            os_ << "*(ptr_ + " << *state_index::user_id << ")";
 
             if (pointers_)
             {
@@ -180,7 +181,7 @@ namespace lexertl
 
             os_ << ";\n";
 
-            if (internals_._features & recursive_bit)
+            if (internals_._features & *feature_bit::recursive)
             {
                 os_ << "    id_type push_dfa_ = ";
 
@@ -190,7 +191,7 @@ namespace lexertl
                     os_ << "static_cast<id_type>(reinterpret_cast<ptrdiff_t>(";
                 }
 
-                os_ << "*(ptr_ + " << push_dfa_index << ")";
+                os_ << "*(ptr_ + " << *state_index::push_dfa << ")";
 
                 if (pointers_)
                 {
@@ -205,12 +206,12 @@ namespace lexertl
                 os_ << "    id_type start_state_ = results_.state;\n";
             }
 
-            if (internals_._features & bol_bit)
+            if (internals_._features & *feature_bit::bol)
             {
                 os_ << "    bool end_bol_ = bol_;\n";
             }
 
-            if (internals_._features & eol_bit)
+            if (internals_._features & *feature_bit::eol)
             {
                 os_ << "    ";
 
@@ -228,7 +229,7 @@ namespace lexertl
 
             os_ << '\n';
 
-            if (internals_._features & bol_bit)
+            if (internals_._features & *feature_bit::bol)
             {
                 os_ << "    if (bol_)\n";
                 os_ << "    {\n";
@@ -264,7 +265,7 @@ namespace lexertl
             os_ << "    while (curr_ != results_.eoi)\n";
             os_ << "    {\n";
 
-            if (internals_._features & eol_bit)
+            if (internals_._features & *feature_bit::eol)
             {
                 os_ << "        EOL_state_ = ";
 
@@ -273,7 +274,7 @@ namespace lexertl
                     os_ << "reinterpret_cast<const void * const *>(";
                 }
 
-                os_ << "ptr_[" << eol_index << ']';
+                os_ << "ptr_[" << *state_index::eol << ']';
 
                 if (pointers_)
                 {
@@ -305,7 +306,7 @@ namespace lexertl
                 os_, std::integral_constant<bool,
                 (sizeof(typename sm::traits::input_char_type) > 1)>());
 
-            if (internals_._features & eol_bit)
+            if (internals_._features & *feature_bit::eol)
             {
                 output_tabs(additional_tabs_, os_);
                 os_ << "    }\n";
@@ -318,7 +319,7 @@ namespace lexertl
             os_ << "            end_state_ = true;\n";
 
 
-            if (internals_._features & recursive_bit)
+            if (internals_._features & *feature_bit::recursive)
             {
                 os_ << "            pop_ = (";
 
@@ -335,7 +336,7 @@ namespace lexertl
                     os_ << ')';
                 }
 
-                os_ << " & " << pop_dfa_bit;
+                os_ << " & " << *state_bit::pop_dfa;
 
                 if (pointers_)
                 {
@@ -353,7 +354,7 @@ namespace lexertl
                 os_ << "static_cast<id_type>(reinterpret_cast<ptrdiff_t>(";
             }
 
-            os_ << "*(ptr_ + " << id_index << ")";
+            os_ << "*(ptr_ + " << *state_index::id << ")";
 
             if (pointers_)
             {
@@ -369,7 +370,7 @@ namespace lexertl
                 os_ << "static_cast<id_type>(reinterpret_cast<ptrdiff_t>(";
             }
 
-            os_ << "*(ptr_ + " << user_id_index << ")";
+            os_ << "*(ptr_ + " << *state_index::user_id << ")";
 
             if (pointers_)
             {
@@ -378,7 +379,7 @@ namespace lexertl
 
             os_ << ";\n";
 
-            if (internals_._features & recursive_bit)
+            if (internals_._features & *feature_bit::recursive)
             {
                 os_ << "            push_dfa_ = ";
 
@@ -388,7 +389,7 @@ namespace lexertl
                     os_ << "static_cast<id_type>(reinterpret_cast<ptrdiff_t>(";
                 }
 
-                os_ << "*(ptr_ + " << push_dfa_index << ')';
+                os_ << "*(ptr_ + " << *state_index::push_dfa << ')';
 
                 if (pointers_)
                 {
@@ -408,7 +409,7 @@ namespace lexertl
                     os_ << "static_cast<id_type>(reinterpret_cast<ptrdiff_t>(";
                 }
 
-                os_ << "*(ptr_ + " << next_dfa_index << ')';
+                os_ << "*(ptr_ + " << *state_index::next_dfa << ')';
 
                 if (pointers_)
                 {
@@ -418,7 +419,7 @@ namespace lexertl
                 os_ << ";\n";
             }
 
-            if (internals_._features & bol_bit)
+            if (internals_._features & *feature_bit::bol)
             {
                 os_ << "            end_bol_ = bol_;\n";
             }
@@ -429,7 +430,7 @@ namespace lexertl
             output_quit(os_, std::integral_constant<bool,
                 (sizeof(typename sm::traits::input_char_type) > 1)>());
 
-            if (internals_._features & eol_bit)
+            if (internals_._features & *feature_bit::eol)
             {
                 os_ << "    if (curr_ == results_.eoi)\n";
                 os_ << "    {\n";
@@ -440,7 +441,7 @@ namespace lexertl
                     os_ << "reinterpret_cast<const void * const *>(";
                 }
 
-                os_ << "ptr_[" << eol_index << ']';
+                os_ << "ptr_[" << *state_index::eol << ']';
 
                 if (pointers_)
                 {
@@ -468,7 +469,7 @@ namespace lexertl
                 os_ << "                end_state_ = true;\n";
 
 
-                if (internals_._features & recursive_bit)
+                if (internals_._features & *feature_bit::recursive)
                 {
                     os_ << "                pop_ = (";
 
@@ -486,7 +487,7 @@ namespace lexertl
                         os_ << ')';
                     }
 
-                    os_ << " & " << pop_dfa_bit;
+                    os_ << " & " << *state_bit::pop_dfa;
 
                     if (pointers_)
                     {
@@ -504,7 +505,7 @@ namespace lexertl
                     os_ << "static_cast<id_type>(reinterpret_cast<ptrdiff_t>(";
                 }
 
-                os_ << "*(ptr_ + " << id_index << ")";
+                os_ << "*(ptr_ + " << *state_index::id << ")";
 
                 if (pointers_)
                 {
@@ -520,7 +521,7 @@ namespace lexertl
                     os_ << "static_cast<id_type>(reinterpret_cast<ptrdiff_t>(";
                 }
 
-                os_ << "*(ptr_ + " << user_id_index << ")";
+                os_ << "*(ptr_ + " << *state_index::user_id << ")";
 
                 if (pointers_)
                 {
@@ -529,7 +530,7 @@ namespace lexertl
 
                 os_ << ";\n";
 
-                if (internals_._features & recursive_bit)
+                if (internals_._features & *feature_bit::recursive)
                 {
                     os_ << "                push_dfa_ = ";
 
@@ -540,7 +541,7 @@ namespace lexertl
                             "(reinterpret_cast<ptrdiff_t>(";
                     }
 
-                    os_ << "*(ptr_ + " << push_dfa_index << ')';
+                    os_ << "*(ptr_ + " << *state_index::push_dfa << ')';
 
                     if (pointers_)
                     {
@@ -561,7 +562,7 @@ namespace lexertl
                             "(reinterpret_cast<ptrdiff_t>(";
                     }
 
-                    os_ << "*(ptr_ + " << next_dfa_index << ')';
+                    os_ << "*(ptr_ + " << *state_index::next_dfa << ')';
 
                     if (pointers_)
                     {
@@ -571,7 +572,7 @@ namespace lexertl
                     os_ << ";\n";
                 }
 
-                if (internals_._features & bol_bit)
+                if (internals_._features & *feature_bit::bol)
                 {
                     os_ << "                end_bol_ = bol_;\n";
                 }
@@ -586,7 +587,7 @@ namespace lexertl
             os_ << "    {\n";
             os_ << "        // Return longest match\n";
 
-            if (internals_._features & recursive_bit)
+            if (internals_._features & *feature_bit::recursive)
             {
                 os_ << "        if (pop_)\n";
                 os_ << "        {\n";
@@ -607,26 +608,26 @@ namespace lexertl
                 os_ << "        results_.state = start_state_;\n";
             }
 
-            if (internals_._features & bol_bit)
+            if (internals_._features & *feature_bit::bol)
             {
                 os_ << "        results_.bol = end_bol_;\n";
             }
 
             os_ << "        results_.second = end_token_;\n";
 
-            if (internals_._features & skip_bit)
+            if (internals_._features & *feature_bit::skip)
             {
                 // We want a number regardless of id_type.
                 os_ << "\n        if (id_ == results_.skip()) goto skip;\n";
             }
 
-            if (internals_._features & again_bit)
+            if (internals_._features & *feature_bit::again)
             {
                 // We want a number regardless of id_type.
                 os_ << "\n        if (id_ == "
                     << static_cast<std::size_t>(internals_._eoi);
 
-                if (internals_._features & recursive_bit)
+                if (internals_._features & *feature_bit::recursive)
                 {
                     os_ << " || (pop_ && !results_.stack.empty() &&\n";
                     // We want a number regardless of id_type.
@@ -647,7 +648,7 @@ namespace lexertl
             os_ << "        // No match causes char to be skipped\n";
             os_ << "        results_.second = end_token_;\n";
 
-            if (internals_._features & bol_bit)
+            if (internals_._features & *feature_bit::bol)
             {
                 os_ << "        results_.bol = *results_.second == '\\n';\n";
             }
@@ -874,8 +875,8 @@ namespace lexertl
                         static_cast<std::size_t>(*ptr_++);
                 }
 
-                for (id_type id_index_ = id_index;
-                    id_index_ < transitions_index; ++id_index_, ++ptr_)
+                for (id_type id_index_ = *state_index::id;
+                    id_index_ < *state_index::transitions; ++id_index_, ++ptr_)
                 {
                     os_ << ", ";
                     zero_ = *ptr_ == 0;
@@ -894,7 +895,7 @@ namespace lexertl
                     }
                 }
 
-                for (id_type alphabet_ = transitions_index;
+                for (id_type alphabet_ = *state_index::transitions;
                     alphabet_ < dfa_alphabet_; ++alphabet_, ++ptr_)
                 {
                     // We want numbers regardless of id_type.
@@ -989,7 +990,7 @@ namespace lexertl
 
             os_ << ";\n\n";
 
-            if (features_ & bol_bit)
+            if (features_ & *feature_bit::bol)
             {
                 output_tabs(additional_tabs_, os_);
                 os_ << "        bol_ = prev_char_ == '\\n';\n\n";
@@ -1000,7 +1001,7 @@ namespace lexertl
             output_tabs(additional_tabs_, os_);
             os_ << "        {\n";
 
-            if (features_ & eol_bit)
+            if (features_ & *feature_bit::eol)
             {
                 output_tabs(additional_tabs_, os_);
                 os_ << "            EOL_state_ = 0;\n";
@@ -1042,7 +1043,7 @@ namespace lexertl
             os_ << "        typename results::char_type prev_char_ = "
                 "*curr_++;\n\n";
 
-            if (features_ & bol_bit)
+            if (features_ & *feature_bit::bol)
             {
                 output_tabs(additional_tabs_, os_);
                 os_ << "        bol_ = prev_char_ == '\\n';\n\n";
@@ -1089,7 +1090,7 @@ namespace lexertl
             output_tabs(additional_tabs_, os_);
             os_ << "            {\n";
 
-            if (features_ & eol_bit)
+            if (features_ & *feature_bit::eol)
             {
                 output_tabs(additional_tabs_, os_);
                 os_ << "                EOL_state_ = 0;\n";

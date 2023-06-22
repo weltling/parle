@@ -26,13 +26,14 @@ namespace parsertl
         // Refer to what yypact is saying about the current state
         int yyn_ = tables_.yypact[results_.stack.back()];
 
-        if (yyn_ == tables_struct::YYPACT_NINF)
+        if (yyn_ == static_cast<int>(tables_struct::yyconsts::YYPACT_NINF))
             goto yydefault;
 
         results_.token_id = tables_.yytranslate[iter_->id];
         yyn_ += results_.token_id;
 
-        if (yyn_ < 0 || tables_struct::YYLAST < yyn_ ||
+        if (yyn_ < 0 ||
+            static_cast<int>(tables_struct::yyconsts::YYLAST) < yyn_ ||
             tables_.yycheck[yyn_] != results_.token_id)
             goto yydefault;
 
@@ -40,7 +41,8 @@ namespace parsertl
 
         if (yyn_ <= 0)
         {
-            if (yyn_ == 0 || yyn_ == tables_struct::YYTABLE_NINF)
+            if (yyn_ == 0 || yyn_ ==
+                static_cast<int>(tables_struct::yyconsts::YYTABLE_NINF))
             {
                 results_.entry.action = action::error;
                 results_.entry.param = static_cast<typename results::id_type>
@@ -53,7 +55,7 @@ namespace parsertl
         }
 
         // ACCEPT
-        if (yyn_ == tables_struct::YYFINAL)
+        if (yyn_ == static_cast<int>(tables_struct::yyconsts::YYFINAL))
         {
             results_.entry.action = action::accept;
             results_.entry.param = 0;
@@ -120,7 +122,7 @@ namespace parsertl
         }
         case action::go_to:
             if (0 <= results_.entry.param &&
-                results_.entry.param <= tables_struct::YYLAST &&
+                results_.entry.param <= tables_struct::yyconsts::YYLAST &&
                 tables_.yycheck[results_.entry.param] == results_.stack.back())
             {
                 results_.entry.param = tables_.yytable[results_.entry.param];
@@ -134,8 +136,8 @@ namespace parsertl
             results_.stack.push_back(results_.entry.param);
             break;
         default:
-            // action::error
-            // action::accept
+            // error
+            // accept
             break;
         }
     }
@@ -193,13 +195,15 @@ namespace parsertl
             productions_.push_back(token_);
             results_.entry.action = action::go_to;
             results_.entry.param = tables_.yypgoto[results_.token_id -
-                tables_struct::YYNTOKENS] + results_.stack.back();
+                static_cast<int>(tables_struct::yyconsts::YYNTOKENS)] +
+                results_.stack.back();
             // Drop through to go_to:
             // [[fallthrough]]; (C++17)
         }
         case action::go_to:
             if (0 <= results_.entry.param &&
-                results_.entry.param <= tables_struct::YYLAST &&
+                results_.entry.param <=
+                static_cast<int>(tables_struct::yyconsts::YYLAST) &&
                 tables_.yycheck[results_.entry.param] == results_.stack.back())
             {
                 results_.entry.param = tables_.yytable[results_.entry.param];
@@ -207,14 +211,14 @@ namespace parsertl
             else
             {
                 results_.entry.param = tables_.yydefgoto[results_.token_id -
-                    tables_struct::YYNTOKENS];
+                    static_cast<int>(tables_struct::yyconsts::YYNTOKENS)];
             }
 
             results_.stack.push_back(results_.entry.param);
             break;
         default:
-            // action::error
-            // action::accept
+            // error
+            // accept
             break;
         }
     }

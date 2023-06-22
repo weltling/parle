@@ -31,9 +31,9 @@ namespace lexertl
             std::stack<std::size_t> _flags_stack;
             std::locale _locale;
             const char_type* _macro_name;
-            long _paren_count;
-            bool _in_string;
-            id_type _nl_id;
+            long _paren_count = 0;
+            bool _in_string = false;
+            id_type _nl_id = static_cast<id_type>(~0);
 
             basic_re_tokeniser_state(const char_type* start_,
                 const char_type* const end_, id_type id_,
@@ -44,42 +44,9 @@ namespace lexertl
                 _curr(start_),
                 _id(id_),
                 _flags(flags_),
-                _flags_stack(),
                 _locale(locale_),
-                _macro_name(macro_name_),
-                _paren_count(0),
-                _in_string(false),
-                _nl_id(static_cast<id_type>(~0))
+                _macro_name(macro_name_)
             {
-            }
-
-            basic_re_tokeniser_state(const basic_re_tokeniser_state& rhs_)
-            {
-                assign(rhs_);
-            }
-
-            // prevent VC++ 7.1 warning:
-            const basic_re_tokeniser_state& operator =
-                (const basic_re_tokeniser_state& rhs_)
-            {
-                return assign(rhs_);
-            }
-
-            basic_re_tokeniser_state&
-                assign(const basic_re_tokeniser_state& rhs_)
-            {
-                _start = rhs_._start;
-                _end = rhs_._end;
-                _curr = rhs_._curr;
-                _id = rhs_._id;
-                _flags = rhs_._flags;
-                _flags_stack = rhs_._flags_stack;
-                _locale = rhs_._locale;
-                _macro_name = rhs_._macro_name;
-                _paren_count = rhs_._paren_count;
-                _in_string = rhs_._in_string;
-                _nl_id = rhs_._nl_id;
-                return *this;
             }
 
             inline bool next(char_type& ch_)
@@ -102,22 +69,22 @@ namespace lexertl
                 ++_curr;
             }
 
-            inline std::size_t index()
+            inline std::size_t index() const
             {
                 return _curr - _start;
             }
 
-            inline bool eos()
+            inline bool eos() const
             {
                 return _curr >= _end;
             }
 
-            inline void unexpected_end(std::ostringstream& ss_)
+            inline void unexpected_end(std::ostringstream& ss_) const
             {
                 ss_ << "Unexpected end of regex";
             }
 
-            inline void error(std::ostringstream& ss_)
+            inline void error(std::ostringstream& ss_) const
             {
                 ss_ << " in ";
 

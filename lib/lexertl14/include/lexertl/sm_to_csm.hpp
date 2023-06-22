@@ -6,6 +6,7 @@
 #ifndef LEXERTL_SM_TO_CSM_HPP
 #define LEXERTL_SM_TO_CSM_HPP
 
+#include "enum_operator.hpp"
 #include "enums.hpp"
 #include "observer_ptr.hpp"
 #include <cstddef>
@@ -29,16 +30,16 @@ namespace lexertl
             if (internals_._dfa_alphabet[i_] == 0) continue;
 
             const std::size_t alphabet_ = internals_._dfa_alphabet[i_] -
-                transitions_index;
+                *state_index::transitions;
             string_token_vector token_vector_(alphabet_, string_token());
             observer_ptr<const id_type> ptr_ = &internals_._lookup[i_].front();
 
             for (std::size_t c_ = 0; c_ < 256; ++c_, ++ptr_)
             {
-                if (*ptr_ >= transitions_index)
+                if (*ptr_ >= *state_index::transitions)
                 {
                     string_token& token_ = token_vector_
-                        [*ptr_ - transitions_index];
+                        [*ptr_ - *state_index::transitions];
 
                     token_.insert(typename string_token::range
                     (index_type(c_), index_type(c_)));

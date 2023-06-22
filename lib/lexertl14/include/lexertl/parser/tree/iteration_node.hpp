@@ -29,15 +29,15 @@ namespace lexertl
                 _next(next_),
                 _greedy(greedy_)
             {
-                _next->append_firstpos(node::_firstpos);
-                _next->append_lastpos(node::_lastpos);
+                _next->append_firstpos(node::firstpos());
+                _next->append_lastpos(node::lastpos());
 
-                for (observer_ptr<node> node_ : node::_lastpos)
+                for (observer_ptr<node> node_ : node::lastpos())
                 {
-                    node_->append_followpos(node::_firstpos);
+                    node_->append_followpos(node::firstpos());
                 }
 
-                for (observer_ptr<node> node_ : node::_firstpos)
+                for (observer_ptr<node> node_ : node::firstpos())
                 {
                     node_->greedy(greedy_);
                 }
@@ -70,8 +70,8 @@ namespace lexertl
                 {
                     observer_ptr<node> ptr_ = new_node_stack_.top();
 
-                    node_ptr_vector_.emplace_back
-                    (std::make_unique<basic_iteration_node>(ptr_, _greedy));
+                    node_ptr_vector_.push_back(std::make_unique
+                        <basic_iteration_node>(ptr_, _greedy));
                     new_node_stack_.top() = node_ptr_vector_.back().get();
                 }
                 else

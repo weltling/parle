@@ -6,6 +6,7 @@
 #ifndef LEXERTL_RULES_HPP
 #define LEXERTL_RULES_HPP
 
+#include "enum_operator.hpp"
 #include "enums.hpp"
 #include <locale>
 #include <map>
@@ -56,22 +57,13 @@ namespace lexertl
             "Your id type is signed");
 
 #ifdef _WIN32
-        basic_rules(const std::size_t flags_ = dot_not_cr_lf) :
+        explicit basic_rules(const std::size_t flags_ =
+            *regex_flags::dot_not_cr_lf) :
 #else
-        basic_rules(const std::size_t flags_ = dot_not_newline) :
+        explicit basic_rules(const std::size_t flags_ =
+            *regex_flags::dot_not_newline) :
 #endif
-            _statemap(),
-            _macro_map(),
-            _regexes(),
-            _features(),
-            _ids(),
-            _user_ids(),
-            _next_dfas(),
-            _pushes(),
-            _pops(),
-            _flags(flags_),
-            _locale(),
-            _lexer_state_names()
+            _flags(flags_)
         {
             push_state(initial());
         }
@@ -88,9 +80,9 @@ namespace lexertl
             _pushes.clear();
             _pops.clear();
 #ifdef _WIN32
-            _flags = dot_not_cr_lf;
+            _flags = *regex_flags::dot_not_cr_lf;
 #else
-            _flags = dot_not_newline;
+            _flags = *regex_flags::dot_not_newline;
 #endif
             _locale = std::locale();
             _lexer_state_names.clear();
@@ -281,22 +273,22 @@ namespace lexertl
 
             if (_regexes.front().back()[1]._type == detail::token_type::BOL)
             {
-                _features.front() |= bol_bit;
+                _features.front() |= *feature_bit::bol;
             }
 
             if (_regexes.front().back()[_regexes.front().back().size() - 2].
                 _type == detail::token_type::EOL)
             {
-                _features.front() |= eol_bit;
+                _features.front() |= *feature_bit::eol;
             }
 
             if (id_ == skip())
             {
-                _features.front() |= skip_bit;
+                _features.front() |= *feature_bit::skip;
             }
             else if (id_ == eoi())
             {
-                _features.front() |= again_bit;
+                _features.front() |= *feature_bit::again;
             }
 
             _ids.front().push_back(id_);
@@ -914,7 +906,7 @@ namespace lexertl
 
             if (star_)
             {
-                const id_type size_ = static_cast<id_type>(_statemap.size());
+                const auto size_ = static_cast<id_type>(_statemap.size());
 
                 for (id_type i_ = 0; i_ < size_; ++i_)
                 {
@@ -969,27 +961,27 @@ namespace lexertl
 
                 if (_regexes[curr_].back()[1]._type == detail::token_type::BOL)
                 {
-                    _features[curr_] |= bol_bit;
+                    _features[curr_] |= *feature_bit::bol;
                 }
 
                 if (_regexes[curr_].back()[_regexes[curr_].back().size() - 2].
                     _type == detail::token_type::EOL)
                 {
-                    _features[curr_] |= eol_bit;
+                    _features[curr_] |= *feature_bit::eol;
                 }
 
                 if (id_ == skip())
                 {
-                    _features[curr_] |= skip_bit;
+                    _features[curr_] |= *feature_bit::skip;
                 }
                 else if (id_ == eoi())
                 {
-                    _features[curr_] |= again_bit;
+                    _features[curr_] |= *feature_bit::again;
                 }
 
                 if (push_ || pop_)
                 {
-                    _features[curr_] |= recursive_bit;
+                    _features[curr_] |= *feature_bit::recursive;
                 }
 
                 _ids[curr_].push_back(id_);
