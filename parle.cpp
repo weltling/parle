@@ -90,8 +90,7 @@ namespace parle {/*{{{*/
 	using id_type = uint16_t;
 #if PARLE_U32
 #if defined(_MSC_VER)
-	// dirty quirk
-	using char_type = uint32_t;
+	using char_type = char32_t;
 	using string = std::basic_string<char_type>;
 #if PARLE_U32
 	using utf_out_iter = lexertl::basic_utf8_out_iterator
