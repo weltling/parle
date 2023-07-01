@@ -18,8 +18,8 @@
 	</contributor>
 	<date>2023-07-01</date>
 	<version>
-		<release>0.8.5</release>
-		<api>0.8.5</api>
+		<release>0.8.6</release>
+		<api>0.8.6</api>
 	</version>
 	<stability>
 		<release>beta</release>
@@ -27,11 +27,7 @@
 	</stability>
 	<license uri="http://opensource.org/licenses/BSD-2-Clause">BSD 2-clause</license>
 	<notes>
-		- Implement Parser::readBison() (Ben Hanson)
-		- Parser::dump() and Lexer::dump() are supported in UTF-32 mode (Ben Hanson)
-		- Parser::dump() and Lexer::dump() use PHP streams (Ben Hanson)
-		- Update the bundled parsertl/lexertl libraries (Ben Hanson)
-		- Fix Windows build (Ben Hanson)
+		- TODO
 	</notes>
 	<contents>
 		<dir name="/">
@@ -181,6 +177,25 @@
 		<configureoption name="enable-parle-utf32" default="no" prompt="Enable internal UTF-32 support in parle" />
 	</extsrcrelease>
 	<changelog>
+		<release>
+			<date>2023-07-01</date>
+			<version>
+				<release>0.8.5</release>
+				<api>0.8.5</api>
+			</version>
+			<stability>
+				<release>beta</release>
+				<api>beta</api>
+			</stability>
+			<license uri="http://opensource.org/licenses/BSD-2-Clause">BSD 2-clause</license>
+			<notes>
+				- Implement Parser::readBison() (Ben Hanson)
+				- Parser::dump() and Lexer::dump() are supported in UTF-32 mode (Ben Hanson)
+				- Parser::dump() and Lexer::dump() use PHP streams (Ben Hanson)
+				- Update the bundled parsertl/lexertl libraries (Ben Hanson)
+				- Fix Windows build (Ben Hanson)
+			</notes>
+		</release>
 		<release>
 			<date>2023-05-13</date>
 			<version>
