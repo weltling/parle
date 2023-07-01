@@ -31,6 +31,7 @@
 		- Parser::dump() and Lexer::dump() are supported in UTF-32 mode (Ben Hanson)
 		- Parser::dump() and Lexer::dump() use PHP streams (Ben Hanson)
 		- Update the bundled parsertl/lexertl libraries (Ben Hanson)
+		- Fix Windows build (Ben Hanson)
 	</notes>
 	<contents>
 		<dir name="/">
