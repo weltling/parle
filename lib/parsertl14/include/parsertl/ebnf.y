@@ -1,14 +1,17 @@
+/* Generate code using: bison -S parsertl.cc ebnf.y */
 %token EMPTY IDENTIFIER PREC TERMINAL
 %%
 
 rule: rhs_or;
 
-rhs_or: opt_list
-      | rhs_or '|' opt_list;
+rhs_or: opt_prec_list
+      | rhs_or '|' opt_prec_list;
+
+opt_prec_list: opt_list opt_prec;
 
 opt_list:
         | EMPTY
-        | rhs_list opt_prec;
+        | rhs_list;
 
 rhs_list: rhs
         | rhs_list rhs;
