@@ -16,18 +16,18 @@ namespace parsertl
 	// int num = *number::two;
 	template <typename T>
 	auto operator*(T e) noexcept ->
-		std::enable_if_t<std::is_enum<T>::value, std::size_t>
+		std::enable_if_t<std::is_enum<T>::value, uint16_t>
 	{
-		return static_cast<std::size_t>(e);
+		return static_cast<uint16_t>(e);
 	}
 
 	// This is the compile time version of the above operator
 	// (e.g. Setting a C style array size using an enum)
 	template <typename T>
 	constexpr auto operator+(T e) noexcept ->
-		std::enable_if_t<std::is_enum<T>::value, std::size_t>
+		std::enable_if_t<std::is_enum<T>::value, uint16_t>
 	{
-		return static_cast<std::size_t>(e);
+		return static_cast<uint16_t>(e);
 	}
 }
 

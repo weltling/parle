@@ -311,9 +311,9 @@ namespace parsertl
             typename token_t::token_vector productions_;
             std::stack<string> rhs_stack_;
             std::stack<std::pair<string, string>> new_rules_;
-            char_type empty_or_[] =
-            { '%', 'e', 'm', 'p', 't', 'y', ' ', '|', ' ', 0 };
-            char_type or_[] = { ' ', '|', ' ', 0 };
+            static const char_type empty_or_[] =
+            { '%', 'e', 'm', 'p', 't', 'y', ' ', '|', ' ', '\0' };
+            static const char_type or_[] = { ' ', '|', ' ', '\0' };
 
             bison_next(_ebnf_tables, iter_, results_);
 
@@ -347,13 +347,9 @@ namespace parsertl
 
                         break;
                     }
-                    case ebnf_indexes::opt_list_1_idx:
-                        // opt_list: %empty
-                        rhs_stack_.push(string());
-                        break;
-                    case ebnf_indexes::opt_list_3_idx:
+                    case ebnf_indexes::opt_prec_list_idx:
                     {
-                        // opt_list: rhs_list opt_prec
+                        // opt_prec_list: opt_list opt_prec
                         const std::size_t size_ =
                             _ebnf_tables.yyr2[results_.entry.param];
                         const std::size_t idx_ = productions_.size() - size_;
@@ -370,6 +366,10 @@ namespace parsertl
 
                         break;
                     }
+                    case ebnf_indexes::opt_list_1_idx:
+                        // opt_list: %empty
+                        rhs_stack_.push(string());
+                        break;
                     case ebnf_indexes::rhs_list_2_idx:
                     {
                         // rhs_list: rhs_list rhs
@@ -664,46 +664,22 @@ namespace parsertl
                 }
             }
 
-            // Validate start rule
-    /*        if (start_ >= _nt_locations.size() ||
-                _grammar[_nt_locations[start_]._first_production].
-                    _rhs.first.size() != 1)*/
+            static const char_type accept_[] =
             {
-                static char_type accept_[] =
-                { '$', 'a', 'c', 'c', 'e', 'p', 't', 0 };
+                '$', 'a', 'c', 'c', 'e', 'p', 't', '\0'
+            };
+
+            // Validate start rule
+            if (_non_terminals.find(accept_) == _non_terminals.end())
+            {
                 string rhs_ = _start;
 
                 push_production(accept_, rhs_);
                 _grammar.back()._rhs.first.emplace_back(symbol::type::TERMINAL,
                     insert_terminal(string(1, '$')));
-                _start = accept_;
             }
-            /*        else
-                    {
-                        _grammar[_nt_locations[start_]._first_production].
-                            _rhs.first.emplace_back(symbol::TERMINAL,
-                                insert_terminal(string(1, '$')));
 
-                        for (const auto &p_ : _grammar)
-                        {
-                            for (const auto &s_ : p_._rhs.first)
-                            {
-                                if (s_._type == symbol::NON_TERMINAL &&
-                                    s_._id == start_)
-                                {
-                                    std::ostringstream ss_;
-                                    const string name_ =
-                                        name_from_nt_id(p_._lhs);
-
-                                    ss_ << "The start symbol occurs on the "
-                                        "RHS of rule '";
-                                    narrow(name_.c_str(), ss_);
-                                    ss_ << "'.";
-                                    throw runtime_error(ss_.str());
-                                }
-                            }
-                        }
-                    }*/
+            _start = accept_;
 
             // Validate all non-terminals.
             for (std::size_t i_ = 0, size_ = _nt_locations.size();
@@ -793,6 +769,7 @@ namespace parsertl
             rule_idx = 2,
             rhs_or_1_idx,
             rhs_or_2_idx,
+            opt_prec_list_idx,
             opt_list_1_idx,
             opt_list_2_idx,
             opt_list_3_idx,
